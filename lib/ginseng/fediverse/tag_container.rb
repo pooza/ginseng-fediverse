@@ -53,7 +53,7 @@ module Ginseng
 
       def self.tweak(text)
         links = {}
-        Ginseng::URI.scan(text.clone).each do |uri|
+        Ginseng::URI.scan(text).each do |uri|
           key = Digest::SHA1.hexdigest(uri.to_s)
           links[key] = uri.to_s
           text.sub!(uri.to_s, key)
