@@ -12,4 +12,8 @@ Gem::Specification.new do |spec|
   spec.license = package['license']
   spec.metadata['homepage_uri'] = package['url']
   spec.require_paths = ['lib']
+
+  spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'rubocop-performance'
+  spec.add_development_dependency 'test-unit'
 end

@@ -1,0 +1,153 @@
+require: rubocop-performance
+
+AllCops:
+  AllowSymlinksInCacheRootDirectory: true
+  DisplayCopNames: true
+  Exclude:
+    - '**/._*'
+    - '.git/**/*'
+    - 'public/**/*'
+    - 'tmp/**/*'
+  TargetRubyVersion: 2.7
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/DoubleNegation:
+  Enabled: false
+
+Style/FormatStringToken:
+  EnforcedStyle: template
+
+Layout/ParameterAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/FirstHashElementIndentation:
+  EnforcedStyle: consistent
+
+Layout/SpaceBeforeBlockBraces:
+  EnforcedStyle: space
+
+Layout/SpaceInsideBlockBraces:
+  EnforcedStyle: no_space
+  EnforcedStyleForEmptyBraces: no_space
+  SpaceBeforeBlockParameters: false
+
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Metrics/AbcSize:
+  Max: 30
+  Exclude:
+    - test/*
+
+Metrics/MethodLength:
+  Max: 20
+  Exclude:
+    - test/*
+
+Metrics/ClassLength:
+  Max: 200
+  Exclude:
+    - test/*
+
+Style/Documentation:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+Style/RescueStandardError:
+  Enabled: false
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/WordArray:
+  EnforcedStyle: brackets
+
+Style/IdenticalConditionalBranches:
+  Exclude:
+    - test/*
+
+Layout/LineLength:
+  Max: 100
+  Exclude:
+    - test/*
+
+Style/IfUnlessModifier:
+  Exclude:
+    - test/*
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/FormatString:
+  EnforcedStyle: percent
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Lint/AssignmentInCondition:
+  Enabled: false
+
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+Lint/UnusedMethodArgument:
+  Enabled: false
+
+Style/YodaCondition:
+  Enabled: false
+
+Style/RescueModifier:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+Naming/RescuedExceptionsVariableName:
+  PreferredName: e
+
+Lint/RaiseException:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+

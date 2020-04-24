@@ -7,16 +7,15 @@ package:
     - tkoishi@b-shock.co.jp
   description: ginseng Fediverse libraries
   license: MIT
+hashtag:
+  pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
 mastodon:
   url: https://mstdn.b-shock.org/
   token: test
-  test_toot: 0
   followers:
     limit: 500
   followees:
     limit: 500
-  hashtag:
-    pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
 misskey:
   url: https://dev.mis.b-shock.org/
   token: test
