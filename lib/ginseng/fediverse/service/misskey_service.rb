@@ -13,7 +13,7 @@ module Ginseng
 
       def fetch_note(id)
         response = @http.get("/mulukhiya/note/#{id}")
-        raise GatewayError, response['message'] unless response.code == 200
+        raise Ginseng::GatewayError, response['message'] unless response.code == 200
         return response
       end
 
@@ -39,6 +39,8 @@ module Ginseng
       end
 
       alias fav favourite
+
+      alias bookmark favourite
 
       def upload(path, params = {})
         headers = params[:headers] || {}
