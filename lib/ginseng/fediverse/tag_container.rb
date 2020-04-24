@@ -47,7 +47,7 @@ module Ginseng
       end
 
       def self.scan(text)
-        pattern = Regexp.new(config_class.instance['/hashtag/pattern'], Regexp::IGNORECASE)
+        pattern = Regexp.new(Config.instance['/hashtag/pattern'], Regexp::IGNORECASE)
         return text.scan(pattern).map(&:first)
       end
 
