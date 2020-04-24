@@ -12,6 +12,7 @@ hashtag:
 mastodon:
   url: https://mstdn.b-shock.org/
   token: test
+  test_toot: 1
   followers:
     limit: 500
   followees:
