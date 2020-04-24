@@ -1,0 +1,25 @@
+package:
+  version: 1.0.0
+  url: https://github.com/pooza/ginseng-fediverse
+  authors:
+    - Tatsuya Koishi
+  email:
+    - tkoishi@b-shock.co.jp
+  description: ginseng Fediverse libraries
+  license: MIT
+mastodon:
+  url: https://mstdn.b-shock.org/
+  token: test
+  test_toot: 0
+  followers:
+    limit: 500
+  followees:
+    limit: 500
+  hashtag:
+    pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
+misskey:
+  url: https://dev.mis.b-shock.org/
+  token: test
+dolphin:
+  url: https://dev.dol.b-shock.org/
+  token: test
