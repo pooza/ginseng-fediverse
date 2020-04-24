@@ -11,7 +11,7 @@ module Ginseng
 
       def fetch_toot(id)
         response = @http.get("/api/v1/statuses/#{id}")
-        raise GatewayError, response['error'] if response['error']
+        raise Ginseng::GatewayError, response['error'] if response['error']
         return response
       end
 
