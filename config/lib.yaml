@@ -1,5 +1,5 @@
 package:
-  version: 1.0.2
+  version: 1.1.0
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -9,10 +9,14 @@ package:
   license: MIT
 hashtag:
   pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
+acct:
+  pattern: '((?<=^|[^\/[:word:]])@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))'
 mastodon:
   url: https://st.mstdn.b-shock.org/
   token: test
   test_toot: 1
+  toot:
+    max_length: 500
   followers:
     limit: 500
   followees:
@@ -20,6 +24,8 @@ mastodon:
 misskey:
   url: https://dev.mis.b-shock.org/
   token: test
+  note:
+    max_length: 500
 dolphin:
   url: https://dev.dol.b-shock.org/
   token: test
