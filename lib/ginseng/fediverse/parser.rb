@@ -87,21 +87,6 @@ module Ginseng
         return Parser.sanitize(text)
       end
 
-      def to_md
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
-      end
-
-      def all_tags
-        unless @all_tags
-          container = TagContainer.new
-          container.concat(tags)
-          return @all_tags = container.create_tags
-        end
-        return @all_tags
-      end
-
-      alias create_tags all_tags
-
       def max_length
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
