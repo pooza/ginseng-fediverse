@@ -12,9 +12,8 @@ Gem::Specification.new do |spec|
   spec.license = package['license']
   spec.metadata['homepage_uri'] = package['url']
   spec.require_paths = ['lib']
+  spec.required_ruby_version = '>=2.6'
 
-  spec.add_dependency 'nokogiri'
-  spec.add_dependency 'sanitize'
   spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'rubocop-performance'
   spec.add_development_dependency 'test-unit'

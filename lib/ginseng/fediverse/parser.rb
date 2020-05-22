@@ -1,6 +1,3 @@
-require 'sanitize'
-require 'nokogiri'
-
 module Ginseng
   module Fediverse
     class Parser
@@ -94,8 +91,7 @@ module Ginseng
       def self.sanitize(text)
         text.gsub!(/<br.*?>/, "\n")
         text.gsub!(%r{</p.*?>}, "\n\n")
-        text = Sanitize.clean(text)
-        text = Nokogiri::HTML.parse(text).text
+        text.sanitize!
         return text.strip
       end
 
