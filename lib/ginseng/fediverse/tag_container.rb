@@ -1,4 +1,3 @@
-require 'unicode'
 require 'digest/sha1'
 
 module Ginseng
@@ -20,7 +19,7 @@ module Ginseng
 
       def text=(text)
         @tags = nil
-        @text = Unicode.nfkc(text)
+        @text = text.nfkc
       end
 
       alias body= text=
@@ -68,7 +67,7 @@ module Ginseng
       private
 
       def create_pattern(tag)
-        tag = Service.create_tag(tag) unless /^#/.match?(tag)
+        tag = Service.create_tag(tag) unless tag.start_with?('#')
         return Regexp.new("#{tag}([^[:word:]]|$)")
       end
     end
