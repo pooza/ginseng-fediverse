@@ -49,6 +49,10 @@ module Ginseng
       def oauth_client_path
         return File.join(environment_class.dir, 'tmp/cache/oauth_cilent.json')
       end
+
+      def clear_oauth_client
+        File.unlink(oauth_client_path) if File.exist?(oauth_client_path)
+      end
     end
   end
 end

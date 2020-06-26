@@ -9,13 +9,15 @@ module Ginseng
         @http.base_uri = Ginseng::URI.parse(uri || @config['/mastodon/url'])
       end
 
-      def fetch_toot(id)
+      def fetch_status(id)
         response = @http.get("/api/v1/statuses/#{id}")
         raise Ginseng::GatewayError, response['error'] if response['error']
         return response
       end
 
-      def toot(body, params = {})
+      alias fetch_toot fetch_status
+
+      def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{@token}"
@@ -23,9 +25,7 @@ module Ginseng
         return @http.post('/api/v1/statuses', {body: body.to_json, headers: headers})
       end
 
-      alias post toot
-
-      alias note toot
+      alias toot post
 
       def upload(path, params = {})
         params[:version] ||= 1

@@ -11,13 +11,15 @@ module Ginseng
         @http.base_uri = Ginseng::URI.parse(uri || @config['/misskey/url'])
       end
 
-      def fetch_note(id)
+      def fetch_status(id)
         response = @http.get("/mulukhiya/note/#{id}")
         raise Ginseng::GatewayError, response['message'] unless response.code == 200
         return response
       end
 
-      def note(body, params = {})
+      alias fetch_note fetch_status
+
+      def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
@@ -25,9 +27,7 @@ module Ginseng
         return @http.post('/api/notes/create', {body: body.to_json, headers: headers})
       end
 
-      alias post note
-
-      alias toot note
+      alias note post
 
       def favourite(id, params = {})
         headers = params[:headers] || {}
@@ -86,6 +86,10 @@ module Ginseng
             token: token,
           }.to_json,
         })
+      end
+
+      def filters
+        raise Ginseng::GatewayError, 'Misskey does not support to filter.'
       end
 
       def announcements(params = {})
