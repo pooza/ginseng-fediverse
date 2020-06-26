@@ -1,5 +1,5 @@
 package:
-  version: 1.1.2
+  version: 1.2.0
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -28,4 +28,7 @@ misskey:
     max_length: 500
 dolphin:
   url: https://dev.dol.b-shock.org/
+  token: test
+pleroma:
+  url: https://dev.ple.b-shock.org/
   token: test

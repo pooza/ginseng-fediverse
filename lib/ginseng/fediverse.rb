@@ -23,6 +23,7 @@ module Ginseng
       autoload :DolphinService
       autoload :MastodonService
       autoload :MisskeyService
+      autoload :PleromaService
     end
   end
 end
