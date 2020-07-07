@@ -59,11 +59,11 @@ module Ginseng
         return '#' + word.strip.gsub(/[^[:alnum:]]+/, '_').gsub(/(^[_#]+|_$)/, '')
       end
 
-      private
-
       def create_uri(href)
         return @http.create_uri(href)
       end
+
+      private
 
       def oauth_client_path
         return File.join(environment_class.dir, 'tmp/cache/oauth_cilent.json')
