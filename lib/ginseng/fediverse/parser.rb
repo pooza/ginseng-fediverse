@@ -37,6 +37,10 @@ module Ginseng
         @all_tags = nil
       end
 
+      def to_md
+        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+      end
+
       def length
         return text.length
       end

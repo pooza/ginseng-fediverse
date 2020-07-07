@@ -55,12 +55,12 @@ module Ginseng
         return nil
       end
 
-      def self.create_tag(word)
-        return '#' + word.strip.gsub(/[^[:alnum:]]+/, '_').gsub(/(^[_#]+|_$)/, '')
-      end
-
       def create_uri(href)
         return @http.create_uri(href)
+      end
+
+      def self.create_tag(word)
+        return '#' + word.strip.gsub(/[^[:alnum:]]+/, '_').gsub(/(^[_#]+|_$)/, '')
       end
 
       private
