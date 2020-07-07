@@ -4,18 +4,25 @@ module Ginseng
   module Fediverse
     class Service
       include Package
-      attr_accessor :token
+      attr_reader :token
       attr_accessor :mulukhiya_enable
 
       def initialize(uri = nil, token = nil)
         @config = config_class.instance
-        @token = token
+        @token = token || default_token
         @mulukhiya_enable = false
         @http = http_class.new
+        @http.base_uri = Ginseng::URI.parse(uri) if uri
+        @http.base_uri ||= default_uri
       end
 
       def uri
         return @http.base_uri
+      end
+
+      def token=(token)
+        @token = token
+        @account = nil
       end
 
       def mulukhiya_enable?
@@ -40,11 +47,23 @@ module Ginseng
         File.unlink(path) if File.exist?(path)
       end
 
+      def filters(params = {})
+        return nil
+      end
+
+      def announcements(params = {})
+        return nil
+      end
+
       def self.create_tag(word)
         return '#' + word.strip.gsub(/[^[:alnum:]]+/, '_').gsub(/(^[_#]+|_$)/, '')
       end
 
       private
+
+      def create_uri(href)
+        return @http.create_uri(href)
+      end
 
       def oauth_client_path
         return File.join(environment_class.dir, 'tmp/cache/oauth_cilent.json')
@@ -52,6 +71,14 @@ module Ginseng
 
       def clear_oauth_client
         File.unlink(oauth_client_path) if File.exist?(oauth_client_path)
+      end
+
+      def default_token
+        return @config['/dolphin/token']
+      end
+
+      def default_uri
+        return Ginseng::URI.parse(@config['/dolphin/url'])
       end
     end
   end

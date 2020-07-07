@@ -5,25 +5,11 @@ module Ginseng
     class MisskeyService < Service
       include Package
 
-      def initialize(uri = nil, token = nil)
-        super
-        @token = token || @config['/misskey/token']
-        @http.base_uri = Ginseng::URI.parse(uri || @config['/misskey/url'])
-      end
-
-      def fetch_status(id)
-        response = @http.get("/mulukhiya/note/#{id}")
-        raise Ginseng::GatewayError, response['message'] unless response.code == 200
-        return response
-      end
-
-      alias fetch_note fetch_status
-
       def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        body[:i] ||= @token
+        body[:i] ||= token
         return @http.post('/api/notes/create', {body: body.to_json, headers: headers})
       end
 
@@ -33,7 +19,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return @http.post('/api/notes/favorites/create', {
-          body: {noteId: id, i: @token}.to_json,
+          body: {noteId: id, i: token}.to_json,
           headers: headers,
         })
       end
@@ -45,10 +31,30 @@ module Ginseng
       def upload(path, params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        body = {force: 'true', i: @token}
+        body = {force: 'true', i: token}
         response = @http.upload('/api/drive/files/create', path, headers, body)
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
+      end
+
+      def fetch_status(id, params = {})
+        headers = params[:headers] || {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        return @http.post('/api/notes/show', {
+          body: {noteId: id, i: token}.to_json,
+          headers: headers,
+        })
+      end
+
+      alias fetch_note fetch_status
+
+      def fetch_attachment(id, params = {})
+        headers = params[:headers] || {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        return @http.post('/api/drive/files/show', {
+          body: {fileId: id, i: token}.to_json,
+          headers: headers,
+        })
       end
 
       def oauth_client
@@ -88,21 +94,23 @@ module Ginseng
         })
       end
 
-      def filters
-        raise Ginseng::GatewayError, 'Misskey does not support to filter.'
-      end
-
       def announcements(params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return @http.post('/api/announcements', {
-          body: {i: @token}.to_json,
+          body: {i: token}.to_json,
           headers: headers,
         })
       end
 
-      def create_uri(href = '/api/notes/create')
-        return @http.create_uri(href)
+      private
+
+      def default_token
+        return @config['/misskey/token']
+      end
+
+      def default_uri
+        return Ginseng::URI.parse(@config['/misskey/url'])
       end
     end
   end

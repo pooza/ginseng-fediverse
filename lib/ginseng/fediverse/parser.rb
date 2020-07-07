@@ -69,10 +69,18 @@ module Ginseng
       alias tags hashtags
 
       def command?
-        return command_name.present?
+        return true if params.key?('command')
+        return true if text.start_with?('c:') && params.key?('c')
+        return false
+      rescue
+        return false
       end
 
       def command_name
+        if text.start_with?('c:')
+          params['command'] ||= params['c']
+          params.delete('c')
+        end
         return params['command']
       rescue
         return nil
