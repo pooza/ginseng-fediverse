@@ -45,10 +45,30 @@ module Ginseng
       def upload(path, params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        body = {force: 'true', i: @token}
+        body = {force: 'true', i: token}
         response = @http.upload('/api/drive/files/create', path, headers, body)
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
+      end
+
+      def fetch_status(id, params = {})
+        headers = params[:headers] || {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        return @http.post('/api/notes/show', {
+          body: {noteId: id, i: token}.to_json,
+          headers: headers,
+        })
+      end
+
+      alias fetch_note fetch_status
+
+      def fetch_attachment(id, params = {})
+        headers = params[:headers] || {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        return @http.post('/api/drive/files/show', {
+          body: {fileId: id, i: token}.to_json,
+          headers: headers,
+        })
       end
 
       def oauth_client
