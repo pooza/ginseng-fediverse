@@ -22,6 +22,7 @@ module Ginseng
     autoload_under 'service' do
       autoload :DolphinService
       autoload :MastodonService
+      autoload :MeisskeyService
       autoload :MisskeyService
       autoload :PleromaService
     end

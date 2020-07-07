@@ -32,3 +32,6 @@ dolphin:
 pleroma:
   url: https://dev.ple.b-shock.org/
   token: test
+meisskey:
+  url: https://dev.mei.b-shock.org/
+  token: test
