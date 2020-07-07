@@ -3,20 +3,6 @@ module Ginseng
     class PleromaService < MastodonService
       include Package
 
-      def initialize(uri = nil, token = nil)
-        super
-        @token = token || @config['/pleroma/token']
-        @http.base_uri = Ginseng::URI.parse(uri || @config['/pleroma/url'])
-      end
-
-      def filters
-        raise Ginseng::GatewayError, 'Pleroma does not support to filter.'
-      end
-
-      def announcements(params = {})
-        raise Ginseng::GatewayError, 'Pleroma does not support to announcements.'
-      end
-
       def oauth_client
         unless File.exist?(oauth_client_path)
           r = @http.post('/api/v1/apps', {
@@ -54,6 +40,16 @@ module Ginseng
             'code' => code,
           },
         })
+      end
+
+      private
+
+      def default_token
+        return @config['/pleroma/token']
+      end
+
+      def default_uri
+        return Ginseng::URI.parse(@config['/pleroma/url'])
       end
     end
   end
