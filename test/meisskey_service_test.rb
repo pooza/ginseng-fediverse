@@ -31,6 +31,16 @@ module Ginseng
         assert_equal(r['createdNote']['text'], '文字列からノート')
       end
 
+      def test_announcements
+        return if Environment.ci?
+        assert_kind_of(Array, @meisskey.announcements)
+      end
+
+      def test_statuses
+        return if Environment.ci?
+        assert_kind_of(Array, @meisskey.statuses(account_id: @config['/meisskey/account/id']))
+      end
+
       def test_upload
         return if Environment.ci?
         assert(@meisskey.upload(File.join(Environment.dir, 'images/pooza.png')).present?)

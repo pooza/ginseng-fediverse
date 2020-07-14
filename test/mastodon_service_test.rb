@@ -55,7 +55,12 @@ module Ginseng
 
       def test_announcements
         return if Environment.ci?
-        assert_equal(@mastodon.announcements.code, 200)
+        assert_kind_of(Array, @mastodon.announcements)
+      end
+
+      def test_statuses
+        return if Environment.ci?
+        assert_kind_of(Array, @mastodon.statuses)
       end
 
       def test_followers

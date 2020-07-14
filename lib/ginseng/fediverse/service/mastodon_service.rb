@@ -96,11 +96,24 @@ module Ginseng
         })
       end
 
+      def statuses(params = {})
+        headers = params[:headers] || {}
+        headers['Authorization'] ||= "Bearer #{token}"
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        r = @http.get('/api/v1/timelines/home', {headers: headers})
+        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
+        return r.parsed_response
+      end
+
+      alias toots statuses
+
       def announcements(params = {})
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.get('/api/v1/announcements', {headers: headers})
+        r = @http.get('/api/v1/announcements', {headers: headers})
+        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
+        return r.parsed_response
       end
 
       def followers(params = {})

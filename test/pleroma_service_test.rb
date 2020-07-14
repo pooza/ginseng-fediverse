@@ -37,6 +37,11 @@ module Ginseng
         assert_equal(r['visibility'], 'private')
       end
 
+      def test_statuses
+        return if Environment.ci?
+        assert_kind_of(Array, @pleroma.statuses(account_id: @config['/pleroma/account/id']))
+      end
+
       def test_upload
         return if Environment.ci?
         assert(@pleroma.upload(File.join(Environment.dir, 'images/pooza.png')).present?)

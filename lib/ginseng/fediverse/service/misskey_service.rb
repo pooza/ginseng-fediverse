@@ -37,6 +37,19 @@ module Ginseng
         return JSON.parse(response.body)['id']
       end
 
+      def statuses(params = {})
+        headers = params[:headers] || {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        r = @http.post('/api/users/notes', {
+          body: {userId: params[:account_id], i: token}.to_json,
+          headers: headers,
+        })
+        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
+        return r.parsed_response
+      end
+
+      alias notes statuses
+
       def fetch_status(id, params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
@@ -97,10 +110,12 @@ module Ginseng
       def announcements(params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post('/api/announcements', {
+        r = @http.post('/api/announcements', {
           body: {i: token}.to_json,
           headers: headers,
         })
+        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
+        return r.parsed_response
       end
 
       private
