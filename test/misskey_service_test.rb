@@ -31,14 +31,19 @@ module Ginseng
         assert_equal(r['createdNote']['text'], '文字列からノート')
       end
 
+      def test_announcements
+        return if Environment.ci?
+        assert_kind_of(Array, @misskey.announcements)
+      end
+
+      def test_statuses
+        return if Environment.ci?
+        assert_kind_of(Array, @misskey.statuses(account_id: @config['/misskey/account/id']))
+      end
+
       def test_upload
         return if Environment.ci?
         assert(@misskey.upload(File.join(Environment.dir, 'images/pooza.png')).present?)
-      end
-
-      def test_announcements
-        return if Environment.ci?
-        assert_equal(@misskey.announcements.code, 200)
       end
 
       def test_upload_remote_resource
