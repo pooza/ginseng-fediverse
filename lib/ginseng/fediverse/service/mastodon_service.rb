@@ -26,6 +26,7 @@ module Ginseng
       alias toot post
 
       def upload(path, params = {})
+        params[:response] ||= :raw
         params[:version] ||= 1
         response = http.upload(
           "/api/v#{params[:version]}/media",

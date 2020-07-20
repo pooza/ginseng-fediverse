@@ -35,14 +35,14 @@ module Ginseng
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
 
-      def upload_remote_resource(uri)
+      def upload_remote_resource(uri, params = {})
         path = File.join(
           environment_class.dir,
           'tmp/media',
           Digest::SHA1.hexdigest(uri),
         )
         File.write(path, http.get(uri))
-        return upload(path)
+        return upload(path, params)
       ensure
         File.unlink(path) if File.exist?(path)
       end

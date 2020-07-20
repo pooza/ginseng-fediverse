@@ -28,6 +28,7 @@ module Ginseng
       alias bookmark favourite
 
       def upload(path, params = {})
+        params[:response] ||= :raw
         body = {force: 'true', i: token}
         response = http.upload(
           '/api/drive/files/create',

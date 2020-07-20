@@ -40,7 +40,7 @@ module Ginseng
 
       def test_upload
         return if Environment.ci?
-        assert(@mastodon.upload(File.join(Environment.dir, 'images/pooza.png')).positive?)
+        assert(@mastodon.upload(File.join(Environment.dir, 'images/pooza.png'), {response: :id}).positive?)
       end
 
       def test_favourite
@@ -81,7 +81,7 @@ module Ginseng
 
       def test_upload_remote_resource
         return if Environment.ci?
-        assert(@mastodon.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif').positive?)
+        assert(@mastodon.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}).positive?)
       end
 
       def test_create_tag
