@@ -28,16 +28,31 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        response = @http.upload("/api/v#{params[:version]}/media", path, headers)
+        response = http.upload("/api/v#{params[:version]}/media", path, headers)
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id'].to_i
+      end
+
+      def update_media(id, body, params = {})
+        headers = params[:headers] || {}
+        headers['Authorization'] ||= "Bearer #{token}"
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        if body.dig(:thumbnail, :tempfile).is_a?(File)
+          body[:thumbnail] = File.new(body[:thumbnail][:tempfile].path, 'rb')
+        end
+        return RestClient::Request.new(
+          url: create_uri("/api/v1/media/#{id}").to_s,
+          method: :put,
+          headers: headers,
+          payload: body,
+        ).execute
       end
 
       def favourite(id, params = {})
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post("/api/v1/statuses/#{id}/favourite", {
+        return http.post("/api/v1/statuses/#{id}/favourite", {
           body: '{}',
           headers: headers,
         })
