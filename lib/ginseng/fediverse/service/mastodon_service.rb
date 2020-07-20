@@ -49,7 +49,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post("/api/v1/statuses/#{id}/reblog", {
+        return http.post("/api/v1/statuses/#{id}/reblog", {
           body: '{}',
           headers: headers,
         })
@@ -61,7 +61,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post("/api/v1/statuses/#{id}/bookmark", {
+        return http.post("/api/v1/statuses/#{id}/bookmark", {
           body: '{}',
           headers: headers,
         })
@@ -73,16 +73,16 @@ module Ginseng
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         params[:version] ||= 2
         params[:q] = keyword
-        uri = @http.create_uri("/api/v#{params[:version]}/search")
+        uri = create_uri("/api/v#{params[:version]}/search")
         uri.query_values = params
-        return @http.get(uri, {headers: headers})
+        return http.get(uri, {headers: headers})
       end
 
       def follow(id, params = {})
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post("/api/v1/accounts/#{id}/follow", {
+        return http.post("/api/v1/accounts/#{id}/follow", {
           body: '{}',
           headers: headers,
         })
@@ -92,7 +92,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post("/api/v1/accounts/#{id}/unfollow", {
+        return http.post("/api/v1/accounts/#{id}/unfollow", {
           body: '{}',
           headers: headers,
         })
@@ -102,7 +102,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = @http.get('/api/v1/timelines/home', {headers: headers})
+        r = http.get('/api/v1/timelines/home', {headers: headers})
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
         return r.parsed_response
       end
@@ -113,7 +113,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = @http.get('/api/v1/announcements', {headers: headers})
+        r = http.get('/api/v1/announcements', {headers: headers})
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
         return r.parsed_response
       end
@@ -123,9 +123,9 @@ module Ginseng
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         id = params[:id] || @config['/mastodon/account/id']
-        uri = @http.create_uri("/api/v1/accounts/#{id}/followers")
+        uri = create_uri("/api/v1/accounts/#{id}/followers")
         uri.query_values = {limit: @config['/mastodon/followers/limit']}
-        return @http.get(uri, {headers: headers})
+        return http.get(uri, {headers: headers})
       end
 
       def followees(params = {})
@@ -133,9 +133,9 @@ module Ginseng
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         id = params[:id] || @config['/mastodon/account/id']
-        uri = @http.create_uri("/api/v1/accounts/#{id}/following")
+        uri = create_uri("/api/v1/accounts/#{id}/following")
         uri.query_values = {limit: @config['/mastodon/followees/limit']}
-        return @http.get(uri, {headers: headers})
+        return http.get(uri, {headers: headers})
       end
 
       alias following followees
@@ -144,14 +144,14 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.get('/api/v1/filters', {headers: headers})
+        return http.get('/api/v1/filters', {headers: headers})
       end
 
       def register_filter(params)
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post('/api/v1/filters', {
+        return http.post('/api/v1/filters', {
           body: {
             phrase: params[:phrase],
             context: params[:context] || [:home, :public],
@@ -164,7 +164,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.delete("/api/v1/filters/#{id}", {
+        return http.delete("/api/v1/filters/#{id}", {
           body: '{}',
           headers: headers,
         })
@@ -172,7 +172,7 @@ module Ginseng
 
       def oauth_client
         unless File.exist?(oauth_client_path)
-          r = @http.post('/api/v1/apps', {
+          r = http.post('/api/v1/apps', {
             body: {
               client_name: package_class.name,
               website: @config['/package/url'],
@@ -186,7 +186,7 @@ module Ginseng
       end
 
       def oauth_uri
-        uri = @http.create_uri('/oauth/authorize')
+        uri = create_uri('/oauth/authorize')
         uri.query_values = {
           client_id: oauth_client['client_id'],
           response_type: 'code',
@@ -197,7 +197,7 @@ module Ginseng
       end
 
       def auth(code)
-        return @http.post('/oauth/token', {
+        return http.post('/oauth/token', {
           headers: {'Content-Type' => 'application/x-www-form-urlencoded'},
           body: {
             'grant_type' => 'authorization_code',
