@@ -4,7 +4,7 @@ module Ginseng
   module Fediverse
     class Service
       include Package
-      attr_reader :token
+      attr_reader :token, :http
       attr_accessor :mulukhiya_enable
 
       def initialize(uri = nil, token = nil)
@@ -17,7 +17,7 @@ module Ginseng
       end
 
       def uri
-        return @http.base_uri
+        return http.base_uri
       end
 
       def token=(token)
@@ -41,7 +41,7 @@ module Ginseng
           'tmp/media',
           Digest::SHA1.hexdigest(uri),
         )
-        File.write(path, @http.get(uri))
+        File.write(path, http.get(uri))
         return upload(path)
       ensure
         File.unlink(path) if File.exist?(path)
@@ -56,7 +56,7 @@ module Ginseng
       end
 
       def create_uri(href)
-        return @http.create_uri(href)
+        return http.create_uri(href)
       end
 
       def self.create_tag(word)

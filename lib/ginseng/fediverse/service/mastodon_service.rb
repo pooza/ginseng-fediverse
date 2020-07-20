@@ -1,10 +1,12 @@
+require 'rest-client'
+
 module Ginseng
   module Fediverse
     class MastodonService < Service
       include Package
 
       def fetch_status(id)
-        response = @http.get("/api/v1/statuses/#{id}")
+        response = http.get("/api/v1/statuses/#{id}")
         raise Ginseng::GatewayError, response['error'] if response['error']
         return response
       end
@@ -16,7 +18,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['Authorization'] ||= "Bearer #{token}"
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post('/api/v1/statuses', {body: body.to_json, headers: headers})
+        return http.post('/api/v1/statuses', {body: body.to_json, headers: headers})
       end
 
       alias toot post

@@ -5,7 +5,7 @@ module Ginseng
 
       def oauth_client
         unless File.exist?(oauth_client_path)
-          r = @http.post('/api/v1/apps', {
+          r = http.post('/api/v1/apps', {
             body: {
               client_name: package_class.name,
               website: @config['/package/url'],
@@ -19,7 +19,7 @@ module Ginseng
       end
 
       def oauth_uri
-        uri = @http.create_uri('/oauth/authorize')
+        uri = create_uri('/oauth/authorize')
         uri.query_values = {
           client_id: oauth_client['client_id'],
           response_type: 'code',
@@ -30,7 +30,7 @@ module Ginseng
       end
 
       def auth(code)
-        return @http.post('/oauth/token', {
+        return http.post('/oauth/token', {
           headers: {'Content-Type' => 'application/x-www-form-urlencoded'},
           body: {
             'grant_type' => 'authorization_code',

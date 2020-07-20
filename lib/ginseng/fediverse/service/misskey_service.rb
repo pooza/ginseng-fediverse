@@ -10,7 +10,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         body[:i] ||= token
-        return @http.post('/api/notes/create', {body: body.to_json, headers: headers})
+        return http.post('/api/notes/create', {body: body.to_json, headers: headers})
       end
 
       alias note post
@@ -18,7 +18,7 @@ module Ginseng
       def favourite(id, params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post('/api/notes/favorites/create', {
+        return http.post('/api/notes/favorites/create', {
           body: {noteId: id, i: token}.to_json,
           headers: headers,
         })
@@ -32,7 +32,7 @@ module Ginseng
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         body = {force: 'true', i: token}
-        response = @http.upload('/api/drive/files/create', path, headers, body)
+        response = http.upload('/api/drive/files/create', path, headers, body)
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
       end
@@ -40,7 +40,7 @@ module Ginseng
       def statuses(params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = @http.post('/api/users/notes', {
+        r = http.post('/api/users/notes', {
           body: {userId: params[:account_id], i: token}.to_json,
           headers: headers,
         })
@@ -53,7 +53,7 @@ module Ginseng
       def fetch_status(id, params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post('/api/notes/show', {
+        return http.post('/api/notes/show', {
           body: {noteId: id, i: token}.to_json,
           headers: headers,
         })
@@ -64,7 +64,7 @@ module Ginseng
       def fetch_attachment(id, params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return @http.post('/api/drive/files/show', {
+        return http.post('/api/drive/files/show', {
           body: {fileId: id, i: token}.to_json,
           headers: headers,
         })
@@ -72,12 +72,12 @@ module Ginseng
 
       def oauth_client
         unless File.exist?(oauth_client_path)
-          r = @http.post('/api/app/create', {
+          r = http.post('/api/app/create', {
             body: {
               name: package_class.name,
               description: @config['/package/description'],
               permission: @config['/misskey/oauth/permission'],
-              callbackUrl: @http.create_uri(@config['/misskey/oauth/callback_url']).to_s,
+              callbackUrl: create_uri(@config['/misskey/oauth/callback_url']).to_s,
             }.to_json,
           })
           File.write(oauth_client_path, r.parsed_response.to_json)
@@ -90,7 +90,7 @@ module Ginseng
       end
 
       def oauth_uri
-        r = @http.post('/api/auth/session/generate', {
+        r = http.post('/api/auth/session/generate', {
           body: {
             appSecret: oauth_client['secret'],
           }.to_json,
@@ -99,7 +99,7 @@ module Ginseng
       end
 
       def auth(token)
-        return @http.post('/api/auth/session/userkey', {
+        return http.post('/api/auth/session/userkey', {
           body: {
             appSecret: oauth_client['secret'],
             token: token,
@@ -110,7 +110,7 @@ module Ginseng
       def announcements(params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = @http.post('/api/announcements', {
+        r = http.post('/api/announcements', {
           body: {i: token}.to_json,
           headers: headers,
         })

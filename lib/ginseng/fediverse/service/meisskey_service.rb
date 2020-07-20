@@ -6,7 +6,7 @@ module Ginseng
       def announcements(params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = @http.get('/api/meta', {
+        r = http.get('/api/meta', {
           body: {i: token}.to_json,
           headers: headers,
         })
