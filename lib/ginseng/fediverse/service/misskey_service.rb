@@ -91,7 +91,7 @@ module Ginseng
             appSecret: oauth_client['secret'],
           }.to_json,
         })
-        return URI.parse(r['url'])
+        return Ginseng::URI.parse(r['url'])
       end
 
       def auth(token)
