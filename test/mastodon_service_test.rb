@@ -40,7 +40,7 @@ module Ginseng
 
       def test_upload
         return if Environment.ci?
-        assert(@mastodon.upload(File.join(Environment.dir, 'images/pooza.png'), {response: :id}).positive?)
+        assert(@mastodon.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id}).positive?)
       end
 
       def test_favourite

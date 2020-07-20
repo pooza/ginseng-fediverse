@@ -43,7 +43,7 @@ module Ginseng
 
       def test_upload
         return if Environment.ci?
-        assert(@meisskey.upload(File.join(Environment.dir, 'images/pooza.png')).present?)
+        assert(@meisskey.upload(File.join(Environment.dir, 'images/pooza.jpg')).present?)
       end
 
       def test_upload_remote_resource
