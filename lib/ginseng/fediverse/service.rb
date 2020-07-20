@@ -73,6 +73,12 @@ module Ginseng
         File.unlink(oauth_client_path) if File.exist?(oauth_client_path)
       end
 
+      def create_headers(headers)
+        headers ||= {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        return headers
+      end
+
       def default_token
         return @config['/dolphin/token']
       end

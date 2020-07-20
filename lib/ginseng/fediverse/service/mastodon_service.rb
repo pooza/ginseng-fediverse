@@ -5,8 +5,10 @@ module Ginseng
     class MastodonService < Service
       include Package
 
-      def fetch_status(id)
-        response = http.get("/api/v1/statuses/#{id}")
+      def fetch_status(id, params = {})
+        response = http.get("/api/v1/statuses/#{id}", {
+          headers: create_headers(params[:headers]),
+        })
         raise Ginseng::GatewayError, response['error'] if response['error']
         return response
       end
@@ -15,109 +17,86 @@ module Ginseng
 
       def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return http.post('/api/v1/statuses', {body: body.to_json, headers: headers})
+        return http.post('/api/v1/statuses', {
+          body: body.to_json,
+          headers: create_headers(params[:headers]),
+        })
       end
 
       alias toot post
 
       def upload(path, params = {})
         params[:version] ||= 1
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        response = http.upload("/api/v#{params[:version]}/media", path, headers)
+        response = http.upload(
+          "/api/v#{params[:version]}/media",
+          path,
+          create_headers(params[:headers]),
+        )
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id'].to_i
       end
 
       def update_media(id, body, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         if body.dig(:thumbnail, :tempfile).is_a?(File)
           body[:thumbnail] = File.new(body[:thumbnail][:tempfile].path, 'rb')
         end
         return RestClient::Request.new(
           url: create_uri("/api/v1/media/#{id}").to_s,
           method: :put,
-          headers: headers,
+          headers: create_headers(params[:headers]),
           payload: body,
         ).execute
       end
 
       def favourite(id, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post("/api/v1/statuses/#{id}/favourite", {
           body: '{}',
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
       alias fav favourite
 
       def reblog(id, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post("/api/v1/statuses/#{id}/reblog", {
           body: '{}',
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
       alias boost reblog
 
       def bookmark(id, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post("/api/v1/statuses/#{id}/bookmark", {
           body: '{}',
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
       def search(keyword, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         params[:version] ||= 2
         params[:q] = keyword
         uri = create_uri("/api/v#{params[:version]}/search")
         uri.query_values = params
-        return http.get(uri, {headers: headers})
+        return http.get(uri, {headers: create_headers(params[:headers])})
       end
 
       def follow(id, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post("/api/v1/accounts/#{id}/follow", {
           body: '{}',
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
       def unfollow(id, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post("/api/v1/accounts/#{id}/unfollow", {
           body: '{}',
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
       def statuses(params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = http.get('/api/v1/timelines/home', {headers: headers})
+        r = http.get('/api/v1/timelines/home', {headers: create_headers(params[:headers])})
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
         return r.parsed_response
       end
@@ -125,63 +104,45 @@ module Ginseng
       alias toots statuses
 
       def announcements(params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = http.get('/api/v1/announcements', {headers: headers})
+        r = http.get('/api/v1/announcements', {headers: create_headers(params[:headers])})
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
         return r.parsed_response
       end
 
       def followers(params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         id = params[:id] || @config['/mastodon/account/id']
         uri = create_uri("/api/v1/accounts/#{id}/followers")
         uri.query_values = {limit: @config['/mastodon/followers/limit']}
-        return http.get(uri, {headers: headers})
+        return http.get(uri, {headers: create_headers(params[:headers])})
       end
 
       def followees(params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         id = params[:id] || @config['/mastodon/account/id']
         uri = create_uri("/api/v1/accounts/#{id}/following")
         uri.query_values = {limit: @config['/mastodon/followees/limit']}
-        return http.get(uri, {headers: headers})
+        return http.get(uri, {headers: create_headers(params[:headers])})
       end
 
       alias following followees
 
       def filters(params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return http.get('/api/v1/filters', {headers: headers})
+        return http.get('/api/v1/filters', {headers: create_headers(params[:headers])})
       end
 
       def register_filter(params)
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post('/api/v1/filters', {
           body: {
             phrase: params[:phrase],
             context: params[:context] || [:home, :public],
           }.to_json,
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
       def unregister_filter(id, params = {})
-        headers = params[:headers] || {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.delete("/api/v1/filters/#{id}", {
           body: '{}',
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
@@ -233,6 +194,12 @@ module Ginseng
       end
 
       private
+
+      def create_headers(headers)
+        headers ||= {}
+        headers['Authorization'] ||= "Bearer #{token}"
+        return super
+      end
 
       def default_token
         return @config['/mastodon/token']

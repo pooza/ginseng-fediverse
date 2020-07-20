@@ -7,20 +7,19 @@ module Ginseng
 
       def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
-        headers = params[:headers] || {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         body[:i] ||= token
-        return http.post('/api/notes/create', {body: body.to_json, headers: headers})
+        return http.post('/api/notes/create', {
+          body: body.to_json,
+          headers: create_headers(params[:headers]),
+        })
       end
 
       alias note post
 
       def favourite(id, params = {})
-        headers = params[:headers] || {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post('/api/notes/favorites/create', {
           body: {noteId: id, i: token}.to_json,
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
@@ -29,20 +28,21 @@ module Ginseng
       alias bookmark favourite
 
       def upload(path, params = {})
-        headers = params[:headers] || {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         body = {force: 'true', i: token}
-        response = http.upload('/api/drive/files/create', path, headers, body)
+        response = http.upload(
+          '/api/drive/files/create',
+          path,
+          create_headers(params[:headers]),
+          body,
+        )
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
       end
 
       def statuses(params = {})
-        headers = params[:headers] || {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         r = http.post('/api/users/notes', {
           body: {userId: params[:account_id], i: token}.to_json,
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
         return r.parsed_response
@@ -51,22 +51,18 @@ module Ginseng
       alias notes statuses
 
       def fetch_status(id, params = {})
-        headers = params[:headers] || {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post('/api/notes/show', {
           body: {noteId: id, i: token}.to_json,
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
       alias fetch_note fetch_status
 
       def fetch_attachment(id, params = {})
-        headers = params[:headers] || {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         return http.post('/api/drive/files/show', {
           body: {fileId: id, i: token}.to_json,
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
       end
 
