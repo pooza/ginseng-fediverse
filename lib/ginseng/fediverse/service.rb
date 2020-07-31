@@ -91,7 +91,7 @@ module Ginseng
       end
 
       def default_token
-        return @config['/dolphin/token']
+        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
 
       def default_uri
