@@ -62,6 +62,13 @@ module Ginseng
         assert_kind_of(Array, @mastodon.announcements)
       end
 
+      def test_nodeinfo
+        info = @mastodon.nodeinfo
+        assert_kind_of(String, info['metadata']['nodeName'])
+        assert_kind_of(String, info['metadata']['maintainer']['name'])
+        assert_kind_of(String, info['metadata']['maintainer']['email'])
+      end
+
       def test_statuses
         return if Environment.ci?
         assert_kind_of(Array, @mastodon.statuses)

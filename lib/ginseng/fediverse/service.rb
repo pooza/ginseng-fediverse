@@ -31,16 +31,13 @@ module Ginseng
 
       alias mulukhiya? mulukhiya_enable?
 
-      def info(params = {})
-        unless @info
-          r = http.get('/nodeinfo/2.0')
-          raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-          @info = r.parsed_response
-        end
-        return @info
+      def nodeinfo
+        r = http.get('/nodeinfo/2.0')
+        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
+        return r.parsed_response
       end
 
-      alias nodeinfo info
+      alias info nodeinfo
 
       def upload(path, params = {})
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"

@@ -5,24 +5,21 @@ module Ginseng
     class MastodonService < Service
       include Package
 
-      def info(params = {})
-        unless @info
-          r = http.get('/api/v1/instance', {headers: create_headers(params[:headers])})
+      def info
+        unless @nodeinfo
+          r = http.get('/api/v1/instance')
           raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-          @info = r.parsed_response
-          r = http.get('/nodeinfo/2.0')
-          raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-          @info.merge!(r.parsed_response)
-          @info['metadata'] = {
-            'nodeName' => @info['title'],
+          @nodeinfo = r.parsed_response.merge(super)
+          @nodeinfo['metadata'] = {
+            'nodeName' => @nodeinfo['title'],
             'maintainer' => {
-              'name' => @info['contact_account']['display_name'],
-              'email' => @info['email'],
+              'name' => @nodeinfo['contact_account']['display_name'],
+              'email' => @nodeinfo['email'],
             },
           }
-          @info['metadata']['maintainer']['name'] ||= @info['contact_account']['username']
+          @nodeinfo['metadata']['maintainer']['name'] ||= @nodeinfo['contact_account']['username']
         end
-        return @info
+        return @nodeinfo
       end
 
       alias nodeinfo info

@@ -35,6 +35,13 @@ module Ginseng
         assert_equal(r['createdNote']['text'], '文字列からノート')
       end
 
+      def test_nodeinfo
+        info = @dolphin.nodeinfo
+        assert_kind_of(String, info['metadata']['nodeName'])
+        assert_kind_of(String, info['metadata']['maintainer']['name'])
+        assert_kind_of(String, info['metadata']['maintainer']['email'])
+      end
+
       def test_upload
         return if Environment.ci?
         assert(@dolphin.upload(File.join(Environment.dir, 'images/pooza.jpg')).present?)

@@ -42,6 +42,24 @@ module Ginseng
         })
       end
 
+      def nodeinfo
+        unless @nodeinfo
+          r = http.get('/api/v1/instance')
+          raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
+          @nodeinfo = r.parsed_response
+          @nodeinfo['metadata'] = {
+            'nodeName' => @nodeinfo['title'],
+            'maintainer' => {
+              'name' => @nodeinfo['email'],
+              'email' => @nodeinfo['email'],
+            },
+          }
+        end
+        return @nodeinfo
+      end
+
+      alias info nodeinfo
+
       private
 
       def default_token
