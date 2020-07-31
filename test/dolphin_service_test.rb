@@ -14,6 +14,10 @@ module Ginseng
         assert_kind_of(URI, @dolphin.uri)
       end
 
+      def test_tag_uri
+        assert_equal(@dolphin.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+      end
+
       def test_mulukhiya?
         assert_false(@dolphin.mulukhiya?)
         assert_false(@dolphin.mulukhiya_enable?)
@@ -29,6 +33,13 @@ module Ginseng
         assert_kind_of(HTTParty::Response, r)
         assert_equal(r.code, 200)
         assert_equal(r['createdNote']['text'], '文字列からノート')
+      end
+
+      def test_nodeinfo
+        info = @dolphin.nodeinfo
+        assert_kind_of(String, info['metadata']['nodeName'])
+        assert_kind_of(String, info['metadata']['maintainer']['name'])
+        assert_kind_of(String, info['metadata']['maintainer']['email'])
       end
 
       def test_upload

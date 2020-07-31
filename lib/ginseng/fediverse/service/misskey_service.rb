@@ -115,6 +115,10 @@ module Ginseng
         return r.parsed_response
       end
 
+      def create_tag_uri(tag)
+        return create_uri("/tags/#{tag.sub('^#', '')}")
+      end
+
       private
 
       def default_token

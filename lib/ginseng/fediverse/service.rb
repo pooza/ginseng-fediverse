@@ -31,6 +31,14 @@ module Ginseng
 
       alias mulukhiya? mulukhiya_enable?
 
+      def nodeinfo
+        r = http.get('/nodeinfo/2.0')
+        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
+        return r.parsed_response
+      end
+
+      alias info nodeinfo
+
       def upload(path, params = {})
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
@@ -80,7 +88,7 @@ module Ginseng
       end
 
       def default_token
-        return @config['/dolphin/token']
+        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
 
       def default_uri

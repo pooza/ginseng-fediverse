@@ -14,6 +14,10 @@ module Ginseng
         assert_kind_of(URI, @misskey.uri)
       end
 
+      def test_tag_uri
+        assert_equal(@misskey.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+      end
+
       def test_mulukhiya?
         assert_false(@misskey.mulukhiya?)
         assert_false(@misskey.mulukhiya_enable?)
@@ -34,6 +38,13 @@ module Ginseng
       def test_announcements
         return if Environment.ci?
         assert_kind_of(Array, @misskey.announcements)
+      end
+
+      def test_nodeinfo
+        info = @misskey.nodeinfo
+        assert_kind_of(String, info['metadata']['nodeName'])
+        assert_kind_of(String, info['metadata']['maintainer']['name'])
+        assert_kind_of(String, info['metadata']['maintainer']['email'])
       end
 
       def test_statuses
