@@ -208,6 +208,10 @@ module Ginseng
         })
       end
 
+      def create_tag_uri(tag)
+        return create_uri("/tags/#{tag.sub('^#', '')}")
+      end
+
       def create_streaming_uri(stream = 'user')
         uri = self.uri.clone
         uri.scheme = 'wss'
