@@ -15,6 +15,10 @@ module Ginseng
         assert_kind_of(URI, @mastodon.uri)
       end
 
+      def test_tag_uri
+        assert_equal(@mastodon.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+      end
+
       def test_mulukhiya?
         assert_false(@mastodon.mulukhiya?)
         assert_false(@mastodon.mulukhiya_enable?)

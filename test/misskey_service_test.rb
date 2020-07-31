@@ -14,6 +14,10 @@ module Ginseng
         assert_kind_of(URI, @misskey.uri)
       end
 
+      def test_tag_uri
+        assert_equal(@misskey.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+      end
+
       def test_mulukhiya?
         assert_false(@misskey.mulukhiya?)
         assert_false(@misskey.mulukhiya_enable?)
