@@ -126,7 +126,12 @@ module Ginseng
       def announcements(params = {})
         r = http.get('/api/v1/announcements', {headers: create_headers(params[:headers])})
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-        return r.parsed_response
+        return r.parsed_response.map do |announcement|
+          entry = announcement.deep_symbolize_keys
+          entry[:text] = entry[:content].sanitize.strip
+          entry.delete(:read)
+          entry
+        end
       end
 
       def followers(params = {})
