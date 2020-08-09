@@ -10,11 +10,7 @@ module Ginseng
         })
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
         return r['announcements'].map do |entry|
-          {
-            'id' => Digest::SHA1.hexdigest(entry.to_json),
-            'title' => entry['title'],
-            'text' => entry['text'],
-          }
+          {id: Digest::SHA1.hexdigest(entry.to_json), title: entry['title'], text: entry['text']}
         end
       end
 

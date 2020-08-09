@@ -41,6 +41,11 @@ module Ginseng
         assert_equal(r['visibility'], 'private')
       end
 
+      def test_announcements
+        return if Environment.ci?
+        assert_nil(@pleroma.announcements)
+      end
+
       def test_nodeinfo
         info = @pleroma.nodeinfo
         assert_kind_of(String, info['metadata']['nodeName'])

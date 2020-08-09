@@ -3,6 +3,10 @@ module Ginseng
     class PleromaService < MastodonService
       include Package
 
+      def announcements(params = {})
+        return nil
+      end
+
       def oauth_client
         unless File.exist?(oauth_client_path)
           r = http.post('/api/v1/apps', {

@@ -112,7 +112,11 @@ module Ginseng
           headers: headers,
         })
         raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-        return r.parsed_response
+        return r.parsed_response.map do |announcement|
+          entry = announcement.deep_symbolize_keys
+          entry[:imate_url] = entry[:imageUrl]
+          entry
+        end
       end
 
       def create_tag_uri(tag)

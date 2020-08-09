@@ -60,6 +60,11 @@ module Ginseng
       def test_announcements
         return if Environment.ci?
         assert_kind_of(Array, @mastodon.announcements)
+        @mastodon.announcements do |announcement|
+          assert_kind_of(Hash, accouncement)
+          assert(accouncement['id'].present?)
+          assert(accouncement['title'].present?)
+        end
       end
 
       def test_nodeinfo

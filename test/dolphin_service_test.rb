@@ -35,6 +35,11 @@ module Ginseng
         assert_equal(r['createdNote']['text'], '文字列からノート')
       end
 
+      def test_announcements
+        return if Environment.ci?
+        assert_nil(@dolphin.announcements)
+      end
+
       def test_nodeinfo
         info = @dolphin.nodeinfo
         assert_kind_of(String, info['metadata']['nodeName'])
