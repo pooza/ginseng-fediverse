@@ -24,11 +24,9 @@ module Ginseng
         end
       end
 
-      def uris
+      def uris(&block)
         return enum_for(__method__) unless block_given?
-        Ginseng::URI.scan(text).each do |link|
-          yield link
-        end
+        Ginseng::URI.scan(text).each(&block)
       end
 
       def text=(text)
