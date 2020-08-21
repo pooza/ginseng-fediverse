@@ -1,5 +1,5 @@
 package:
-  version: 1.3.5
+  version: 1.3.6
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -11,6 +11,17 @@ hashtag:
   pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
 acct:
   pattern: '((?<=^|[^\/[:word:]])@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))'
+parser:
+  toot:
+    visibility:
+      unlisted: unlisted
+      private: private
+      direct: direct
+  note:
+    visibility:
+      unlisted: home
+      private: followers
+      direct: specified
 mastodon:
   url: https://st.mstdn.b-shock.org/
   token: test

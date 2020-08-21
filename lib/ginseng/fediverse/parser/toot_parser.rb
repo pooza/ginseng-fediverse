@@ -1,5 +1,3 @@
-require 'nokogiri'
-
 module Ginseng
   module Fediverse
     class TootParser < Parser
@@ -9,7 +7,7 @@ module Ginseng
         md = text.clone
         ['.u-url', '.hashtag'].each do |selector|
           nokogiri.css(selector).each do |link|
-            md.gsub!(link.to_s, "[#{link.inner_text}](#{link.attributes['href'].value})")
+            md.gsub!(link.to_s, "[\\#{link.inner_text}](#{link.attributes['href'].value})")
           rescue => e
             @logger.error(error: e.message, link: link.to_s)
           end
@@ -19,6 +17,22 @@ module Ginseng
 
       def max_length
         return @config['/mastodon/toot/max_length']
+      end
+
+      def self.visibility_name(name)
+        return visibility_names[name.to_sym] if visibility_names.key?(name.to_sym)
+        return name if visibility_names.values.member?(name)
+        return 'public'
+      rescue
+        return 'public'
+      end
+
+      def self.visibility_names
+        return {public: 'public'}.merge(
+          [:unlisted, :private, :direct].map do |name|
+            [name, Config.instance["/parser/toot/visibility/#{name}"]]
+          end.to_h,
+        )
       end
     end
   end

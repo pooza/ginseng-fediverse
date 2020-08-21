@@ -37,6 +37,17 @@ module Ginseng
       def test_to_md
         assert_kind_of(String, @parser.to_md)
       end
+
+      def test_visibility_names
+        assert_kind_of(Hash, NoteParser.visibility_names)
+        pp NoteParser.visibility_names
+      end
+
+      def test_visibility_name
+        ['public', 'unlisted', 'private', 'direct'].each do |key|
+          assert_kind_of(String, NoteParser.visibility_name(key))
+        end
+      end
     end
   end
 end
