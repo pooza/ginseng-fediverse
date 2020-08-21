@@ -1,3 +1,5 @@
+require 'nokogiri'
+
 module Ginseng
   module Fediverse
     class Parser
