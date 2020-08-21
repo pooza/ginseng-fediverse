@@ -20,6 +20,22 @@ module Ginseng
       def max_length
         return @config['/mastodon/toot/max_length']
       end
+
+      def self.visibility_name(name)
+        return visibility_names[name.to_sym] if visibility_names.key?(name.to_sym)
+        return name if visibility_names.values.member?(name)
+        return 'public'
+      rescue
+        return 'public'
+      end
+
+      def self.visibility_names
+        return {public: 'public'}.merge(
+          [:unlisted, :private, :direct].map do |name|
+            [name, Config.instance["/parser/toot/visibility/#{name}"]]
+          end.to_h,
+        )
+      end
     end
   end
 end
