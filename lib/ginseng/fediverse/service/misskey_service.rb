@@ -16,6 +16,15 @@ module Ginseng
 
       alias note post
 
+      def say(body, params = {})
+        body = {text: body.to_s} unless body.is_a?(Hash)
+        body[:i] ||= token
+        return http.post('/api/messaging/messages/create', {
+          body: body.to_json,
+          headers: create_headers(params[:headers]),
+        })
+      end
+
       def favourite(id, params = {})
         return http.post('/api/notes/favorites/create', {
           body: {noteId: id, i: token}.to_json,

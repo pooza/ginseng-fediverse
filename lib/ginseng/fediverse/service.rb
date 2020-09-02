@@ -68,7 +68,11 @@ module Ginseng
       end
 
       def self.create_tag(word)
-        return "##{word.strip.gsub(/[^[:alnum:]]+/, '_').gsub(/(^[_#]+|_$)/, '')}"
+        return "##{create_tag_base(word)}"
+      end
+
+      def self.create_tag_base(word)
+        return word.strip.gsub(/[^[:alnum:]]+/, '_').gsub(/(^[_#]+|_$)/, '').to_s
       end
 
       private

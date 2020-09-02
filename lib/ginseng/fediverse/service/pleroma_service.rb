@@ -3,6 +3,25 @@ module Ginseng
     class PleromaService < MastodonService
       include Package
 
+      def say(body, params = {})
+        params[:chat_id] ||= body[:chat_id]
+        return http.post("/api/v1/pleroma/chats/#{params[:chat_id]}/messages", {
+          body: body.to_json,
+          headers: create_headers(params[:headers]),
+        })
+      end
+
+      def upload(path, params = {})
+        params[:response] ||= :raw
+        response = http.upload(
+          '/api/v1/media',
+          path,
+          create_headers(params[:headers]),
+        )
+        return response if params[:response] == :raw
+        return JSON.parse(response.body)['id']
+      end
+
       def announcements(params = {})
         return nil
       end
