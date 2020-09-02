@@ -56,13 +56,6 @@ module Ginseng
         return if Environment.ci?
         assert(@dolphin.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif').present?)
       end
-
-      def test_create_tag
-        assert_equal(DolphinService.create_tag('宮本佳那子'), '#宮本佳那子')
-        assert_equal(DolphinService.create_tag('宮本 佳那子'), '#宮本_佳那子')
-        assert_equal(DolphinService.create_tag('宮本 佳那子 '), '#宮本_佳那子')
-        assert_equal(DolphinService.create_tag('#宮本 佳那子 '), '#宮本_佳那子')
-      end
     end
   end
 end

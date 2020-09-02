@@ -99,13 +99,6 @@ module Ginseng
         return if Environment.ci?
         assert(@mastodon.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}).positive?)
       end
-
-      def test_create_tag
-        assert_equal(MastodonService.create_tag('宮本佳那子'), '#宮本佳那子')
-        assert_equal(MastodonService.create_tag('宮本 佳那子'), '#宮本_佳那子')
-        assert_equal(MastodonService.create_tag('宮本 佳那子 '), '#宮本_佳那子')
-        assert_equal(MastodonService.create_tag('#宮本 佳那子 '), '#宮本_佳那子')
-      end
     end
   end
 end

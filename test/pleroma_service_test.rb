@@ -60,19 +60,12 @@ module Ginseng
 
       def test_upload
         return if Environment.ci?
-        assert(@pleroma.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id}).positive?)
+        assert_kind_of(String, @pleroma.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id}))
       end
 
       def test_upload_remote_resource
         return if Environment.ci?
-        assert(@pleroma.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}).positive?)
-      end
-
-      def test_create_tag
-        assert_equal(PleromaService.create_tag('宮本佳那子'), '#宮本佳那子')
-        assert_equal(PleromaService.create_tag('宮本 佳那子'), '#宮本_佳那子')
-        assert_equal(PleromaService.create_tag('宮本 佳那子 '), '#宮本_佳那子')
-        assert_equal(PleromaService.create_tag('#宮本 佳那子 '), '#宮本_佳那子')
+        assert_kind_of(String, @pleroma.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}))
       end
     end
   end

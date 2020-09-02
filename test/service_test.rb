@@ -1,0 +1,19 @@
+module Ginseng
+  module Fediverse
+    class ServiceTest < Test::Unit::TestCase
+      def test_create_tag
+        assert_equal(Service.create_tag('宮本佳那子'), '#宮本佳那子')
+        assert_equal(Service.create_tag('宮本 佳那子'), '#宮本_佳那子')
+        assert_equal(Service.create_tag('宮本 佳那子 '), '#宮本_佳那子')
+        assert_equal(Service.create_tag('#宮本 佳那子 '), '#宮本_佳那子')
+      end
+
+      def test_create_tag_base
+        assert_equal(Service.create_tag_base('宮本佳那子'), '宮本佳那子')
+        assert_equal(Service.create_tag_base('宮本 佳那子'), '宮本_佳那子')
+        assert_equal(Service.create_tag_base('宮本 佳那子 '), '宮本_佳那子')
+        assert_equal(Service.create_tag_base('#宮本 佳那子 '), '宮本_佳那子')
+      end
+    end
+  end
+end
