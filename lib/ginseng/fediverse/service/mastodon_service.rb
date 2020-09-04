@@ -211,7 +211,7 @@ module Ginseng
       end
 
       def create_tag_uri(tag)
-        return create_uri("/tags/#{tag.sub('^#', '')}")
+        return create_uri("/tags/#{tag.to_hashtag_base}")
       end
 
       def create_streaming_uri(stream = 'user')

@@ -36,11 +36,11 @@ module Ginseng
         unless @tags
           @tags = map do |tag|
             tag.gsub!(/\s/, '') unless /^[a-z0-9\s]+$/i.match?(tag)
-            Service.create_tag(tag)
+            tag.to_hashtag
           end
           @tags.uniq!
           @tags.compact!
-          @tags.delete_if {|v| @text =~ create_pattern(v)} if @text
+          @tags.delete_if {|v| @text.match?(create_pattern(v))} if @text
         end
         return @tags
       end
@@ -52,8 +52,7 @@ module Ginseng
       private
 
       def create_pattern(tag)
-        tag = Service.create_tag(tag) unless tag.start_with?('#')
-        return Regexp.new("#{tag}([^[:word:]]|$)")
+        return Regexp.new("#{tag.to_hashtag}([^[:word:]]|$)")
       end
     end
   end

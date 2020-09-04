@@ -1,9 +1,11 @@
 require 'ginseng'
 require 'active_support/dependencies/autoload'
+require 'ginseng/fediverse/refines'
 
 module Ginseng
   module Fediverse
     extend ActiveSupport::Autoload
+    using Ginseng::Fediverse::Refines
 
     autoload :Acct
     autoload :Config
