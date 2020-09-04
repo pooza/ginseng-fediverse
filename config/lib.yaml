@@ -26,11 +26,20 @@ parser:
       unlisted: unlisted
       private: private
       direct: direct
+    url:
+      patterns:
+        - ^/web/statuses/([[:digit:]]+)
+        - ^/@[[:word:]]+/([[:digit:]]+)
+        - ^/users/[[:word:]]+/statuses/([[:digit:]]+)
+        - ^/notice/([[:word:]]+)
   note:
     visibility:
       unlisted: home
       private: followers
       direct: specified
+    url:
+      patterns:
+        - ^/notes/([[:alnum:]]+)
 mastodon:
   url: https://st.mstdn.b-shock.org/
   token: test

@@ -23,6 +23,11 @@ module Ginseng
       autoload :TootParser
     end
 
+    autoload_under 'uri' do
+      autoload :NoteURI
+      autoload :TootURI
+    end
+
     autoload_under 'service' do
       autoload :DolphinService
       autoload :MastodonService
