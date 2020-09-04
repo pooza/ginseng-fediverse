@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class TagContainerTest < Ginseng::TestCase
+    class TagContainerTest < TestCase
       def setup
         @container = TagContainer.new
       end

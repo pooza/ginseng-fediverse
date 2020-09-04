@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class MastodonServiceTest < Ginseng::TestCase
+    class MastodonServiceTest < TestCase
       def setup
         @config = Config.instance
         @mastodon = MastodonService.new(@config['/mastodon/url'], @config['/mastodon/token'])

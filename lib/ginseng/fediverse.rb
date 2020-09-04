@@ -15,6 +15,7 @@ module Ginseng
     autoload :Parser
     autoload :Service
     autoload :TagContainer
+    autoload :TestCase
 
     autoload_under 'parser' do
       autoload :NoteParser

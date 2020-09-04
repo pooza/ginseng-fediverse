@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class DolphinServiceTest < Ginseng::TestCase
+    class DolphinServiceTest < TestCase
       def setup
         @config = Config.instance
         @dolphin = DolphinService.new(@config['/dolphin/url'], @config['/dolphin/token'])

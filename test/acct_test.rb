@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class AcctTest < Ginseng::TestCase
+    class AcctTest < TestCase
       def setup
         @acct = Acct.new('@pooza@example.com')
       end

@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class PleromaServiceTest < Ginseng::TestCase
+    class PleromaServiceTest < TestCase
       def setup
         @config = Config.instance
         @pleroma = PleromaService.new(@config['/pleroma/url'], @config['/pleroma/token'])

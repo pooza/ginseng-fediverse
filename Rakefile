@@ -23,9 +23,5 @@ end
 
 desc 'test all'
 task :test do
-  ENV['TEST'] = Ginseng::Fediverse::Package.name
-  require 'test/unit'
-  Dir.glob(File.join(Ginseng::Fediverse::Environment.dir, 'test/*.rb')).sort.each do |t|
-    require t
-  end
+  Ginseng::Fediverse::TestCase.load
 end

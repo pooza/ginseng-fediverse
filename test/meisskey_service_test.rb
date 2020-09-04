@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class MeisskeyServiceTest < Ginseng::TestCase
+    class MeisskeyServiceTest < TestCase
       def setup
         @config = Config.instance
         @meisskey = MeisskeyService.new(@config['/meisskey/url'], @config['/meisskey/token'])

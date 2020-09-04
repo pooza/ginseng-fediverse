@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class MisskeyServiceTest < Ginseng::TestCase
+    class MisskeyServiceTest < TestCase
       def setup
         @config = Config.instance
         @misskey = MisskeyService.new(@config['/misskey/url'], @config['/misskey/token'])
