@@ -5,7 +5,7 @@ require 'ginseng/fediverse/refines'
 module Ginseng
   module Fediverse
     extend ActiveSupport::Autoload
-    using Ginseng::Fediverse::Refines
+    using Refines
 
     autoload :Acct
     autoload :Config
