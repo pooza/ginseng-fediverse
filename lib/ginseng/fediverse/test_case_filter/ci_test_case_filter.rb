@@ -4,7 +4,6 @@ module Ginseng
       include Package
 
       def active?
-        pp 222
         return environment_class.ci?
       end
     end
