@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class StringTest < Test::Unit::TestCase
+    class StringTest < Ginseng::TestCase
       def test_to_hashtag
         assert_equal('宮本佳那子'.to_hashtag, '#宮本佳那子')
         assert_equal('宮本 佳那子'.to_hashtag, '#宮本_佳那子')

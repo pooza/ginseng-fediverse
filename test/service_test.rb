@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class ServiceTest < Test::Unit::TestCase
+    class ServiceTest < Ginseng::TestCase
       def test_create_tag
         assert_equal(Service.create_tag('宮本佳那子'), '#宮本佳那子')
         assert_equal(Service.create_tag('宮本 佳那子'), '#宮本_佳那子')

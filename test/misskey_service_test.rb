@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class MisskeyServiceTest < Test::Unit::TestCase
+    class MisskeyServiceTest < Ginseng::TestCase
       def setup
         @config = Config.instance
         @misskey = MisskeyService.new(@config['/misskey/url'], @config['/misskey/token'])
@@ -28,7 +28,6 @@ module Ginseng
       end
 
       def test_note
-        return if Environment.ci?
         r = @misskey.note('文字列からノート')
         assert_kind_of(HTTParty::Response, r)
         assert_equal(r.code, 200)
@@ -36,7 +35,6 @@ module Ginseng
       end
 
       def test_announcements
-        return if Environment.ci?
         assert_kind_of(Array, @misskey.announcements)
         @misskey.announcements do |announcement|
           assert_kind_of(Hash, accouncement)
@@ -53,17 +51,14 @@ module Ginseng
       end
 
       def test_statuses
-        return if Environment.ci?
         assert_kind_of(Array, @misskey.statuses(account_id: @config['/misskey/account/id']))
       end
 
       def test_upload
-        return if Environment.ci?
         assert(@misskey.upload(File.join(Environment.dir, 'images/pooza.jpg')).present?)
       end
 
       def test_upload_remote_resource
-        return if Environment.ci?
         assert(@misskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif').present?)
       end
     end

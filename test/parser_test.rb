@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class ParserTest < Test::Unit::TestCase
+    class ParserTest < Ginseng::TestCase
       def setup
         @parser = Parser.new
       end

@@ -7,6 +7,15 @@ package:
     - tkoishi@b-shock.co.jp
   description: ginseng Fediverse libraries
   license: MIT
+test:
+  filters:
+    - name: ci
+      cases:
+        - mastodon_service_test
+        - misskey_service_test
+        - meisskey_service_test
+        - pleroma_service_test
+        - dolphin_service_test
 hashtag:
   pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
 acct:
