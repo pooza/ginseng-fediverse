@@ -16,6 +16,7 @@ module Ginseng
     autoload :Service
     autoload :TagContainer
     autoload :TestCase
+    autoload :TestCaseFilter
 
     autoload_under 'parser' do
       autoload :NoteParser
@@ -28,6 +29,10 @@ module Ginseng
       autoload :MeisskeyService
       autoload :MisskeyService
       autoload :PleromaService
+    end
+
+    autoload_under 'test_case_filter' do
+      autoload :CITestCaseFilter
     end
   end
 end

@@ -1,6 +1,8 @@
 module Ginseng
   module Fediverse
     class TestCase < Ginseng::TestCase
+      include Package
+
       def self.load
         ENV['TEST'] = Package.name
         names.each do |name|
