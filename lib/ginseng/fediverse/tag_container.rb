@@ -36,11 +36,11 @@ module Ginseng
         unless @tags
           @tags = map do |tag|
             tag.gsub!(/\s/, '') unless /^[a-z0-9\s]+$/i.match?(tag)
-            Service.create_tag(tag)
+            tag.to_hashtag
           end
           @tags.uniq!
           @tags.compact!
-          @tags.delete_if {|v| @text =~ create_pattern(v)} if @text
+          @tags.delete_if {|v| @text.match?(create_pattern(v))} if @text
         end
         return @tags
       end
@@ -49,26 +49,10 @@ module Ginseng
         return text.scan(Parser.hashtag_pattern).map(&:first)
       end
 
-      def self.tweak(text)
-        links = {}
-        Ginseng::URI.scan(text).each do |uri|
-          key = Digest::SHA1.hexdigest(uri.to_s)
-          links[key] = uri.to_s
-          text.sub!(uri.to_s, key)
-        end
-        text.gsub!(/ *#/, ' #')
-        text.sub!(/^ #/, '#')
-        links.each do |key, link|
-          text.sub!(key, link)
-        end
-        return text
-      end
-
       private
 
       def create_pattern(tag)
-        tag = Service.create_tag(tag) unless tag.start_with?('#')
-        return Regexp.new("#{tag}([^[:word:]]|$)")
+        return Regexp.new("#{tag.to_hashtag}([^[:word:]]|$)")
       end
     end
   end

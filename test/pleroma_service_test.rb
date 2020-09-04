@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class PleromaServiceTest < Test::Unit::TestCase
+    class PleromaServiceTest < TestCase
       def setup
         @config = Config.instance
         @pleroma = PleromaService.new(@config['/pleroma/url'], @config['/pleroma/token'])
@@ -28,7 +28,6 @@ module Ginseng
       end
 
       def test_toot
-        return if Environment.ci?
         r = @pleroma.toot('文字列からトゥート')
         assert_kind_of(HTTParty::Response, r)
         assert_equal(r.code, 200)
@@ -42,7 +41,6 @@ module Ginseng
       end
 
       def test_announcements
-        return if Environment.ci?
         assert_nil(@pleroma.announcements)
       end
 
@@ -54,17 +52,14 @@ module Ginseng
       end
 
       def test_statuses
-        return if Environment.ci?
         assert_kind_of(Array, @pleroma.statuses(account_id: @config['/pleroma/account/id']))
       end
 
       def test_upload
-        return if Environment.ci?
         assert_kind_of(String, @pleroma.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id}))
       end
 
       def test_upload_remote_resource
-        return if Environment.ci?
         assert_kind_of(String, @pleroma.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}))
       end
     end

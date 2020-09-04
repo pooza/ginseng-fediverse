@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class DolphinServiceTest < Test::Unit::TestCase
+    class DolphinServiceTest < TestCase
       def setup
         @config = Config.instance
         @dolphin = DolphinService.new(@config['/dolphin/url'], @config['/dolphin/token'])
@@ -28,7 +28,6 @@ module Ginseng
       end
 
       def test_note
-        return if Environment.ci?
         r = @dolphin.note('文字列からノート')
         assert_kind_of(HTTParty::Response, r)
         assert_equal(r.code, 200)
@@ -36,7 +35,6 @@ module Ginseng
       end
 
       def test_announcements
-        return if Environment.ci?
         assert_nil(@dolphin.announcements)
       end
 
@@ -48,12 +46,10 @@ module Ginseng
       end
 
       def test_upload
-        return if Environment.ci?
         assert(@dolphin.upload(File.join(Environment.dir, 'images/pooza.jpg')).present?)
       end
 
       def test_upload_remote_resource
-        return if Environment.ci?
         assert(@dolphin.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif').present?)
       end
     end

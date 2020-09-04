@@ -1,6 +1,6 @@
 module Ginseng
   module Fediverse
-    class NoteParserTest < Test::Unit::TestCase
+    class NoteParserTest < TestCase
       def setup
         @parser = NoteParser.new
       end
