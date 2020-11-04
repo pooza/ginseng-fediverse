@@ -54,8 +54,8 @@ module Ginseng
       def exec
         if @params.nil?
           @params = YAML.safe_load(text)
-          @params = JSON.parse(text) unless @params&.is_a?(Hash)
-          @params = false unless @params&.is_a?(Hash)
+          @params = JSON.parse(text) unless @params.is_a?(Hash)
+          @params = false unless @params.is_a?(Hash)
         end
         return @params || nil
       rescue Psych::SyntaxError, JSON::ParserError

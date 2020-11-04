@@ -13,11 +13,7 @@ module Ginseng
 
       def upload(path, params = {})
         params[:response] ||= :raw
-        response = http.upload(
-          '/api/v1/media',
-          path,
-          create_headers(params[:headers]),
-        )
+        response = http.upload('/api/v1/media', path, create_headers(params[:headers]))
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
       end
@@ -28,7 +24,7 @@ module Ginseng
 
       def oauth_client
         unless File.exist?(oauth_client_path)
-          r = http.post('/api/v1/apps', {
+          response = http.post('/api/v1/apps', {
             body: {
               client_name: package_class.name,
               website: @config['/package/url'],
@@ -36,7 +32,7 @@ module Ginseng
               scopes: @config['/pleroma/oauth/scopes'].join(' '),
             }.to_json,
           })
-          File.write(oauth_client_path, r.parsed_response.to_json)
+          File.write(oauth_client_path, response.body)
         end
         return JSON.parse(File.read(oauth_client_path))
       end
@@ -67,9 +63,7 @@ module Ginseng
 
       def nodeinfo
         unless @nodeinfo
-          r = http.get('/api/v1/instance')
-          raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-          @nodeinfo = r.parsed_response
+          @nodeinfo = http.get('/api/v1/instance').parsed_response
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
             'maintainer' => {

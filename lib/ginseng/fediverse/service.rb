@@ -32,9 +32,7 @@ module Ginseng
       alias mulukhiya? mulukhiya_enable?
 
       def nodeinfo
-        r = http.get('/nodeinfo/2.0')
-        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-        return r.parsed_response
+        return http.get('/nodeinfo/2.0').parsed_response
       end
 
       alias info nodeinfo

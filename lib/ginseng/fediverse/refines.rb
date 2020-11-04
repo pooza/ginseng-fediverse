@@ -1,7 +1,7 @@
 module Ginseng
   module Fediverse
     module Refines
-      class ::String # rubocop:disable Style/ClassAndModuleChildren
+      class ::String
         def to_hashtag
           return Service.create_tag(self)
         end

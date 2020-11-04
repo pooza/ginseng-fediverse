@@ -7,9 +7,7 @@ module Ginseng
 
       def info
         unless @nodeinfo
-          r = http.get('/api/v1/instance')
-          raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-          @nodeinfo = r.parsed_response.merge(super)
+          @nodeinfo = http.get('/api/v1/instance').parsed_response.merge(super)
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
             'maintainer' => {
@@ -116,17 +114,15 @@ module Ginseng
       end
 
       def statuses(params = {})
-        r = http.get('/api/v1/timelines/home', {headers: create_headers(params[:headers])})
-        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-        return r.parsed_response
+        response = http.get('/api/v1/timelines/home', {headers: create_headers(params[:headers])})
+        return response.parsed_response
       end
 
       alias toots statuses
 
       def announcements(params = {})
-        r = http.get('/api/v1/announcements', {headers: create_headers(params[:headers])})
-        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-        return r.parsed_response.map do |announcement|
+        response = http.get('/api/v1/announcements', {headers: create_headers(params[:headers])})
+        return response.parsed_response.map do |announcement|
           entry = announcement.deep_symbolize_keys
           entry[:text] = entry[:content].sanitize.strip
           entry.delete(:read)
@@ -173,7 +169,7 @@ module Ginseng
 
       def oauth_client
         unless File.exist?(oauth_client_path)
-          r = http.post('/api/v1/apps', {
+          response = http.post('/api/v1/apps', {
             body: {
               client_name: package_class.name,
               website: @config['/package/url'],
@@ -181,7 +177,7 @@ module Ginseng
               scopes: @config['/mastodon/oauth/scopes'].join(' '),
             }.to_json,
           })
-          File.write(oauth_client_path, r.parsed_response.to_json)
+          File.write(oauth_client_path, response.body)
         end
         return JSON.parse(File.read(oauth_client_path))
       end

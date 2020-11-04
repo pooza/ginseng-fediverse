@@ -50,12 +50,11 @@ module Ginseng
       end
 
       def statuses(params = {})
-        r = http.post('/api/users/notes', {
+        response = http.post('/api/users/notes', {
           body: {userId: params[:account_id], i: token}.to_json,
           headers: create_headers(params[:headers]),
         })
-        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-        return r.parsed_response
+        return response.parsed_response
       end
 
       alias notes statuses
@@ -78,7 +77,7 @@ module Ginseng
 
       def oauth_client
         unless File.exist?(oauth_client_path)
-          r = http.post('/api/app/create', {
+          response = http.post('/api/app/create', {
             body: {
               name: package_class.name,
               description: @config['/package/description'],
@@ -86,7 +85,7 @@ module Ginseng
               callbackUrl: create_uri(@config['/misskey/oauth/callback_url']).to_s,
             }.to_json,
           })
-          File.write(oauth_client_path, r.parsed_response.to_json)
+          File.write(oauth_client_path, response.body)
         end
         return JSON.parse(File.read(oauth_client_path))
       end
@@ -96,12 +95,10 @@ module Ginseng
       end
 
       def oauth_uri
-        r = http.post('/api/auth/session/generate', {
-          body: {
-            appSecret: oauth_client['secret'],
-          }.to_json,
+        response = http.post('/api/auth/session/generate', {
+          body: {appSecret: oauth_client['secret']}.to_json,
         })
-        return Ginseng::URI.parse(r['url'])
+        return Ginseng::URI.parse(response['url'])
       end
 
       def auth(token)
@@ -116,12 +113,11 @@ module Ginseng
       def announcements(params = {})
         headers = params[:headers] || {}
         headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        r = http.post('/api/announcements', {
+        response = http.post('/api/announcements', {
           body: {i: token}.to_json,
           headers: headers,
         })
-        raise Ginseng::GatewayError, "Bad response #{r.code}" unless r.code == 200
-        return r.parsed_response.map do |announcement|
+        return response.parsed_response.map do |announcement|
           entry = announcement.deep_symbolize_keys
           entry[:imate_url] = entry[:imageUrl]
           entry
