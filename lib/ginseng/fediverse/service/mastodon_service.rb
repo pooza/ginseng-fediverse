@@ -211,8 +211,7 @@ module Ginseng
       end
 
       def create_streaming_uri(stream = 'user')
-        uri = self.uri.clone
-        uri.scheme = 'wss'
+        uri = Ginseng::URI.parse(info['urls']['streaming_api'])
         uri.path = '/api/v1/streaming'
         uri.query_values = {'access_token' => token, 'stream' => stream}
         return uri
