@@ -22,6 +22,10 @@ module Ginseng
         return nil
       end
 
+      def filters(params = {})
+        return nil
+      end
+
       def oauth_client
         unless File.exist?(oauth_client_path)
           response = http.post('/api/v1/apps', {
