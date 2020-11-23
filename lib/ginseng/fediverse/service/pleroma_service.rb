@@ -81,11 +81,11 @@ module Ginseng
 
       alias info nodeinfo
 
-      private
-
       def default_token
         return @config['/pleroma/token']
       end
+
+      private
 
       def default_uri
         return Ginseng::URI.parse(@config['/pleroma/url'])
