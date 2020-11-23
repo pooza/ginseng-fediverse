@@ -55,9 +55,6 @@ misskey:
   token: test
   note:
     max_length: 500
-dolphin:
-  url: https://dev.dol.b-shock.org/
-  token: test
 pleroma:
   url: https://dev.ple.b-shock.org/
   token: test
