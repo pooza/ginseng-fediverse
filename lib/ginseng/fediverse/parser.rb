@@ -27,7 +27,7 @@ module Ginseng
       end
 
       def uris(&block)
-        return enum_for(__method__) unless block_given?
+        return enum_for(__method__) unless block
         Ginseng::URI.scan(text).each(&block)
       end
 

@@ -13,11 +13,11 @@ module Ginseng
         end
       end
 
-      private
-
       def default_token
         return @config['/meisskey/token']
       end
+
+      private
 
       def default_uri
         return Ginseng::URI.parse(@config['/meisskey/url'])

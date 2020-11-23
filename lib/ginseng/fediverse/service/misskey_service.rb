@@ -128,11 +128,11 @@ module Ginseng
         return create_uri("/tags/#{tag.to_hashtag_base}")
       end
 
-      private
-
       def default_token
         return @config['/misskey/token']
       end
+
+      private
 
       def default_uri
         return Ginseng::URI.parse(@config['/misskey/url'])

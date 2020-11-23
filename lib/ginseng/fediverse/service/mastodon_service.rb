@@ -217,16 +217,16 @@ module Ginseng
         return uri
       end
 
+      def default_token
+        return @config['/mastodon/token']
+      end
+
       private
 
       def create_headers(headers)
         headers ||= {}
         headers['Authorization'] ||= "Bearer #{token}"
         return super
-      end
-
-      def default_token
-        return @config['/mastodon/token']
       end
 
       def default_uri
