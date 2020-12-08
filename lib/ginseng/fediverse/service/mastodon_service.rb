@@ -146,6 +146,12 @@ module Ginseng
 
       alias following followees
 
+      def fetch_featured_tags(id, params = {})
+        return http.get("/api/v1/accounts/#{id}/featured_tags", {
+          headers: create_headers(params[:headers]),
+        })
+      end
+
       def filters(params = {})
         return http.get('/api/v1/filters', {headers: create_headers(params[:headers])})
       end

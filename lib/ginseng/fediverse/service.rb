@@ -53,6 +53,10 @@ module Ginseng
         File.unlink(path) if File.exist?(path)
       end
 
+      def fetch_featured_tags(id, params = {})
+        return nil
+      end
+
       def filters(params = {})
         return nil
       end
