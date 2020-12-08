@@ -188,6 +188,9 @@ Layout/LineLength:
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
 
+Layout/EndOfLine:
+  EnforcedStyle: lf
+
 Metrics/AbcSize:
   Max: 30
   Exclude:
@@ -199,6 +202,11 @@ Metrics/MethodLength:
     - test/*
 
 Metrics/ClassLength:
+  Max: 200
+  Exclude:
+    - test/*
+
+Metrics/ModuleLength:
   Max: 200
   Exclude:
     - test/*
