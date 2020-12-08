@@ -43,7 +43,7 @@ module Ginseng
 
       def test_to_sanitized
         @parser.text = '<p>hoge<br>hoge</p><p>hoge<br>hoge</p>'
-        assert_equal(@parser.to_sanitized, "hoge\nhoge\n\n  hoge\nhoge")
+        assert_equal(@parser.to_sanitized, "hoge\nhoge\n\nhoge\nhoge")
       end
 
       def test_accts

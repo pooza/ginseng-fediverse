@@ -101,8 +101,9 @@ module Ginseng
       end
 
       def self.sanitize(text)
-        text.gsub!(/<br.*?>/, "\n")
-        text.gsub!(%r{</p.*?>}, "\n\n")
+        text.gsub!(/\s*<br.*?>/, "\n")
+        text.gsub!(%r{\s*</p.*?>}, "\n\n")
+        text.gsub!(/<p.*?>/, '')
         text.sanitize!
         return text.strip
       end
