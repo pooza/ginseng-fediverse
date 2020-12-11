@@ -33,6 +33,7 @@ module Ginseng
       autoload :MastodonService
       autoload :MeisskeyService
       autoload :MisskeyService
+      autoload :MulukhiyaService
       autoload :PleromaService
     end
 
