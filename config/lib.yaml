@@ -1,5 +1,5 @@
 package:
-  version: 1.4.6
+  version: 1.4.7
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -14,6 +14,7 @@ test:
         - mastodon_service_test
         - misskey_service_test
         - meisskey_service_test
+        - mulukhiya_ervice_test
         - pleroma_service_test
 hashtag:
   pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
@@ -60,3 +61,5 @@ pleroma:
 meisskey:
   url: https://dev.mei.b-shock.org/
   token: test
+mulukhiya:
+  url: https://st.mstdn.b-shock.org/
