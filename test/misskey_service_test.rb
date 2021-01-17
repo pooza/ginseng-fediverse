@@ -43,6 +43,15 @@ module Ginseng
         end
       end
 
+      def test_antennas
+        assert_kind_of(Array, @misskey.antennas)
+        @misskey.antennas do |antenna|
+          assert_kind_of(Hash, antenna)
+          assert(antenna['id'].present?)
+          assert(antenna['title'].present?)
+        end
+      end
+
       def test_nodeinfo
         info = @misskey.nodeinfo
         assert_kind_of(String, info['metadata']['nodeName'])

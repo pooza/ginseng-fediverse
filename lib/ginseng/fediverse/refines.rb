@@ -10,11 +10,13 @@ module Ginseng
           return Service.create_tag_base(self)
         end
 
-        def escape_toot
+        def escape_status
           return sub(/[@#]/, '\\0 ')
         end
 
-        alias escape_note escape_toot
+        alias escape_note escape_status
+
+        alias escape_toot escape_status
       end
     end
   end

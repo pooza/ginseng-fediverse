@@ -15,7 +15,6 @@ module Ginseng
       loader = Zeitwerk::Loader.new
       loader.inflector.inflect(config['inflections'])
       loader.push_dir(File.join(dir, 'lib/ginseng/fediverse'), namespace: Ginseng::Fediverse)
-      loader.collapse('lib/ginseng/fediverse/*')
       return loader
     end
   end
