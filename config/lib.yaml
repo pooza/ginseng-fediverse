@@ -9,7 +9,7 @@ package:
   license: MIT
 test:
   filters:
-    - name: c_i
+    - name: ci
       cases:
         - mastodon_service_test
         - misskey_service_test
