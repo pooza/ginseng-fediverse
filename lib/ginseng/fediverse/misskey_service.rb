@@ -111,17 +111,23 @@ module Ginseng
       end
 
       def announcements(params = {})
-        headers = params[:headers] || {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
         response = http.post('/api/announcements', {
           body: {i: token}.to_json,
-          headers: headers,
+          headers: create_headers(params[:headers]),
         })
         return response.parsed_response.map do |announcement|
           entry = announcement.deep_symbolize_keys
           entry[:imate_url] = entry[:imageUrl]
           entry
         end
+      end
+
+      def antennas(params = {})
+        response = http.post('/api/antennas/list', {
+          body: {i: token}.to_json,
+          headers: create_headers(params[:headers]),
+        })
+        return response.parsed_response
       end
 
       def create_tag_uri(tag)
