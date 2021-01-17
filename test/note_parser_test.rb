@@ -40,7 +40,6 @@ module Ginseng
 
       def test_visibility_names
         assert_kind_of(Hash, NoteParser.visibility_names)
-        pp NoteParser.visibility_names
       end
 
       def test_visibility_name
