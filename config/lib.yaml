@@ -1,5 +1,5 @@
 package:
-  version: 1.4.8
+  version: 1.4.9
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -9,7 +9,7 @@ package:
   license: MIT
 test:
   filters:
-    - name: ci
+    - name: c_i
       cases:
         - mastodon_service_test
         - misskey_service_test

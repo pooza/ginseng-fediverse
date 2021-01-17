@@ -1,44 +1,25 @@
+require 'bundler/setup'
 require 'ginseng'
-require 'active_support/dependencies/autoload'
 require 'ginseng/fediverse/refines'
 
 module Ginseng
   module Fediverse
-    extend ActiveSupport::Autoload
     using Refines
 
-    autoload :Acct
-    autoload :Config
-    autoload :Environment
-    autoload :Logger
-    autoload :Package
-    autoload :Parser
-    autoload :Service
-    autoload :TagContainer
-    autoload :TestCase
-    autoload :TestCaseFilter
-
-    autoload_under 'parser' do
-      autoload :NoteParser
-      autoload :TootParser
+    def self.dir
+      return File.expand_path('../..', __dir__)
     end
 
-    autoload_under 'uri' do
-      autoload :NoteURI
-      autoload :TootURI
-    end
-
-    autoload_under 'service' do
-      autoload :DolphinService
-      autoload :MastodonService
-      autoload :MeisskeyService
-      autoload :MisskeyService
-      autoload :MulukhiyaService
-      autoload :PleromaService
-    end
-
-    autoload_under 'test_case_filter' do
-      autoload :CITestCaseFilter
+    def self.loader
+      config = YAML.load_file(File.join(dir, 'config/autoload.yaml'))
+      loader = Zeitwerk::Loader.new
+      loader.inflector.inflect(config['inflections'])
+      loader.push_dir(File.join(dir, 'lib/ginseng/fediverse'), namespace: Ginseng::Fediverse)
+      loader.collapse('lib/ginseng/fediverse/*')
+      return loader
     end
   end
 end
+
+Bundler.require
+Ginseng::Fediverse.loader.setup
