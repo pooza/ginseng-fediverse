@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'ginseng'
 require 'ginseng/fediverse/refines'
 
@@ -20,4 +21,5 @@ module Ginseng
   end
 end
 
+Bundler.require
 Ginseng::Fediverse.loader.setup
