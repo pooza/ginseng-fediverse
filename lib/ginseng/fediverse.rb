@@ -1,5 +1,4 @@
 require 'bundler/setup'
-require 'ginseng'
 require 'ginseng/fediverse/refines'
 
 module Ginseng
