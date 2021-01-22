@@ -6,7 +6,7 @@ module Ginseng
       def say(body, params = {})
         params[:chat_id] ||= body[:chat_id]
         return http.post("/api/v1/pleroma/chats/#{params[:chat_id]}/messages", {
-          body: body.to_json,
+          body: body,
           headers: create_headers(params[:headers]),
         })
       end
@@ -34,7 +34,7 @@ module Ginseng
               website: @config['/package/url'],
               redirect_uris: @config['/pleroma/oauth/redirect_uri'],
               scopes: @config['/pleroma/oauth/scopes'].join(' '),
-            }.to_json,
+            },
           })
           File.write(oauth_client_path, response.body)
         end

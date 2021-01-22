@@ -9,7 +9,7 @@ module Ginseng
         body = {text: body.to_s} unless body.is_a?(Hash)
         body[:i] ||= token
         return http.post('/api/notes/create', {
-          body: body.to_json,
+          body: body,
           headers: create_headers(params[:headers]),
         })
       end
@@ -20,14 +20,14 @@ module Ginseng
         body = {text: body.to_s} unless body.is_a?(Hash)
         body[:i] ||= token
         return http.post('/api/messaging/messages/create', {
-          body: body.to_json,
+          body: body,
           headers: create_headers(params[:headers]),
         })
       end
 
       def favourite(id, params = {})
         return http.post('/api/notes/favorites/create', {
-          body: {noteId: id, i: token}.to_json,
+          body: {noteId: id, i: token},
           headers: create_headers(params[:headers]),
         })
       end
@@ -51,7 +51,7 @@ module Ginseng
 
       def statuses(params = {})
         response = http.post('/api/users/notes', {
-          body: {userId: params[:account_id], i: token}.to_json,
+          body: {userId: params[:account_id], i: token},
           headers: create_headers(params[:headers]),
         })
         return response.parsed_response
@@ -61,7 +61,7 @@ module Ginseng
 
       def fetch_status(id, params = {})
         return http.post('/api/notes/show', {
-          body: {noteId: id, i: token}.to_json,
+          body: {noteId: id, i: token},
           headers: create_headers(params[:headers]),
         })
       end
@@ -70,7 +70,7 @@ module Ginseng
 
       def fetch_attachment(id, params = {})
         return http.post('/api/drive/files/show', {
-          body: {fileId: id, i: token}.to_json,
+          body: {fileId: id, i: token},
           headers: create_headers(params[:headers]),
         })
       end
@@ -83,7 +83,7 @@ module Ginseng
               description: @config['/package/description'],
               permission: @config['/misskey/oauth/permission'],
               callbackUrl: create_uri(@config['/misskey/oauth/callback_url']).to_s,
-            }.to_json,
+            },
           })
           File.write(oauth_client_path, response.body)
         end
@@ -96,7 +96,7 @@ module Ginseng
 
       def oauth_uri
         response = http.post('/api/auth/session/generate', {
-          body: {appSecret: oauth_client['secret']}.to_json,
+          body: {appSecret: oauth_client['secret']},
         })
         return Ginseng::URI.parse(response['url'])
       end
@@ -106,13 +106,13 @@ module Ginseng
           body: {
             appSecret: oauth_client['secret'],
             token: token,
-          }.to_json,
+          },
         })
       end
 
       def announcements(params = {})
         response = http.post('/api/announcements', {
-          body: {i: token}.to_json,
+          body: {i: token},
           headers: create_headers(params[:headers]),
         })
         return response.parsed_response.map do |announcement|
@@ -124,7 +124,7 @@ module Ginseng
 
       def antennas(params = {})
         response = http.post('/api/antennas/list', {
-          body: {i: token}.to_json,
+          body: {i: token},
           headers: create_headers(params[:headers]),
         })
         return response.parsed_response
