@@ -35,7 +35,7 @@ module Ginseng
       def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         return http.post('/api/v1/statuses', {
-          body: body.to_json,
+          body: body,
           headers: create_headers(params[:headers]),
         })
       end
@@ -68,7 +68,7 @@ module Ginseng
 
       def favourite(id, params = {})
         return http.post("/api/v1/statuses/#{id}/favourite", {
-          body: '{}',
+          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -77,7 +77,7 @@ module Ginseng
 
       def reblog(id, params = {})
         return http.post("/api/v1/statuses/#{id}/reblog", {
-          body: '{}',
+          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -86,7 +86,7 @@ module Ginseng
 
       def bookmark(id, params = {})
         return http.post("/api/v1/statuses/#{id}/bookmark", {
-          body: '{}',
+          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -101,14 +101,14 @@ module Ginseng
 
       def follow(id, params = {})
         return http.post("/api/v1/accounts/#{id}/follow", {
-          body: '{}',
+          body: {},
           headers: create_headers(params[:headers]),
         })
       end
 
       def unfollow(id, params = {})
         return http.post("/api/v1/accounts/#{id}/unfollow", {
-          body: '{}',
+          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -161,7 +161,7 @@ module Ginseng
           body: {
             phrase: params[:phrase],
             context: params[:context] || [:home, :public],
-          }.to_json,
+          },
           headers: create_headers(params[:headers]),
         })
       end
@@ -181,7 +181,7 @@ module Ginseng
               website: @config['/package/url'],
               redirect_uris: @config['/mastodon/oauth/redirect_uri'],
               scopes: @config['/mastodon/oauth/scopes'].join(' '),
-            }.to_json,
+            },
           })
           File.write(oauth_client_path, response.body)
         end
