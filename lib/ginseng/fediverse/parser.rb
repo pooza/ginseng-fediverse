@@ -101,6 +101,8 @@ module Ginseng
       end
 
       def self.sanitize(text)
+        text = text.clone
+        text.gsub!("\n", '') if text.match?(%r{<br.*?>}) 
         text.gsub!(/\s*<br.*?>/, "\n")
         text.gsub!(%r{\s*</p.*?>}, "\n\n")
         text.gsub!(/<p.*?>/, '')
