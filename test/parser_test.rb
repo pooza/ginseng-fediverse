@@ -45,7 +45,7 @@ module Ginseng
         @parser.text = '<p>hoge<br>hoge</p><p>hoge<br>hoge</p>'
         assert_equal(@parser.to_sanitized, "hoge\nhoge\n\nhoge\nhoge")
 
-        @parser.text = %{このインスタンスがめいすきーのフォークであることを意識して、以下のような調整を行いました。<br>\n<br>\n・リポジトリのリンクを以下のものに修正<br>\nhttps://github.com/pooza/meisskey/tree/mei-m544.pooza<br>\n<br>\n・独自のバージョン番号<br>\n末尾に "-reco" 追加<br>}
+        @parser.text = %(このインスタンスがめいすきーのフォークであることを意識して、以下のような調整を行いました。<br>\n<br>\n・リポジトリのリンクを以下のものに修正<br>\nhttps://github.com/pooza/meisskey/tree/mei-m544.pooza<br>\n<br>\n・独自のバージョン番号<br>\n末尾に "-reco" 追加<br>)
         assert_equal(@parser.to_sanitized, "このインスタンスがめいすきーのフォークであることを意識して、以下のような調整を行いました。\n\n・リポジトリのリンクを以下のものに修正\nhttps://github.com/pooza/meisskey/tree/mei-m544.pooza\n\n・独自のバージョン番号\n末尾に \"-reco\" 追加")
       end
 
