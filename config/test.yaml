@@ -1,3 +1,7 @@
 filters:
   - name: ci
-    cases: []
+    cases:
+      - mastodon_service
+      - misskey_service
+      - meisskey_service
+      - pleroma_service
