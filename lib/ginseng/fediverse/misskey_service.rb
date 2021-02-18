@@ -7,6 +7,9 @@ module Ginseng
 
       def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
+        body.deep_symbolize_keys!
+        body.delete(:text) unless body[:text].present?
+        body.delete(:fileIds) unless body[:fileIds].present?
         body[:i] ||= token
         return http.post('/api/notes/create', {
           body: body,
@@ -18,6 +21,7 @@ module Ginseng
 
       def say(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
+        body.deep_symbolize_keys!
         body[:i] ||= token
         return http.post('/api/messaging/messages/create', {
           body: body,
@@ -38,12 +42,11 @@ module Ginseng
 
       def upload(path, params = {})
         params[:response] ||= :raw
-        body = {force: 'true', i: token}
         response = http.upload(
           '/api/drive/files/create',
           path,
           create_headers(params[:headers]),
-          body,
+          {force: 'true', i: token},
         )
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
