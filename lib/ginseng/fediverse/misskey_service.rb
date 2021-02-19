@@ -7,7 +7,7 @@ module Ginseng
 
       def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
-        body.deep_symbolize_keys!
+        body = body.deep_symbolize_keys
         body.delete(:text) unless body[:text].present?
         body.delete(:fileIds) unless body[:fileIds].present?
         body[:i] ||= token
@@ -21,7 +21,7 @@ module Ginseng
 
       def say(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
-        body.deep_symbolize_keys!
+        body = body.deep_symbolize_keys
         body[:i] ||= token
         return http.post('/api/messaging/messages/create', {
           body: body,

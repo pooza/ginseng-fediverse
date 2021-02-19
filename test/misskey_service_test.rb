@@ -32,6 +32,12 @@ module Ginseng
         assert_kind_of(HTTParty::Response, r)
         assert_equal(r.code, 200)
         assert_equal(r['createdNote']['text'], '文字列からノート')
+
+        body = {text: 'HashWithIndifferentAccessからノート'}.with_indifferent_access
+        r = @misskey.note(body)
+        assert_kind_of(HTTParty::Response, r)
+        assert_equal(r.code, 200)
+        assert_equal(r['createdNote']['text'], 'HashWithIndifferentAccessからノート')
       end
 
       def test_announcements
