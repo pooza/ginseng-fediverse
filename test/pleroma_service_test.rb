@@ -40,6 +40,13 @@ module Ginseng
         assert_equal(r['visibility'], 'private')
       end
 
+      def test_delete_status
+        id = @pleroma.toot('このあと削除するトゥート')['id']
+        r = @pleroma.delete_status(id)
+        assert_equal(r.code, 200)
+        assert_equal(r['text'], 'このあと削除するトゥート')
+      end
+
       def test_announcements
         assert_nil(@pleroma.announcements)
       end
