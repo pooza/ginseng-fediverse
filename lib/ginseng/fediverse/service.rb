@@ -31,12 +31,12 @@ module Ginseng
 
       alias mulukhiya? mulukhiya_enable?
 
-      def retry
-        return http.retry
+      def retry_limit
+        return http.retry_limit
       end
 
-      def retry=(cnt)
-        http.retry = cnt
+      def retry_limit=(cnt)
+        http.retry_limit = cnt
       end
 
       def nodeinfo
