@@ -52,6 +52,10 @@ module Ginseng
         assert(@mastodon.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id}).positive?)
       end
 
+      def test_bookmark
+        assert_equal(@mastodon.bookmark(@toot_id).code, 200)
+      end
+
       def test_favourite
         assert_equal(@mastodon.favourite(@toot_id).code, 200)
       end
