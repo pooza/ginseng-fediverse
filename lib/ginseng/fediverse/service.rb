@@ -31,6 +31,14 @@ module Ginseng
 
       alias mulukhiya? mulukhiya_enable?
 
+      def retry
+        return http.retry
+      end
+
+      def retry=(cnt)
+        http.retry = cnt
+      end
+
       def nodeinfo
         return http.get('/nodeinfo/2.0').parsed_response
       end
