@@ -42,6 +42,13 @@ module Ginseng
 
       alias toot post
 
+      def delete_status(id, params = {})
+        return http.delete("/api/v1/statuses/#{id}", {
+          body: {},
+          headers: create_headers(params[:headers]),
+        })
+      end
+
       def upload(path, params = {})
         params[:response] ||= :raw
         params[:version] ||= 1
