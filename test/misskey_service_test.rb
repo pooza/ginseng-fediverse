@@ -40,6 +40,12 @@ module Ginseng
         assert_equal(r['createdNote']['text'], 'HashWithIndifferentAccessからノート')
       end
 
+      def test_delete_status
+        id = @misskey.note('このあと削除するトゥート')['createdNote']['id']
+        r = @misskey.delete_status(id)
+        assert_equal(r.code, 204)
+      end
+
       def test_announcements
         assert_kind_of(Array, @misskey.announcements)
         @misskey.announcements do |announcement|
@@ -70,11 +76,25 @@ module Ginseng
       end
 
       def test_upload
-        assert(@misskey.upload(File.join(Environment.dir, 'images/pooza.jpg')).present?)
+        assert_kind_of(RestClient::Response, @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg')))
       end
 
       def test_upload_remote_resource
-        assert(@misskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif').present?)
+        assert_kind_of(RestClient::Response, @misskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif'))
+      end
+
+      def test_delete_attachment
+        response = @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
+        id = JSON.parse(response.body)['id']
+        r = @misskey.delete_attachment(id)
+        assert_equal(r.code, 204)
+      end
+
+      def test_search_dupllicated_attachment
+        response = @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
+        md5 = JSON.parse(response.body)['md5']
+        r = @misskey.search_dupllicated_attachment(md5)
+        assert_equal(r.parsed_response.first['md5'], md5)
       end
     end
   end

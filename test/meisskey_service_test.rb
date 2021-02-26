@@ -34,6 +34,12 @@ module Ginseng
         assert_equal(r['createdNote']['text'], '文字列からノート')
       end
 
+      def test_delete_status
+        id = @meisskey.note('このあと削除するトゥート')['createdNote']['id']
+        r = @meisskey.delete_status(id)
+        assert_equal(r.code, 204)
+      end
+
       def test_announcements
         assert_kind_of(Array, @meisskey.announcements)
         @meisskey.announcements do |announcement|
@@ -55,11 +61,18 @@ module Ginseng
       end
 
       def test_upload
-        assert(@meisskey.upload(File.join(Environment.dir, 'images/pooza.jpg')).present?)
+        assert_kind_of(RestClient::Response, @meisskey.upload(File.join(Environment.dir, 'images/pooza.jpg')))
       end
 
       def test_upload_remote_resource
-        assert(@meisskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif').present?)
+        assert_kind_of(RestClient::Response, @meisskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif'))
+      end
+
+      def test_delete_attachment
+        response = @meisskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
+        id = JSON.parse(response.body)['id']
+        r = @meisskey.delete_attachment(id)
+        assert_equal(r.code, 204)
       end
     end
   end
