@@ -42,6 +42,14 @@ module Ginseng
 
       alias toot post
 
+      def delete_status(id, params = {})
+        return http.delete("/api/v1/statuses/#{id}", {
+          headers: create_headers(params[:headers]),
+        })
+      end
+
+      alias delete_toot delete_status
+
       def upload(path, params = {})
         params[:response] ||= :raw
         params[:version] ||= 1
@@ -66,9 +74,10 @@ module Ginseng
         ).execute
       end
 
+      alias update_attachment update_media
+
       def favourite(id, params = {})
         return http.post("/api/v1/statuses/#{id}/favourite", {
-          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -77,7 +86,6 @@ module Ginseng
 
       def reblog(id, params = {})
         return http.post("/api/v1/statuses/#{id}/reblog", {
-          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -86,7 +94,6 @@ module Ginseng
 
       def bookmark(id, params = {})
         return http.post("/api/v1/statuses/#{id}/bookmark", {
-          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -101,14 +108,12 @@ module Ginseng
 
       def follow(id, params = {})
         return http.post("/api/v1/accounts/#{id}/follow", {
-          body: {},
           headers: create_headers(params[:headers]),
         })
       end
 
       def unfollow(id, params = {})
         return http.post("/api/v1/accounts/#{id}/unfollow", {
-          body: {},
           headers: create_headers(params[:headers]),
         })
       end
@@ -168,7 +173,6 @@ module Ginseng
 
       def unregister_filter(id, params = {})
         return http.delete("/api/v1/filters/#{id}", {
-          body: '{}',
           headers: create_headers(params[:headers]),
         })
       end

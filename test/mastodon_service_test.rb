@@ -41,8 +41,19 @@ module Ginseng
         assert_equal(r['visibility'], 'private')
       end
 
+      def test_delete_status
+        id = @mastodon.toot('このあと削除するトゥート')['id']
+        r = @mastodon.delete_status(id)
+        assert_equal(r.code, 200)
+        assert_equal(r['text'], 'このあと削除するトゥート')
+      end
+
       def test_upload
         assert(@mastodon.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id}).positive?)
+      end
+
+      def test_bookmark
+        assert_equal(@mastodon.bookmark(@toot_id).code, 200)
       end
 
       def test_favourite

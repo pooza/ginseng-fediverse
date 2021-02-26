@@ -19,9 +19,19 @@ module Ginseng
 
       alias note post
 
+      def delete_status(id, params = {})
+        return http.post('/api/notes/delete', {
+          body: {noteId: id, i: token},
+          headers: create_headers(params[:headers]),
+        })
+      end
+
+      alias delete_note delete_status
+
       def say(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
         body = body.deep_symbolize_keys
+        body.delete(:text) unless body[:text].present?
         body[:i] ||= token
         return http.post('/api/messaging/messages/create', {
           body: body,
@@ -50,6 +60,20 @@ module Ginseng
         )
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
+      end
+
+      def delete_attachment(id, params = {})
+        return http.post('/api/drive/files/delete', {
+          body: {fileId: id, i: token},
+          headers: create_headers(params[:headers]),
+        })
+      end
+
+      def search_dupllicated_attachment(md5, params = {})
+        return http.post('/api/drive/files/find-by-hash', {
+          body: {md5: md5, i: token},
+          headers: create_headers(params[:headers]),
+        })
       end
 
       def statuses(params = {})
