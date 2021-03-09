@@ -1,5 +1,3 @@
-require 'digest/sha1'
-
 module Ginseng
   module Fediverse
     class TagContainer < Array
