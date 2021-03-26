@@ -1,5 +1,3 @@
-require 'sanitize'
-
 module Ginseng
   module Fediverse
     class MulukhiyaService
@@ -21,9 +19,7 @@ module Ginseng
       end
 
       def search_hashtags(text)
-        params = {
-          body: {q: Sanitize.clean(text)}.to_json,
-        }
+        params = {body: {q: text.sanitize}}
         tags = []
         @http.post('/mulukhiya/api/tagging/tag/search', params).each_value do |entry|
           tags.concat(entry['words'])
