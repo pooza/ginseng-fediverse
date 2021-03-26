@@ -1,5 +1,3 @@
-require 'zlib'
-
 module Ginseng
   module Fediverse
     class MeisskeyService < MisskeyService
@@ -11,7 +9,7 @@ module Ginseng
           headers: create_headers(params[:headers]),
         })
         return response['announcements'].map do |entry|
-          {id: Zlib.alder32(entry.to_json), title: entry['title'], text: entry['text']}
+          {id: entry.to_json.adler32, title: entry['title'], text: entry['text']}
         end
       end
 
