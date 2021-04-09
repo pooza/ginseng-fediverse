@@ -1,5 +1,3 @@
-require 'digest/sha1'
-
 module Ginseng
   module Fediverse
     class Service
@@ -50,11 +48,7 @@ module Ginseng
       end
 
       def upload_remote_resource(uri, params = {})
-        path = File.join(
-          environment_class.dir,
-          'tmp/media',
-          Digest::SHA1.hexdigest(uri),
-        )
+        path = File.join(environment_class.dir, 'tmp/media', uri.to_s.adler32.to_s)
         File.write(path, http.get(uri))
         return upload(path, params)
       ensure
