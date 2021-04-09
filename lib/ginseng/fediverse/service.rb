@@ -48,7 +48,7 @@ module Ginseng
       end
 
       def upload_remote_resource(uri, params = {})
-        path = File.join(environment_class.dir, 'tmp/media', uri.to_s.adler32)
+        path = File.join(environment_class.dir, 'tmp/media', uri.to_s.adler32.to_s)
         File.write(path, http.get(uri))
         return upload(path, params)
       ensure
