@@ -100,7 +100,7 @@ module Ginseng
       end
 
       def default_uri
-        return Ginseng::URI.parse(@config['/dolphin/url'])
+        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
     end
   end
