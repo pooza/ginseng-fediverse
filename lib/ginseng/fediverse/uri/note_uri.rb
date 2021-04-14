@@ -48,6 +48,16 @@ module Ginseng
         return @parser
       end
 
+      def subject
+        unless @subject
+          @subject = note['cw'] if note['cw'].present?
+          @subject ||= note['text']
+          @subject.gsub!(/\s+/, ' ')
+          @subject.sanitize!
+        end
+        return @subject
+      end
+
       def service
         unless @service
           uri = clone
