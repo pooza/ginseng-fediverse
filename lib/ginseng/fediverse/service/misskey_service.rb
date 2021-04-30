@@ -19,9 +19,17 @@ module Ginseng
 
       alias note post
 
+      def search_status_id(status)
+        if status.is_a?(URI) && (status.host == uri.host)
+          uri = NoteURI.parse(status)
+          status = status.id if uri.valid?
+        end
+        return status
+      end
+
       def delete_status(id, params = {})
         return http.post('/api/notes/delete', {
-          body: {noteId: id, i: token},
+          body: {noteId: search_status_id(id), i: token},
           headers: create_headers(params[:headers]),
         })
       end
@@ -41,7 +49,7 @@ module Ginseng
 
       def favourite(id, params = {})
         return http.post('/api/notes/favorites/create', {
-          body: {noteId: id, i: token},
+          body: {noteId: search_status_id(id), i: token},
           headers: create_headers(params[:headers]),
         })
       end
@@ -88,7 +96,7 @@ module Ginseng
 
       def fetch_status(id, params = {})
         return http.post('/api/notes/show', {
-          body: {noteId: id, i: token},
+          body: {noteId: search_status_id(id), i: token},
           headers: create_headers(params[:headers]),
         })
       end
