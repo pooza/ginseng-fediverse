@@ -30,6 +30,10 @@ module Ginseng
         return status
       end
 
+      def search_attachment_id(attachment)
+        return attachment
+      end
+
       def fetch_status(id, params = {})
         response = http.get("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
@@ -75,7 +79,7 @@ module Ginseng
           body[:thumbnail] = File.new(body[:thumbnail][:tempfile].path, 'rb')
         end
         return RestClient::Request.new(
-          url: create_uri("/api/v1/media/#{id}").to_s,
+          url: create_uri("/api/v1/media/#{search_attachment_id(id)}").to_s,
           method: :put,
           headers: create_headers(params[:headers]),
           payload: body,

@@ -27,6 +27,10 @@ module Ginseng
         return status
       end
 
+      def search_attachment_id(attachment)
+        return attachment
+      end
+
       def delete_status(id, params = {})
         return http.post('/api/notes/delete', {
           body: {noteId: search_status_id(id), i: token},
@@ -72,7 +76,7 @@ module Ginseng
 
       def delete_attachment(id, params = {})
         return http.post('/api/drive/files/delete', {
-          body: {fileId: id, i: token},
+          body: {fileId: search_attachment_id(id), i: token},
           headers: create_headers(params[:headers]),
         })
       end
@@ -105,7 +109,7 @@ module Ginseng
 
       def fetch_attachment(id, params = {})
         return http.post('/api/drive/files/show', {
-          body: {fileId: id, i: token},
+          body: {fileId: search_attachment_id(id), i: token},
           headers: create_headers(params[:headers]),
         })
       end
