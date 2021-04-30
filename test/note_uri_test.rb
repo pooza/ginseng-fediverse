@@ -4,13 +4,13 @@ module Ginseng
       def setup
         @uris = {
           misskey: NoteURI.parse('https://dev.mis.b-shock.org/notes/8kjdew1qgd'),
-          meisskey: NoteURI.parse('https://dev.mei.b-shock.org/notes/7178ca821b99d7996c6c7fe4'),
+          meisskey: NoteURI.parse('https://st.reco.shrieker.net/notes/7179245f89349aea2ea290f0'),
         }
       end
 
       def test_id
         assert_equal(@uris[:misskey].id, '8kjdew1qgd')
-        assert_equal(@uris[:meisskey].id, '7178ca821b99d7996c6c7fe4')
+        assert_equal(@uris[:meisskey].id, '7179245f89349aea2ea290f0')
       end
 
       def test_service
