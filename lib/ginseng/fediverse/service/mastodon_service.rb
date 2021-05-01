@@ -22,8 +22,20 @@ module Ginseng
 
       alias nodeinfo info
 
+      def search_status_id(status)
+        if status.is_a?(URI) && (status.host == uri.host)
+          uri = TootURI.parse(status)
+          status = status.id if uri.valid?
+        end
+        return status
+      end
+
+      def search_attachment_id(attachment)
+        return attachment
+      end
+
       def fetch_status(id, params = {})
-        response = http.get("/api/v1/statuses/#{id}", {
+        response = http.get("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
         })
         raise Ginseng::GatewayError, response['error'] if response['error']
@@ -43,7 +55,7 @@ module Ginseng
       alias toot post
 
       def delete_status(id, params = {})
-        return http.delete("/api/v1/statuses/#{id}", {
+        return http.delete("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
         })
       end
@@ -67,7 +79,7 @@ module Ginseng
           body[:thumbnail] = File.new(body[:thumbnail][:tempfile].path, 'rb')
         end
         return RestClient::Request.new(
-          url: create_uri("/api/v1/media/#{id}").to_s,
+          url: create_uri("/api/v1/media/#{search_attachment_id(id)}").to_s,
           method: :put,
           headers: create_headers(params[:headers]),
           payload: body,
@@ -77,7 +89,7 @@ module Ginseng
       alias update_attachment update_media
 
       def favourite(id, params = {})
-        return http.post("/api/v1/statuses/#{id}/favourite", {
+        return http.post("/api/v1/statuses/#{search_status_id(id)}/favourite", {
           headers: create_headers(params[:headers]),
         })
       end
@@ -85,7 +97,7 @@ module Ginseng
       alias fav favourite
 
       def reblog(id, params = {})
-        return http.post("/api/v1/statuses/#{id}/reblog", {
+        return http.post("/api/v1/statuses/#{search_status_id(id)}/reblog", {
           headers: create_headers(params[:headers]),
         })
       end
@@ -93,7 +105,7 @@ module Ginseng
       alias boost reblog
 
       def bookmark(id, params = {})
-        return http.post("/api/v1/statuses/#{id}/bookmark", {
+        return http.post("/api/v1/statuses/#{search_status_id(id)}/bookmark", {
           headers: create_headers(params[:headers]),
         })
       end

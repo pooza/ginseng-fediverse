@@ -1,5 +1,5 @@
 package:
-  version: 1.5.9
+  version: 1.5.10
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -50,7 +50,7 @@ pleroma:
   url: https://dev.ple.b-shock.org/
   token: test
 meisskey:
-  url: https://dev.mei.b-shock.org/
+  url: https://st.reco.shrieker.net/
   token: test
 mulukhiya:
   url: https://st.mstdn.b-shock.org/
