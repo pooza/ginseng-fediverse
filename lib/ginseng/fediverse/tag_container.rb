@@ -33,13 +33,11 @@ module Ginseng
       def create_tags
         unless @tags
           @tags = map do |tag|
-            tag = tag.dup
-            tag.gsub!(/\s/, '') unless /^[a-z0-9\s]+$/i.match?(tag)
-            tag.to_hashtag
+            tag.gsub(/([a-z0-9]{2,})\s/i, '\\1_').gsub(/\s/, '').to_hashtag
           end
           @tags.uniq!
           @tags.compact!
-          @tags.delete_if {|v| @text.match?(create_pattern(v))} if @text
+          @tags.reject! {|v| @text.match?(create_pattern(v))} if @text
         end
         return @tags
       end
