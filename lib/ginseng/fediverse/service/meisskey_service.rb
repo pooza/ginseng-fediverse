@@ -9,7 +9,7 @@ module Ginseng
           headers: create_headers(params[:headers]),
         })
         return response['announcements'].map do |entry|
-          {id: entry.to_json.adler32.to_s, title: entry['title'], text: entry['text']}
+          {id: entry.to_json.adler32, title: entry['title'], text: entry['text']}
         end
       end
 
