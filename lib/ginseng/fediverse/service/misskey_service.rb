@@ -156,6 +156,7 @@ module Ginseng
         })
         return response.parsed_response.map do |announcement|
           entry = announcement.deep_symbolize_keys
+          entry[:content] = entry[:text]
           entry[:imate_url] = entry[:imageUrl]
           entry
         end
