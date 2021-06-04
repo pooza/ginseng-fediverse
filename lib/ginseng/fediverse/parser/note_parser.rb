@@ -12,7 +12,7 @@ module Ginseng
       end
 
       def to_md
-        md = text.clone
+        md = text.dup
         tags.sort_by(&:length).reverse_each do |tag|
           md.gsub!("\##{tag}", "[\\#{HASH}#{tag}](#{@service.create_uri("/tags/#{tag}")})")
         end
