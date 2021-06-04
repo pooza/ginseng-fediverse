@@ -4,7 +4,7 @@ module Ginseng
       include Package
 
       def to_md
-        md = text.clone
+        md = text.dup
         ['.u-url', '.hashtag'].each do |selector|
           nokogiri.css(selector).each do |link|
             md.gsub!(link.to_s, "[\\#{link.inner_text}](#{link.attributes['href'].value})")

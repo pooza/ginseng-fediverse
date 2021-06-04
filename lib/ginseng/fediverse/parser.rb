@@ -33,12 +33,17 @@ module Ginseng
 
       def text=(text)
         @text = text.to_s
+        @text.gsub!(/^#(nowplaying)[[:space:]]+(.*)$/i, '#\\1 \\2')
         @params = nil
         @all_tags = nil
       end
 
       def to_md
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+      end
+
+      def nowplaying?
+        return /#nowplaying\s/i.match?(text)
       end
 
       def length
@@ -101,7 +106,7 @@ module Ginseng
       end
 
       def self.sanitize(text)
-        text = text.clone
+        text = text.dup
         text.delete!("\n") if text.match?(/<br.*?>/)
         text.gsub!(/\s*<br.*?>/, "\n")
         text.gsub!(%r{\s*</p.*?>}, "\n\n")
