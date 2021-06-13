@@ -33,7 +33,6 @@ module Ginseng
 
       def text=(text)
         @text = text.to_s.dup
-        @text.gsub!(/^#(nowplaying)[[:space:]]+(.*)$/i, '#\\1 \\2')
         @params = nil
         @all_tags = nil
       end
