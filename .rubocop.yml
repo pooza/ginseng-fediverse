@@ -16,6 +16,7 @@ AllCops:
     - 'public/**/*'
     - 'config/**/*'
     - 'tmp/**/*'
+    - '**/old/**/*'
   TargetRubyVersion: 2.6
 
 Naming/RescuedExceptionsVariableName:
@@ -336,3 +337,10 @@ Performance/StringInclude:
 
 Performance/Sum: # (new in 1.8)
   Enabled: true
+
+Rake:
+  Exclude:
+    - '*'
+  Include:
+    - 'Rakefile'
+    - 'app/task/*'
