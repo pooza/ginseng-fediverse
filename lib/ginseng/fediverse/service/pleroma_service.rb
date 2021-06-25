@@ -26,7 +26,7 @@ module Ginseng
         return nil
       end
 
-      def oauth_client
+      def oauth_client(type = :default)
         unless File.exist?(oauth_client_path)
           response = http.post('/api/v1/apps', {
             body: {
@@ -41,10 +41,11 @@ module Ginseng
         return JSON.parse(File.read(oauth_client_path))
       end
 
-      def oauth_uri
+      def oauth_uri(type = :default)
+        return nil unless oauth_client(type)
         uri = create_uri('/oauth/authorize')
         uri.query_values = {
-          client_id: oauth_client['client_id'],
+          client_id: oauth_client(type)['client_id'],
           response_type: 'code',
           redirect_uri: @config['/pleroma/oauth/redirect_uri'],
           scope: @config['/pleroma/oauth/scopes'].join(' '),
@@ -52,14 +53,14 @@ module Ginseng
         return uri
       end
 
-      def auth(code)
+      def auth(code, type = :default)
         return http.post('/oauth/token', {
           headers: {'Content-Type' => 'application/x-www-form-urlencoded'},
           body: {
             'grant_type' => 'authorization_code',
             'redirect_uri' => @config['/pleroma/oauth/redirect_uri'],
-            'client_id' => oauth_client['client_id'],
-            'client_secret' => oauth_client['client_secret'],
+            'client_id' => oauth_client(type)['client_id'],
+            'client_secret' => oauth_client(type)['client_secret'],
             'code' => code,
           },
         })
