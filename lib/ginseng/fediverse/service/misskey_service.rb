@@ -114,7 +114,7 @@ module Ginseng
         })
       end
 
-      def oauth_client
+      def oauth_client(type = :default)
         unless File.exist?(oauth_client_path)
           response = http.post('/api/app/create', {
             body: {
@@ -133,17 +133,18 @@ module Ginseng
         return Digest::SHA256.hexdigest(token + oauth_client['secret'])
       end
 
-      def oauth_uri
+      def oauth_uri(type = :default)
+        return nil unless oauth_client(type)
         response = http.post('/api/auth/session/generate', {
-          body: {appSecret: oauth_client['secret']},
+          body: {appSecret: oauth_client(type)['secret']},
         })
         return Ginseng::URI.parse(response['url'])
       end
 
-      def auth(token)
+      def auth(token, type = :default)
         return http.post('/api/auth/session/userkey', {
           body: {
-            appSecret: oauth_client['secret'],
+            appSecret: oauth_client(type)['secret'],
             token: token,
           },
         })
@@ -173,6 +174,8 @@ module Ginseng
       def create_tag_uri(tag)
         return create_uri("/tags/#{tag.to_hashtag_base}")
       end
+
+      alias tag_uri create_tag_uri
 
       def default_token
         return @config['/misskey/token']
