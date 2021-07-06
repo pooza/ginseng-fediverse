@@ -71,7 +71,7 @@ module Ginseng
       alias params exec
 
       def hashtags
-        return TagContainer.scan(text)
+        return TagContainer.new(TagContainer.scan(text))
       end
 
       alias tags hashtags
