@@ -129,8 +129,8 @@ module Ginseng
         return JSON.parse(File.read(oauth_client_path))
       end
 
-      def create_access_token(token)
-        return Digest::SHA256.hexdigest(token + oauth_client['secret'])
+      def create_access_token(token, type = :default)
+        return Digest::SHA256.hexdigest(token + oauth_client(type)['secret'])
       end
 
       def oauth_uri(type = :default)
@@ -176,6 +176,13 @@ module Ginseng
       end
 
       alias tag_uri create_tag_uri
+
+      def create_streaming_uri(stream = nil)
+        uri = http.create_uri('/streaming')
+        uri.scheme = 'wss'
+        uri.query_values = {'i' => token}
+        return uri
+      end
 
       def default_token
         return @config['/misskey/token']
