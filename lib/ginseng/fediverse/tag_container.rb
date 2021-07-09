@@ -43,7 +43,9 @@ module Ginseng
       end
 
       def self.scan(text)
-        return text.scan(Parser.hashtag_pattern).map(&:first)
+        return TagContainer.new(
+          text.scan(Parser.hashtag_pattern).map(&:first),
+        )
       end
 
       private
