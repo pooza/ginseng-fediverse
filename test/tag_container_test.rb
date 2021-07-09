@@ -29,6 +29,10 @@ module Ginseng
         @container.push('よにんでSUPER TEUCHI STATION ONLINE')
         assert_equal(@container.create_tags, ['#よにんでSUPER_TEUCHI_STATION_ONLINE'])
       end
+
+      def test_scan
+        assert_equal(TagContainer.scan('#フワ #プルンス'), ['フワ', 'プルンス'])
+      end
     end
   end
 end
