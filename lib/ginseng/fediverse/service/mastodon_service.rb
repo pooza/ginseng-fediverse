@@ -242,8 +242,6 @@ module Ginseng
         return uri
       end
 
-      alias streaming_uri create_streaming_uri
-
       def default_token
         return @config['/mastodon/token']
       end
