@@ -75,8 +75,6 @@ module Ginseng
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
 
-      alias streaming_uri create_streaming_uri
-
       def self.create_tag(word)
         return "##{create_tag_base(word)}"
       end
