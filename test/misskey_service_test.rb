@@ -71,6 +71,18 @@ module Ginseng
         assert_kind_of(String, info['metadata']['maintainer']['email'])
       end
 
+      def test_node_name
+        assert_kind_of(String, @misskey.node_name)
+      end
+
+      def test_maintainer_name
+        assert_kind_of(String, @misskey.maintainer_name)
+      end
+
+      def test_maintainer_email
+        assert_kind_of(String, @misskey.maintainer_email)
+      end
+
       def test_statuses
         assert_kind_of(Array, @misskey.statuses(account_id: @config['/misskey/account/id']))
       end
