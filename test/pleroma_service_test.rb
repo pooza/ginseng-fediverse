@@ -58,6 +58,18 @@ module Ginseng
         assert_kind_of(String, info['metadata']['maintainer']['email'])
       end
 
+      def test_node_name
+        assert_kind_of(String, @pleroma.node_name)
+      end
+
+      def test_maintainer_name
+        assert_kind_of(String, @pleroma.maintainer_name)
+      end
+
+      def test_maintainer_email
+        assert_kind_of(String, @pleroma.maintainer_email)
+      end
+
       def test_statuses
         assert_kind_of(Array, @pleroma.statuses(account_id: @config['/pleroma/account/id']))
       end

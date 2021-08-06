@@ -43,6 +43,18 @@ module Ginseng
 
       alias info nodeinfo
 
+      def node_name
+        return nodeinfo.dig('metadata', 'nodeName')
+      end
+
+      def maintainer_name
+        return nodeinfo.dig('metadata', 'maintainer', 'name')
+      end
+
+      def maintainer_email
+        return nodeinfo.dig('metadata', 'maintainer', 'email')
+      end
+
       def upload(path, params = {})
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
@@ -74,6 +86,8 @@ module Ginseng
       def create_streaming_uri(stream = 'user')
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
+
+      alias streaming_uri create_streaming_uri
 
       def self.create_tag(word)
         return "##{create_tag_base(word)}"
