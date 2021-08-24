@@ -24,7 +24,7 @@ module Ginseng
         @http.post('/mulukhiya/api/tagging/tag/search', params).each_value do |entry|
           tags.concat(entry['words'])
         end
-        return tags.uniq.compact
+        return tags.compact.to_set
       end
     end
   end
