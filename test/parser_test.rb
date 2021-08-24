@@ -35,10 +35,10 @@ module Ginseng
 
       def test_hashtags
         @parser.text = 'pooza@b-shock.org'
-        assert_equal(@parser.hashtags, [])
+        assert_equal(@parser.hashtags, Set[])
 
         @parser.text = '#aaa #bbbb @pooza @pooza@precure.ml よろです。'
-        assert_equal(@parser.hashtags, ['aaa', 'bbbb'])
+        assert_equal(@parser.hashtags, Set['aaa', 'bbbb'])
       end
 
       def test_to_sanitized

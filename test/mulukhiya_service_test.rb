@@ -19,7 +19,7 @@ module Ginseng
       end
 
       def test_search_hashtags
-        assert_kind_of(Array, @mulukhiya.search_hashtags('キュアソードはドキプリに登場。'))
+        assert_kind_of(Set, @mulukhiya.search_hashtags('キュアソードはドキプリに登場。'))
       end
     end
   end
