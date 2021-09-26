@@ -18,7 +18,7 @@ module Ginseng
         end
         accts = self.accts.map(&:to_s).sort_by do |acct|
           v = acct.to_s
-          v.scan(/@/).count * 100_000_000 + v.length
+          (v.scan(/@/).count * 100_000_000) + v.length
         end
         accts.reverse_each do |acct|
           md.sub!(acct, "[#{acct.gsub('@', ATMARK)}](#{@service.create_uri("/#{acct}")})")
