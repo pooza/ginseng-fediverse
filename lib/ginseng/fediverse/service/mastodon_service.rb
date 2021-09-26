@@ -47,7 +47,7 @@ module Ginseng
       def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         return http.post('/api/v1/statuses', {
-          body: body,
+          body: body.compact,
           headers: create_headers(params[:headers]),
         })
       end

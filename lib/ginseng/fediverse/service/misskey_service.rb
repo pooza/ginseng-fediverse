@@ -12,7 +12,7 @@ module Ginseng
         body.delete(:fileIds) unless body[:fileIds].present?
         body[:i] ||= token
         return http.post('/api/notes/create', {
-          body: body,
+          body: body.compact,
           headers: create_headers(params[:headers]),
         })
       end
