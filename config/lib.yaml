@@ -47,7 +47,7 @@ misskey:
   note:
     max_length: 500
 pleroma:
-  url: https://dev.ple.b-shock.org/
+  url: https://leroma.shrieker.net/
   token: test
 meisskey:
   url: https://st.reco.shrieker.net/
