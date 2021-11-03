@@ -35,9 +35,9 @@ module Ginseng
       def self.visibility_name(name)
         return visibility_names[name.to_sym] if visibility_names.key?(name.to_sym)
         return name if visibility_names.values.member?(name)
-        return 'public'
+        return visibility_names[:public]
       rescue
-        return 'public'
+        return visibility_names[:public]
       end
 
       def self.visibility_names

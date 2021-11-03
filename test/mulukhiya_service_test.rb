@@ -12,6 +12,10 @@ module Ginseng
         assert_equal(response.code, 200)
       end
 
+      def test_base_uri
+        assert_kind_of(Ginseng::URI, @mulukhiya.base_uri)
+      end
+
       def test_health
         response = @mulukhiya.health
         assert_kind_of(HTTParty::Response, response)

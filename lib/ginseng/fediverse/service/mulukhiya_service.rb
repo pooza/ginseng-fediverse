@@ -2,12 +2,15 @@ module Ginseng
   module Fediverse
     class MulukhiyaService
       include Package
-      attr_reader :base_uri
 
       def initialize(uri = nil)
         uri = Ginseng::URI.parse(uri.to_s) unless uri.is_a?(Ginseng::URI)
         @http = http_class.new
         @http.base_uri = uri if uri
+      end
+
+      def base_uri
+        return @http.base_uri
       end
 
       def about
