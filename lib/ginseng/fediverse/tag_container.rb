@@ -34,6 +34,10 @@ module Ginseng
         return create_tags.join(' ')
       end
 
+      def member?(item)
+        return super(item.to_hashtag_base)
+      end
+
       def create_tags
         unless @tags
           tags = map {|v| v.gsub(/([a-z0-9]{2,})\s/i, '\\1_').gsub(/\s/, '').to_hashtag}
