@@ -11,6 +11,10 @@ module Ginseng
 
       alias push add
 
+      def member?(tag)
+        return super(tag.to_s.to_hashtag_base)
+      end
+
       def merge(words)
         words.each {|v| add(v)}
       end
