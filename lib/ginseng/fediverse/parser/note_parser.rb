@@ -42,9 +42,9 @@ module Ginseng
 
       def self.visibility_names
         return {public: 'public'}.merge(
-          [:unlisted, :private, :direct].map do |name|
+          [:unlisted, :private, :direct].to_h do |name|
             [name, Config.instance["/parser/note/visibility/#{name}"]]
-          end.to_h,
+          end,
         )
       end
     end
