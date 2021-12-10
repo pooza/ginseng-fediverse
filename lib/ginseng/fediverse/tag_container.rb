@@ -6,7 +6,7 @@ module Ginseng
 
       def add(word)
         @tags = nil
-        return super(word.to_s.sub(/^#/, ''))
+        return super(normalize(word.to_s))
       end
 
       alias push add
@@ -20,6 +20,10 @@ module Ginseng
       end
 
       alias concat merge
+
+      def normalize(word)
+        return word.sub(/^#/, '')
+      end
 
       alias body text
 
