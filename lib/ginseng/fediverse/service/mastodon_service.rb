@@ -80,9 +80,9 @@ module Ginseng
         end
         response = http.put(
           "/api/v1/media/#{search_attachment_id(id)}",
-          File.new(payload.dig(:thumbnail, :tempfile),
+          File.new(payload.dig(:thumbnail, :tempfile)),
           create_headers(params[:headers]),
-          payload
+          payload,
         )
         return JSON.parse(response.body)
       end
