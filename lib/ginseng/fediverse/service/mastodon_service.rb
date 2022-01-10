@@ -78,13 +78,12 @@ module Ginseng
         if payload.dig(:thumbnail, :tempfile).is_a?(File)
           payload[:thumbnail] = File.new(payload.dig(:thumbnail, :tempfile).path, 'rb')
         end
-        response = http.put(
+        return http.put(
           "/api/v1/media/#{search_attachment_id(id)}",
           payload[:thumbnail],
           create_headers(params[:headers]),
           payload,
         )
-        return JSON.parse(response.body)
       end
 
       alias update_attachment update_media
