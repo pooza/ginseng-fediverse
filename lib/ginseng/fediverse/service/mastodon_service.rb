@@ -74,16 +74,17 @@ module Ginseng
         return JSON.parse(response.body)['id'].to_i
       end
 
-      def update_media(id, body, params = {})
-        if body.dig(:thumbnail, :tempfile).is_a?(File)
-          body[:thumbnail] = File.new(body[:thumbnail][:tempfile].path, 'rb')
+      def update_media(id, payload, params = {})
+        if payload.dig(:thumbnail, :tempfile).is_a?(File)
+          payload[:thumbnail] = File.new(payload.dig(:thumbnail, :tempfile).path, 'rb')
         end
-        return RestClient::Request.new(
-          url: create_uri("/api/v1/media/#{search_attachment_id(id)}").to_s,
-          method: :put,
-          headers: create_headers(params[:headers]),
-          payload: body,
-        ).execute
+        response = http.put(
+          "/api/v1/media/#{search_attachment_id(id)}",
+          payload[:thumbnail],
+          create_headers(params[:headers]),
+          payload
+        )
+        return JSON.parse(response.body)
       end
 
       alias update_attachment update_media
