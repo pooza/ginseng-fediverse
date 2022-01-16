@@ -4,11 +4,7 @@ module Ginseng
       include Package
 
       def announcements(params = {})
-        response = http.get('/api/meta', {
-          body: {i: token}.to_json,
-          headers: create_headers(params[:headers]),
-        })
-        return response['announcements'].map do |entry|
+        return info.dig('metadata', 'announcements').map do |entry|
           {
             id: entry.to_json.adler32,
             title: entry['title'],
