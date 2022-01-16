@@ -117,6 +117,10 @@ module Ginseng
         assert(@mastodon.max_post_text_length.positive?)
       end
 
+      def test_max_media_attachments
+        assert(@mastodon.max_media_attachments.positive?)
+      end
+
       def test_create_streaming_uri
         assert_kind_of(Ginseng::URI, @mastodon.create_streaming_uri)
       end

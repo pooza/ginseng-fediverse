@@ -85,6 +85,10 @@ module Ginseng
       def test_max_post_text_length
         assert(@pleroma.max_post_text_length.positive?)
       end
+
+      def test_max_media_attachments
+        assert(@pleroma.max_media_attachments.positive?)
+      end
     end
   end
 end

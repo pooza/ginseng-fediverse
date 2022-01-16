@@ -59,6 +59,10 @@ module Ginseng
         return nil
       end
 
+      def max_media_attachments
+        return 4
+      end
+
       def upload(path, params = {})
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end

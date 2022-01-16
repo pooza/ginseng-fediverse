@@ -84,6 +84,10 @@ module Ginseng
         assert(@meisskey.max_post_text_length.positive?)
       end
 
+      def test_max_media_attachments
+        assert(@meisskey.max_media_attachments.positive?)
+      end
+
       def test_delete_attachment
         response = @meisskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         id = JSON.parse(response.body)['id']

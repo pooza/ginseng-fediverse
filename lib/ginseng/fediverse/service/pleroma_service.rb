@@ -86,6 +86,10 @@ module Ginseng
         return info['max_toot_chars']
       end
 
+      def max_media_attachments
+        return 4
+      end
+
       def default_token
         return @config['/pleroma/token']
       end

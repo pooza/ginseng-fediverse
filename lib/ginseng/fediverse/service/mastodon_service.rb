@@ -248,6 +248,10 @@ module Ginseng
         return info.dig('configuration', 'statuses', 'max_characters')
       end
 
+      def max_media_attachments
+        return info.dig('configuration', 'statuses', 'max_media_attachments')
+      end
+
       def default_token
         return @config['/mastodon/token']
       end
