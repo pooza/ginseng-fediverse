@@ -75,12 +75,12 @@ module Ginseng
       end
 
       def update_media(id, payload, params = {})
-        if payload.dig(:thumbnail, :tempfile).is_a?(File)
-          payload[:thumbnail] = File.new(payload.dig(:thumbnail, :tempfile).path, 'rb')
+        if [File, Tempfile].map {|c| payload.dig(:thumbnail, :tempfile).is_a?(c)}.any?
+          path = payload.dig(:thumbnail, :tempfile).path
         end
         return http.put(
           "/api/v1/media/#{search_attachment_id(id)}",
-          payload[:thumbnail],
+          path,
           create_headers(params[:headers]),
           payload,
         )
