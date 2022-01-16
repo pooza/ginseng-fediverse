@@ -194,6 +194,10 @@ module Ginseng
         return info.dig('metadata', 'maxNoteTextLength')
       end
 
+      def max_media_attachments
+        return 4
+      end
+
       private
 
       def default_uri

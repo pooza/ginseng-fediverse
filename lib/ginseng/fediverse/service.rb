@@ -60,7 +60,7 @@ module Ginseng
       end
 
       def max_media_attachments
-        return 4
+        return nil
       end
 
       def upload(path, params = {})
