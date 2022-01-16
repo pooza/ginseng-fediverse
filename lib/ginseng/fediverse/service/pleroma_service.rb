@@ -82,6 +82,10 @@ module Ginseng
 
       alias info nodeinfo
 
+      def max_post_text_length
+        return info['max_toot_chars']
+      end
+
       def default_token
         return @config['/pleroma/token']
       end

@@ -190,6 +190,10 @@ module Ginseng
         return @config['/misskey/token']
       end
 
+      def max_post_text_length
+        return info.dig('metadata', 'maxNoteTextLength')
+      end
+
       private
 
       def default_uri

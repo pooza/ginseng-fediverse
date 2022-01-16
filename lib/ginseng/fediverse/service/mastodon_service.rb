@@ -236,13 +236,17 @@ module Ginseng
       alias tag_uri create_tag_uri
 
       def create_streaming_uri(stream = 'user')
-        uri = Ginseng::URI.parse(info['urls']['streaming_api'])
+        uri = Ginseng::URI.parse(info.dig('urls', 'streaming_api'))
         uri.path = '/api/v1/streaming'
         uri.query_values = {'access_token' => token, 'stream' => stream}
         return uri
       end
 
       alias streaming_uri create_streaming_uri
+
+      def max_post_text_length
+        return info.dig('configuration', 'statuses', 'max_characters')
+      end
 
       def default_token
         return @config['/mastodon/token']

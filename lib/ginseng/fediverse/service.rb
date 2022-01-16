@@ -55,6 +55,10 @@ module Ginseng
         return nodeinfo.dig('metadata', 'maintainer', 'email')
       end
 
+      def max_post_text_length
+        return nil
+      end
+
       def upload(path, params = {})
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end

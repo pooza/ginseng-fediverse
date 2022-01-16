@@ -113,6 +113,10 @@ module Ginseng
         assert(@mastodon.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}).positive?)
       end
 
+      def test_max_post_text_length
+        assert(@mastodon.max_post_text_length.positive?)
+      end
+
       def test_create_streaming_uri
         assert_kind_of(Ginseng::URI, @mastodon.create_streaming_uri)
       end
