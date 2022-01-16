@@ -8,14 +8,14 @@ module Ginseng
       def info
         unless @nodeinfo
           @nodeinfo = http.get('/api/v1/instance').parsed_response.merge(super)
+          contact = @nodeinfo['contact_account']
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
             'maintainer' => {
-              'name' => @nodeinfo.dig('contact_account', 'display_name'),
+              'name' => contact['display_name'] || contact['username'],
               'email' => @nodeinfo['email'],
             },
           }
-          @nodeinfo['metadata']['maintainer']['name'] ||= @nodeinfo.dig('contact_account', 'username')
         end
         return @nodeinfo
       end
