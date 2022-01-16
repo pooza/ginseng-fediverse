@@ -11,11 +11,11 @@ module Ginseng
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
             'maintainer' => {
-              'name' => @nodeinfo['contact_account']['display_name'],
+              'name' => @nodeinfo.dig('contact_account', 'display_name'),
               'email' => @nodeinfo['email'],
             },
           }
-          @nodeinfo['metadata']['maintainer']['name'] ||= @nodeinfo['contact_account']['username']
+          @nodeinfo['metadata']['maintainer']['name'] ||= @nodeinfo.dig('contact_account', 'username')
         end
         return @nodeinfo
       end

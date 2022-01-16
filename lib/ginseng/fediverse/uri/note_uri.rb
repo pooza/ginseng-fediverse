@@ -75,7 +75,7 @@ module Ginseng
           @note = service.fetch_status(id)
           raise Ginseng::NotFoundError, "Note '#{self}' not found" unless @note
           if note['error']
-            raise Ginseng::GatewayError, "Note '#{self}' is invalid (#{note['error']['message']})"
+            raise Ginseng::GatewayError, "Note '#{self}' is invalid (#{note.dig('error', 'message')})"
           end
         end
         return @note
