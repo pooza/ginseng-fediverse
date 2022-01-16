@@ -198,6 +198,10 @@ module Ginseng
         return 4
       end
 
+      def characters_reserved_per_url
+        return 23
+      end
+
       private
 
       def default_uri

@@ -63,6 +63,10 @@ module Ginseng
         return nil
       end
 
+      def characters_reserved_per_url
+        return nil
+      end
+
       def upload(path, params = {})
         raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end

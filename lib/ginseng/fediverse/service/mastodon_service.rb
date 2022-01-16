@@ -252,6 +252,10 @@ module Ginseng
         return info.dig('configuration', 'statuses', 'max_media_attachments')
       end
 
+      def characters_reserved_per_url
+        return info.dig('configuration', 'statuses', 'characters_reserved_per_url')
+      end
+
       def default_token
         return @config['/mastodon/token']
       end

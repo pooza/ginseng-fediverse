@@ -121,6 +121,10 @@ module Ginseng
         assert(@mastodon.max_media_attachments.positive?)
       end
 
+      def test_characters_reserved_per_url
+        assert(@mastodon.characters_reserved_per_url.positive?)
+      end
+
       def test_create_streaming_uri
         assert_kind_of(Ginseng::URI, @mastodon.create_streaming_uri)
       end

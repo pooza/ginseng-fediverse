@@ -110,6 +110,10 @@ module Ginseng
         assert(@misskey.max_media_attachments.positive?)
       end
 
+      def test_characters_reserved_per_url
+        assert(@misskey.characters_reserved_per_url.positive?)
+      end
+
       def test_search_dupllicated_attachment
         response = @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         md5 = JSON.parse(response.body)['md5']

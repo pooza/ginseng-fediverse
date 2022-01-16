@@ -90,6 +90,10 @@ module Ginseng
         return 4
       end
 
+      def characters_reserved_per_url
+        return 23
+      end
+
       def default_token
         return @config['/pleroma/token']
       end
