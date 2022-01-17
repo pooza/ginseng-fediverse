@@ -9,7 +9,6 @@ module Ginseng
       def initialize(text = '')
         super
         @service = MisskeyService.new
-        @max_length = @config['/misskey/note/max_length']
       end
 
       def to_md
@@ -35,6 +34,10 @@ module Ginseng
         return visibility_names[:public]
       rescue
         return visibility_names[:public]
+      end
+
+      def default_max_length
+        return @config['/misskey/note/max_length']
       end
 
       def self.visibility_names

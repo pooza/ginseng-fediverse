@@ -11,13 +11,13 @@ module Ginseng
         self.text = text
         @config = config_class.instance
         @logger = logger_class.new
+        @max_length = default_max_length
       end
 
       alias to_s text
 
       def nokogiri
-        @nokogiri ||= Nokogiri::HTML.parse(text, nil, 'utf-8')
-        return @nokogiri
+        return text.nokogiri
       end
 
       def accts(&block)
@@ -97,6 +97,10 @@ module Ginseng
 
       def to_sanitized
         return Parser.sanitize(text)
+      end
+
+      def default_max_length
+        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
 
       def self.sanitize(text)
