@@ -265,9 +265,7 @@ module Ginseng
         return @config['/mastodon/token']
       end
 
-      private
-
-      def create_headers(headers)
+      def create_headers(headers = {})
         headers ||= {}
         headers['Authorization'] ||= "Bearer #{token}"
         return super

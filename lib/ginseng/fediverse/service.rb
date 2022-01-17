@@ -10,8 +10,7 @@ module Ginseng
         @token = token || default_token
         @mulukhiya_enable = false
         @http = http_class.new
-        @http.base_uri = URI.parse(uri) if uri
-        @http.base_uri ||= default_uri
+        @http.base_uri = uri ? URI.parse(uri) : default_uri
       end
 
       def uri
@@ -101,6 +100,20 @@ module Ginseng
 
       alias streaming_uri create_streaming_uri
 
+      def create_headers(headers = {})
+        headers ||= {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        return headers
+      end
+
+      def default_token
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
+
+      def default_uri
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
+
       def self.create_tag(word)
         return "##{create_tag_base(word)}"
       end
@@ -117,20 +130,6 @@ module Ginseng
 
       def clear_oauth_client
         File.unlink(oauth_client_path) if File.exist?(oauth_client_path)
-      end
-
-      def create_headers(headers)
-        headers ||= {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return headers
-      end
-
-      def default_token
-        raise ImplementError, "'#{__method__}' not implemented"
-      end
-
-      def default_uri
-        raise ImplementError, "'#{__method__}' not implemented"
       end
     end
   end

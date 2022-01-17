@@ -18,8 +18,6 @@ module Ginseng
         return @config['/meisskey/token']
       end
 
-      private
-
       def default_uri
         return URI.parse(@config['/meisskey/url'])
       end

@@ -98,8 +98,6 @@ module Ginseng
         return @config['/pleroma/token']
       end
 
-      private
-
       def default_uri
         return URI.parse(@config['/pleroma/url'])
       end

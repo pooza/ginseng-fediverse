@@ -207,8 +207,6 @@ module Ginseng
         return 23
       end
 
-      private
-
       def default_uri
         return URI.parse(@config['/misskey/url'])
       end
