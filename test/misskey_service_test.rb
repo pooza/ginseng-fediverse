@@ -3,52 +3,52 @@ module Ginseng
     class MisskeyServiceTest < TestCase
       def setup
         @config = Config.instance
-        @misskey = MisskeyService.new(@config['/misskey/url'], @config['/misskey/token'])
+        @service = MisskeyService.new(@config['/misskey/url'], @config['/misskey/token'])
       end
 
       def test_new
-        assert_kind_of(MisskeyService, @misskey)
+        assert_kind_of(MisskeyService, @service)
       end
 
       def test_uri
-        assert_kind_of(URI, @misskey.uri)
+        assert_kind_of(URI, @service.uri)
       end
 
       def test_tag_uri
-        assert_equal(@misskey.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+        assert_equal(@service.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
       end
 
       def test_mulukhiya?
-        assert_false(@misskey.mulukhiya?)
-        assert_false(@misskey.mulukhiya_enable?)
-        @misskey.mulukhiya_enable = true
-        assert(@misskey.mulukhiya?)
-        assert(@misskey.mulukhiya_enable?)
-        @misskey.mulukhiya_enable = false
+        assert_false(@service.mulukhiya?)
+        assert_false(@service.mulukhiya_enable?)
+        @service.mulukhiya_enable = true
+        assert(@service.mulukhiya?)
+        assert(@service.mulukhiya_enable?)
+        @service.mulukhiya_enable = false
       end
 
       def test_note
-        r = @misskey.note('文字列からノート')
+        r = @service.note('文字列からノート')
         assert_kind_of(HTTParty::Response, r)
         assert_equal(r.code, 200)
         assert_equal(r['createdNote']['text'], '文字列からノート')
 
         body = {text: 'HashWithIndifferentAccessからノート'}.with_indifferent_access
-        r = @misskey.note(body)
+        r = @service.note(body)
         assert_kind_of(HTTParty::Response, r)
         assert_equal(r.code, 200)
         assert_equal(r['createdNote']['text'], 'HashWithIndifferentAccessからノート')
       end
 
       def test_delete_status
-        id = @misskey.note('このあと削除するトゥート')['createdNote']['id']
-        r = @misskey.delete_status(id)
+        id = @service.note('このあと削除するトゥート')['createdNote']['id']
+        r = @service.delete_status(id)
         assert_equal(r.code, 204)
       end
 
       def test_announcements
-        assert_kind_of(Array, @misskey.announcements)
-        @misskey.announcements do |announcement|
+        assert_kind_of(Array, @service.announcements)
+        @service.announcements do |announcement|
           assert_kind_of(Hash, accouncement)
           assert(accouncement['id'].present?)
           assert(accouncement['title'].present?)
@@ -56,8 +56,8 @@ module Ginseng
       end
 
       def test_antennas
-        assert_kind_of(Array, @misskey.antennas)
-        @misskey.antennas do |antenna|
+        assert_kind_of(Array, @service.antennas)
+        @service.antennas do |antenna|
           assert_kind_of(Hash, antenna)
           assert(antenna['id'].present?)
           assert(antenna['title'].present?)
@@ -65,63 +65,63 @@ module Ginseng
       end
 
       def test_nodeinfo
-        info = @misskey.nodeinfo
+        info = @service.nodeinfo
         assert_kind_of(String, info['metadata']['nodeName'])
         assert_kind_of(String, info['metadata']['maintainer']['name'])
         assert_kind_of(String, info['metadata']['maintainer']['email'])
       end
 
       def test_node_name
-        assert_kind_of(String, @misskey.node_name)
+        assert_kind_of(String, @service.node_name)
       end
 
       def test_maintainer_name
-        assert_kind_of(String, @misskey.maintainer_name)
+        assert_kind_of(String, @service.maintainer_name)
       end
 
       def test_maintainer_email
-        assert_kind_of(String, @misskey.maintainer_email)
+        assert_kind_of(String, @service.maintainer_email)
       end
 
       def test_statuses
-        assert_kind_of(Array, @misskey.statuses(account_id: @config['/misskey/account/id']))
+        assert_kind_of(Array, @service.statuses(account_id: @config['/misskey/account/id']))
       end
 
       def test_upload
-        assert_kind_of(RestClient::Response, @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg')))
+        assert_kind_of(RestClient::Response, @service.upload(File.join(Environment.dir, 'images/pooza.jpg')))
       end
 
       def test_upload_remote_resource
-        assert_kind_of(RestClient::Response, @misskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif'))
+        assert_kind_of(RestClient::Response, @service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif'))
       end
 
       def test_delete_attachment
-        response = @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
+        response = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         id = JSON.parse(response.body)['id']
-        r = @misskey.delete_attachment(id)
+        r = @service.delete_attachment(id)
         assert_equal(r.code, 204)
       end
 
-      def test_parser
-        assert_kind_of(NoteParser, @misskey.parser)
+      def test_create_parser
+        assert_kind_of(NoteParser, @service.create_parser(''))
       end
 
       def test_max_post_text_length
-        assert(@misskey.max_post_text_length.positive?)
+        assert(@service.max_post_text_length.positive?)
       end
 
       def test_max_media_attachments
-        assert(@misskey.max_media_attachments.positive?)
+        assert(@service.max_media_attachments.positive?)
       end
 
       def test_characters_reserved_per_url
-        assert(@misskey.characters_reserved_per_url.positive?)
+        assert(@service.characters_reserved_per_url.positive?)
       end
 
       def test_search_dupllicated_attachment
-        response = @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
+        response = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         md5 = JSON.parse(response.body)['md5']
-        r = @misskey.search_dupllicated_attachment(md5)
+        r = @service.search_dupllicated_attachment(md5)
         assert_equal(r.parsed_response.first['md5'], md5)
       end
     end
