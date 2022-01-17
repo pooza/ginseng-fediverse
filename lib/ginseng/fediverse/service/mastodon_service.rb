@@ -251,11 +251,13 @@ module Ginseng
       alias streaming_uri create_streaming_uri
 
       def max_post_text_length
-        return info.dig('configuration', 'statuses', 'max_characters')
+        length = info.dig('configuration', 'statuses', 'max_characters')
+        length ||= config['/mastodon/toot/max_length']
+        return length
       end
 
       def max_media_attachments
-        return info.dig('configuration', 'statuses', 'max_media_attachments')
+        return info.dig('configuration', 'statuses', 'max_media_attachments') || 4
       end
 
       def characters_reserved_per_url

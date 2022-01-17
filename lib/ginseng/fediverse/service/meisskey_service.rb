@@ -14,6 +14,10 @@ module Ginseng
         end
       end
 
+      def max_post_text_length
+        return info.dig('metadata', 'maxNoteTextLength') || config['/meisskey/note/max_length']
+      end
+
       def default_token
         return @config['/meisskey/token']
       end
