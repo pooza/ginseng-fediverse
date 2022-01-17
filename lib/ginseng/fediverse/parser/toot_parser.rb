@@ -3,6 +3,11 @@ module Ginseng
     class TootParser < Parser
       include Package
 
+      def initialize(text = '')
+        super
+        @max_length = @config['/mastodon/toot/max_length']
+      end
+
       def to_md
         md = text.dup
         ['.u-url', '.hashtag'].each do |selector|
@@ -13,10 +18,6 @@ module Ginseng
           end
         end
         return Parser.sanitize(md)
-      end
-
-      def max_length
-        return @config['/mastodon/toot/max_length']
       end
 
       def self.visibility_name(name)

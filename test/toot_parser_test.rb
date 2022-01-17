@@ -34,6 +34,12 @@ module Ginseng
         assert_equal(@parser.uris.map(&:to_s), ['https://www.google.co.jp', 'https://mstdn.b-shock.co.jp'])
       end
 
+      def test_max_length
+        assert(@parser.max_length.positive?)
+        @parser.max_length = 5000
+        assert_equal(@parser.max_length, 5000)
+      end
+
       def test_to_md
         assert_kind_of(String, @parser.to_md)
       end

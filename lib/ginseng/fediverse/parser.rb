@@ -5,6 +5,7 @@ module Ginseng
     class Parser
       include Package
       attr_reader :text
+      attr_accessor :max_length
 
       def initialize(text = '')
         self.text = text
@@ -96,10 +97,6 @@ module Ginseng
 
       def to_sanitized
         return Parser.sanitize(text)
-      end
-
-      def max_length
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
 
       def self.sanitize(text)

@@ -9,6 +9,7 @@ module Ginseng
       def initialize(text = '')
         super
         @service = MisskeyService.new
+        @max_length = @config['/misskey/note/max_length']
       end
 
       def to_md
@@ -26,10 +27,6 @@ module Ginseng
         md.gsub!(HASH, '#')
         md.gsub!(ATMARK, '@')
         return Parser.sanitize(md)
-      end
-
-      def max_length
-        return @config['/misskey/note/max_length']
       end
 
       def self.visibility_name(name)
