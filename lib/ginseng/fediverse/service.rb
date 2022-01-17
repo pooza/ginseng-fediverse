@@ -10,7 +10,7 @@ module Ginseng
         @token = token || default_token
         @mulukhiya_enable = false
         @http = http_class.new
-        @http.base_uri = Ginseng::URI.parse(uri) if uri
+        @http.base_uri = URI.parse(uri) if uri
         @http.base_uri ||= default_uri
       end
 
@@ -68,7 +68,7 @@ module Ginseng
       end
 
       def upload(path, params = {})
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       def upload_remote_resource(uri, params = {})
@@ -96,7 +96,7 @@ module Ginseng
       end
 
       def create_streaming_uri(stream = 'user')
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       alias streaming_uri create_streaming_uri
@@ -126,11 +126,11 @@ module Ginseng
       end
 
       def default_token
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       def default_uri
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
     end
   end

@@ -143,7 +143,7 @@ module Ginseng
         response = http.post('/api/auth/session/generate', {
           body: {appSecret: oauth_client(type)['secret']},
         })
-        return Ginseng::URI.parse(response['url'])
+        return URI.parse(response['url'])
       end
 
       def auth(token, type = :default)
@@ -210,7 +210,7 @@ module Ginseng
       private
 
       def default_uri
-        return Ginseng::URI.parse(@config['/misskey/url'])
+        return URI.parse(@config['/misskey/url'])
       end
     end
   end

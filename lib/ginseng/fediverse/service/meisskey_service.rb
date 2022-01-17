@@ -21,7 +21,7 @@ module Ginseng
       private
 
       def default_uri
-        return Ginseng::URI.parse(@config['/meisskey/url'])
+        return URI.parse(@config['/meisskey/url'])
       end
     end
   end

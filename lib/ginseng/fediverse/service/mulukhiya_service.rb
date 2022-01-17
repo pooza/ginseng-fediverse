@@ -4,7 +4,7 @@ module Ginseng
       include Package
 
       def initialize(uri = nil)
-        uri = Ginseng::URI.parse(uri.to_s) unless uri.is_a?(Ginseng::URI)
+        uri = URI.parse(uri.to_s) unless uri.is_a?(URI)
         @http = http_class.new
         @http.base_uri = uri if uri
       end

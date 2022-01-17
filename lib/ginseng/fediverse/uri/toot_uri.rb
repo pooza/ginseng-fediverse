@@ -72,9 +72,9 @@ module Ginseng
       def toot
         unless @toot
           @toot = service.fetch_status(id)
-          raise Ginseng::NotFoundError, "Toot '#{self}' not found" unless @toot
+          raise NotFoundError, "Toot '#{self}' not found" unless @toot
           if @toot['error']
-            raise Ginseng::GatewayError, "Toot '#{self}' is invalid (#{toot['error']})"
+            raise GatewayError, "Toot '#{self}' is invalid (#{toot['error']})"
           end
         end
         return @toot

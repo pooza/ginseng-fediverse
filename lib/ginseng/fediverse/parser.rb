@@ -27,7 +27,7 @@ module Ginseng
 
       def uris(&block)
         return enum_for(__method__) unless block
-        Ginseng::URI.scan(text).each(&block)
+        URI.scan(text).each(&block)
       end
 
       def text=(text)
@@ -37,7 +37,7 @@ module Ginseng
       end
 
       def to_md
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       def nowplaying?

@@ -101,7 +101,7 @@ module Ginseng
       private
 
       def default_uri
-        return Ginseng::URI.parse(@config['/pleroma/url'])
+        return URI.parse(@config['/pleroma/url'])
       end
     end
   end

@@ -43,7 +43,7 @@ module Ginseng
         response = http.get("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
         })
-        raise Ginseng::GatewayError, response['error'] if response['error']
+        raise GatewayError, response['error'] if response['error']
         return response
       end
 
@@ -241,7 +241,7 @@ module Ginseng
       alias tag_uri create_tag_uri
 
       def create_streaming_uri(stream = 'user')
-        uri = Ginseng::URI.parse(info.dig('urls', 'streaming_api'))
+        uri = URI.parse(info.dig('urls', 'streaming_api'))
         uri.path = '/api/v1/streaming'
         uri.query_values = {'access_token' => token, 'stream' => stream}
         return uri
@@ -274,7 +274,7 @@ module Ginseng
       end
 
       def default_uri
-        return Ginseng::URI.parse(@config['/mastodon/url'])
+        return URI.parse(@config['/mastodon/url'])
       end
     end
   end
