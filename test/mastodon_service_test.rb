@@ -109,6 +109,10 @@ module Ginseng
         assert_equal(@mastodon.search('pooza', {version: 2}).code, 200)
       end
 
+      def test_parser
+        assert_kind_of(TootParser, @mastodon.parser)
+      end
+
       def test_upload_remote_resource
         assert(@mastodon.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}).positive?)
       end

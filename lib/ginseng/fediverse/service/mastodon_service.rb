@@ -22,6 +22,11 @@ module Ginseng
 
       alias nodeinfo info
 
+      def parser
+        @parser ||= TootParser.new
+        return @parser
+      end
+
       def search_status_id(status)
         if status.is_a?(URI) && (status.host == uri.host)
           uri = TootURI.parse(status)

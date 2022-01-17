@@ -5,6 +5,11 @@ module Ginseng
     class MisskeyService < Service
       include Package
 
+      def parser
+        @parser ||= NoteParser.new
+        return @parser
+      end
+
       def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
         body = body.deep_symbolize_keys

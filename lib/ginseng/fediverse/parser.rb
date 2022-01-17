@@ -100,7 +100,7 @@ module Ginseng
       end
 
       def default_max_length
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        return nil
       end
 
       def self.sanitize(text)

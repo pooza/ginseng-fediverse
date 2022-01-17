@@ -80,6 +80,10 @@ module Ginseng
         assert_kind_of(RestClient::Response, @meisskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif'))
       end
 
+      def test_parser
+        assert_kind_of(NoteParser, @meisskey.parser)
+      end
+
       def test_max_post_text_length
         assert(@meisskey.max_post_text_length.positive?)
       end
