@@ -34,6 +34,13 @@ module Ginseng
         assert_equal(@parser.uris.map(&:to_s), ['https://www.google.co.jp', 'https://mstdn.b-shock.co.jp'])
       end
 
+      def test_nokogiri
+        assert_kind_of(
+          [Nokogiri::HTML4::Document, Nokogiri::HTML5::Document, Nokogiri::XML::Document],
+          @parser.nokogiri,
+        )
+      end
+
       def test_max_length
         assert(@parser.max_length.positive?)
         @parser.max_length = 5000
