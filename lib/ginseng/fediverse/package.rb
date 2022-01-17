@@ -18,7 +18,7 @@ module Ginseng
       end
 
       def http_class
-        return Ginseng::HTTP
+        return HTTP
       end
 
       def self.name

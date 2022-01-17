@@ -5,18 +5,19 @@ module Ginseng
     class Parser
       include Package
       attr_reader :text
+      attr_accessor :max_length
 
       def initialize(text = '')
         self.text = text
         @config = config_class.instance
         @logger = logger_class.new
+        @max_length = default_max_length
       end
 
       alias to_s text
 
       def nokogiri
-        @nokogiri ||= Nokogiri::HTML.parse(text, nil, 'utf-8')
-        return @nokogiri
+        return text.nokogiri
       end
 
       def accts(&block)
@@ -26,7 +27,7 @@ module Ginseng
 
       def uris(&block)
         return enum_for(__method__) unless block
-        Ginseng::URI.scan(text).each(&block)
+        URI.scan(text).each(&block)
       end
 
       def text=(text)
@@ -36,15 +37,22 @@ module Ginseng
       end
 
       def to_md
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       def nowplaying?
         return /#nowplaying\s/i.match?(text)
       end
 
+      def service
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
+
       def length
-        return text.length
+        length = text.length
+        length -= uris.sum {|v| v.to_s.length - service.characters_reserved_per_url}
+        length -= accts.sum {|v| v.to_s.length - v.username.length - 1}
+        return length
       end
 
       alias size length
@@ -98,8 +106,8 @@ module Ginseng
         return Parser.sanitize(text)
       end
 
-      def max_length
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+      def default_max_length
+        return nil
       end
 
       def self.sanitize(text)

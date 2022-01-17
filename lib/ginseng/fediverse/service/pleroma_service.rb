@@ -82,14 +82,24 @@ module Ginseng
 
       alias info nodeinfo
 
+      def max_post_text_length
+        return info['max_toot_chars']
+      end
+
+      def max_media_attachments
+        return 4
+      end
+
+      def characters_reserved_per_url
+        return 23
+      end
+
       def default_token
         return @config['/pleroma/token']
       end
 
-      private
-
       def default_uri
-        return Ginseng::URI.parse(@config['/pleroma/url'])
+        return URI.parse(@config['/pleroma/url'])
       end
     end
   end

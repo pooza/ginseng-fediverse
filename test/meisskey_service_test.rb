@@ -80,6 +80,22 @@ module Ginseng
         assert_kind_of(RestClient::Response, @meisskey.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif'))
       end
 
+      def test_parser
+        assert_kind_of(NoteParser, @meisskey.parser)
+      end
+
+      def test_max_post_text_length
+        assert(@meisskey.max_post_text_length.positive?)
+      end
+
+      def test_max_media_attachments
+        assert(@meisskey.max_media_attachments.positive?)
+      end
+
+      def test_characters_reserved_per_url
+        assert(@meisskey.characters_reserved_per_url.positive?)
+      end
+
       def test_delete_attachment
         response = @meisskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         id = JSON.parse(response.body)['id']

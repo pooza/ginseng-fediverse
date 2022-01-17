@@ -102,6 +102,22 @@ module Ginseng
         assert_equal(r.code, 204)
       end
 
+      def test_parser
+        assert_kind_of(NoteParser, @misskey.parser)
+      end
+
+      def test_max_post_text_length
+        assert(@misskey.max_post_text_length.positive?)
+      end
+
+      def test_max_media_attachments
+        assert(@misskey.max_media_attachments.positive?)
+      end
+
+      def test_characters_reserved_per_url
+        assert(@misskey.characters_reserved_per_url.positive?)
+      end
+
       def test_search_dupllicated_attachment
         response = @misskey.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         md5 = JSON.parse(response.body)['md5']

@@ -8,19 +8,24 @@ module Ginseng
       def info
         unless @nodeinfo
           @nodeinfo = http.get('/api/v1/instance').parsed_response.merge(super)
+          contact = @nodeinfo['contact_account']
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
             'maintainer' => {
-              'name' => @nodeinfo['contact_account']['display_name'],
+              'name' => contact['display_name'] || contact['username'],
               'email' => @nodeinfo['email'],
             },
           }
-          @nodeinfo['metadata']['maintainer']['name'] ||= @nodeinfo['contact_account']['username']
         end
         return @nodeinfo
       end
 
       alias nodeinfo info
+
+      def parser
+        @parser ||= TootParser.new
+        return @parser
+      end
 
       def search_status_id(status)
         if status.is_a?(URI) && (status.host == uri.host)
@@ -38,7 +43,7 @@ module Ginseng
         response = http.get("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
         })
-        raise Ginseng::GatewayError, response['error'] if response['error']
+        raise GatewayError, response['error'] if response['error']
         return response
       end
 
@@ -74,16 +79,16 @@ module Ginseng
         return JSON.parse(response.body)['id'].to_i
       end
 
-      def update_media(id, body, params = {})
-        if body.dig(:thumbnail, :tempfile).is_a?(File)
-          body[:thumbnail] = File.new(body[:thumbnail][:tempfile].path, 'rb')
+      def update_media(id, payload, params = {})
+        if [File, Tempfile].map {|c| payload.dig(:thumbnail, :tempfile).is_a?(c)}.any?
+          path = payload.dig(:thumbnail, :tempfile).path
         end
-        return RestClient::Request.new(
-          url: create_uri("/api/v1/media/#{search_attachment_id(id)}").to_s,
-          method: :put,
-          headers: create_headers(params[:headers]),
-          payload: body,
-        ).execute
+        return http.put(
+          "/api/v1/media/#{search_attachment_id(id)}",
+          path,
+          create_headers(params[:headers]),
+          payload,
+        )
       end
 
       alias update_attachment update_media
@@ -236,7 +241,7 @@ module Ginseng
       alias tag_uri create_tag_uri
 
       def create_streaming_uri(stream = 'user')
-        uri = Ginseng::URI.parse(info['urls']['streaming_api'])
+        uri = URI.parse(info.dig('urls', 'streaming_api'))
         uri.path = '/api/v1/streaming'
         uri.query_values = {'access_token' => token, 'stream' => stream}
         return uri
@@ -244,20 +249,30 @@ module Ginseng
 
       alias streaming_uri create_streaming_uri
 
+      def max_post_text_length
+        return info.dig('configuration', 'statuses', 'max_characters')
+      end
+
+      def max_media_attachments
+        return info.dig('configuration', 'statuses', 'max_media_attachments')
+      end
+
+      def characters_reserved_per_url
+        return info.dig('configuration', 'statuses', 'characters_reserved_per_url')
+      end
+
       def default_token
         return @config['/mastodon/token']
       end
 
-      private
-
-      def create_headers(headers)
+      def create_headers(headers = {})
         headers ||= {}
         headers['Authorization'] ||= "Bearer #{token}"
         return super
       end
 
       def default_uri
-        return Ginseng::URI.parse(@config['/mastodon/url'])
+        return URI.parse(@config['/mastodon/url'])
       end
     end
   end

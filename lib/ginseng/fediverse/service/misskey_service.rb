@@ -5,6 +5,11 @@ module Ginseng
     class MisskeyService < Service
       include Package
 
+      def parser
+        @parser ||= NoteParser.new
+        return @parser
+      end
+
       def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
         body = body.deep_symbolize_keys
@@ -138,7 +143,7 @@ module Ginseng
         response = http.post('/api/auth/session/generate', {
           body: {appSecret: oauth_client(type)['secret']},
         })
-        return Ginseng::URI.parse(response['url'])
+        return URI.parse(response['url'])
       end
 
       def auth(token, type = :default)
@@ -190,10 +195,20 @@ module Ginseng
         return @config['/misskey/token']
       end
 
-      private
+      def max_post_text_length
+        return info.dig('metadata', 'maxNoteTextLength')
+      end
+
+      def max_media_attachments
+        return 4
+      end
+
+      def characters_reserved_per_url
+        return 23
+      end
 
       def default_uri
-        return Ginseng::URI.parse(@config['/misskey/url'])
+        return URI.parse(@config['/misskey/url'])
       end
     end
   end

@@ -81,6 +81,22 @@ module Ginseng
       def test_upload_remote_resource
         assert_kind_of(String, @pleroma.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}))
       end
+
+      def test_parser
+        assert_kind_of(TootParser, @pleroma.parser)
+      end
+
+      def test_max_post_text_length
+        assert(@pleroma.max_post_text_length.positive?)
+      end
+
+      def test_characters_reserved_per_url
+        assert(@pleroma.characters_reserved_per_url.positive?)
+      end
+
+      def test_max_media_attachments
+        assert(@pleroma.max_media_attachments.positive?)
+      end
     end
   end
 end

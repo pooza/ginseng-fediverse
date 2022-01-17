@@ -10,8 +10,7 @@ module Ginseng
         @token = token || default_token
         @mulukhiya_enable = false
         @http = http_class.new
-        @http.base_uri = Ginseng::URI.parse(uri) if uri
-        @http.base_uri ||= default_uri
+        @http.base_uri = uri ? URI.parse(uri) : default_uri
       end
 
       def uri
@@ -55,8 +54,20 @@ module Ginseng
         return nodeinfo.dig('metadata', 'maintainer', 'email')
       end
 
+      def max_post_text_length
+        return nil
+      end
+
+      def max_media_attachments
+        return nil
+      end
+
+      def characters_reserved_per_url
+        return nil
+      end
+
       def upload(path, params = {})
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       def upload_remote_resource(uri, params = {})
@@ -84,10 +95,24 @@ module Ginseng
       end
 
       def create_streaming_uri(stream = 'user')
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       alias streaming_uri create_streaming_uri
+
+      def create_headers(headers = {})
+        headers ||= {}
+        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        return headers
+      end
+
+      def default_token
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
+
+      def default_uri
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
 
       def self.create_tag(word)
         return "##{create_tag_base(word)}"
@@ -105,20 +130,6 @@ module Ginseng
 
       def clear_oauth_client
         File.unlink(oauth_client_path) if File.exist?(oauth_client_path)
-      end
-
-      def create_headers(headers)
-        headers ||= {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
-        return headers
-      end
-
-      def default_token
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
-      end
-
-      def default_uri
-        raise Ginseng::ImplementError, "'#{__method__}' not implemented"
       end
     end
   end
