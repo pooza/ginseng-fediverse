@@ -41,6 +41,23 @@ module Ginseng
         )
       end
 
+      def test_length
+        @parser.text = 'ローリン♪ローリン♪ココロにズッキュン'
+        assert_equal(@parser.length, 19)
+
+        @parser.text = '@admin ローリン♪ローリン♪ココロにズッキュン'
+        assert_equal(@parser.length, 26)
+
+        @parser.text = '@admin@mstdn.example.com ローリン♪ローリン♪ココロにズッキュン'
+        assert_equal(@parser.length, 26)
+
+        @parser.text = 'ローリン♪ローリン♪ココロにズッキュン https://mstdn.example.com'
+        assert_equal(@parser.length, 43)
+
+        @parser.text = 'ローリン♪ローリン♪ココロにズッキュン https://mstdn.example.com/1/2/3'
+        assert_equal(@parser.length, 43)
+      end
+
       def test_max_length
         assert(@parser.max_length.positive?)
         @parser.max_length = 5000

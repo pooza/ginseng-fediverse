@@ -11,11 +11,6 @@ module Ginseng
         assert_equal(@parser.to_s, 'ローリン♪ローリン♪ココロにズッキュン')
       end
 
-      def test_length
-        @parser.text = 'ローリン♪ローリン♪ココロにズッキュン'
-        assert_equal(@parser.length, 19)
-      end
-
       def test_exec
         @parser.text = 'ローリン♪ローリン♪ココロにズッキュン'
         assert_nil(@parser.exec)

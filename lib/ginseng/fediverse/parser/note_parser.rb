@@ -6,22 +6,22 @@ module Ginseng
       ATMARK = '__ATMARK__'.freeze
       HASH = '__HASH__'.freeze
 
-      def initialize(text = '')
-        super
-        @service = MisskeyService.new
+      def service
+        @service ||= (MisskeyService.new rescue MeisskeyService.new)
+        return @service
       end
 
       def to_md
         md = text.dup
         tags.sort_by(&:length).reverse_each do |tag|
-          md.gsub!("\##{tag}", "[\\#{HASH}#{tag}](#{@service.create_uri("/tags/#{tag}")})")
+          md.gsub!("\##{tag}", "[\\#{HASH}#{tag}](#{service.create_uri("/tags/#{tag}")})")
         end
         accts = self.accts.map(&:to_s).sort_by do |acct|
           v = acct.to_s
           (v.scan(/@/).count * 100_000_000) + v.length
         end
         accts.reverse_each do |acct|
-          md.sub!(acct, "[#{acct.gsub('@', ATMARK)}](#{@service.create_uri("/#{acct}")})")
+          md.sub!(acct, "[#{acct.gsub('@', ATMARK)}](#{service.create_uri("/#{acct}")})")
         end
         md.gsub!(HASH, '#')
         md.gsub!(ATMARK, '@')

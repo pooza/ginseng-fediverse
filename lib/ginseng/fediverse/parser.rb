@@ -44,8 +44,15 @@ module Ginseng
         return /#nowplaying\s/i.match?(text)
       end
 
+      def service
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
+
       def length
-        return text.length
+        length = text.length
+        length -= uris.map {|v| v.to_s.length - service.characters_reserved_per_url}.sum
+        length -= accts.map {|v| v.to_s.length - v.username.length - 1}.sum
+        return length
       end
 
       alias size length

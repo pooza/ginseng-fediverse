@@ -3,6 +3,11 @@ module Ginseng
     class TootParser < Parser
       include Package
 
+      def service
+        @service ||= (MastodonService.new rescue PleromaService.new)
+        return @service
+      end
+
       def to_md
         md = text.dup
         ['.u-url', '.hashtag'].each do |selector|
