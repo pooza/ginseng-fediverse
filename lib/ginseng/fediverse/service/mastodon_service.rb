@@ -22,9 +22,10 @@ module Ginseng
 
       alias nodeinfo info
 
-      def parser
-        @parser ||= TootParser.new
-        return @parser
+      def create_parser(text = '')
+        parser = TootParser.new(text)
+        parser.max_length = max_post_text_length
+        return parser
       end
 
       def search_status_id(status)

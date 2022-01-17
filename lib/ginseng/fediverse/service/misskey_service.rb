@@ -5,9 +5,10 @@ module Ginseng
     class MisskeyService < Service
       include Package
 
-      def parser
-        @parser ||= NoteParser.new
-        return @parser
+      def create_parser(text = '')
+        parser = NoteParser.new(text)
+        parser.max_length = max_post_text_length
+        return parser
       end
 
       def post(body, params = {})
