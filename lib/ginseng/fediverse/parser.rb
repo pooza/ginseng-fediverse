@@ -50,8 +50,8 @@ module Ginseng
 
       def length
         length = text.length
-        length -= uris.map {|v| v.to_s.length - service.characters_reserved_per_url}.sum
-        length -= accts.map {|v| v.to_s.length - v.username.length - 1}.sum
+        length -= uris.sum {|v| v.to_s.length - service.characters_reserved_per_url}
+        length -= accts.sum {|v| v.to_s.length - v.username.length - 1}
         return length
       end
 
