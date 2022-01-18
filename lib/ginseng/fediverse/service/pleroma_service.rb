@@ -83,7 +83,7 @@ module Ginseng
       alias info nodeinfo
 
       def max_post_text_length
-        return info['max_toot_chars'] || config['/pleroma/toot/max_length']
+        return info['max_toot_chars'] || config['/pleroma/toot/default_max_length']
       end
 
       def max_media_attachments

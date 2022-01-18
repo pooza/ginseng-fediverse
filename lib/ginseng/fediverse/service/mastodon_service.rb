@@ -252,7 +252,7 @@ module Ginseng
 
       def max_post_text_length
         length = info.dig('configuration', 'statuses', 'max_characters')
-        length ||= config['/mastodon/toot/max_length']
+        length ||= config['/mastodon/toot/default_max_length']
         return length
       end
 
