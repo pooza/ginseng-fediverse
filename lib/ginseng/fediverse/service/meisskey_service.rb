@@ -15,8 +15,9 @@ module Ginseng
       end
 
       def max_post_text_length
-        return info.dig('metadata',
-                        'maxNoteTextLength') || config['/meisskey/note/default_max_length']
+        length = info.dig('metadata', 'maxNoteTextLength')
+        length ||= config['/meisskey/note/default_max_length']
+        return length
       end
 
       def default_token
