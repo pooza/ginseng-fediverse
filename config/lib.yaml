@@ -1,5 +1,5 @@
 package:
-  version: 1.7.4
+  version: 1.7.5
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -46,15 +46,21 @@ misskey:
   token: test
   note:
     default_max_length: 500
+  attachment:
+    limit: 16
 pleroma:
   url: https://leroma.shrieker.net/
   token: test
   toot:
     default_max_length: 5000
+  attachment:
+    limit: 4
 meisskey:
   url: https://st.reco.shrieker.net/
   token: test
   note:
     default_max_length: 500
+  attachment:
+    limit: 4
 mulukhiya:
   url: https://st.mstdn.b-shock.org/

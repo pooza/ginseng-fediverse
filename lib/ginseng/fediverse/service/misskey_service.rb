@@ -203,7 +203,7 @@ module Ginseng
       end
 
       def max_media_attachments
-        return 4
+        return @config['/misskey/attachment/limit']
       end
 
       def characters_reserved_per_url
