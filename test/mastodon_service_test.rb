@@ -117,6 +117,23 @@ module Ginseng
         assert(@service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}).positive?)
       end
 
+      def test_filters
+        filters = @service.filters.parsed_response
+        assert_kind_of(Array, filters)
+        return unless filters.present?
+
+        filters.first(5).each do |filter|
+          assert_kind_of(String, filter['id'])
+          assert_kind_of(String, filter['phrase'])
+        end
+
+        sample = filters.first
+        @service.filters(phrase: sample['phrase']).each do |filter|
+          assert_kind_of(String, filter['id'])
+          assert_equal(filter['phrase'], sample['phrase'])
+        end
+      end
+
       def test_max_post_text_length
         assert(@service.max_post_text_length.positive?)
       end

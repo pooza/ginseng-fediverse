@@ -176,7 +176,16 @@ module Ginseng
       end
 
       def filters(params = {})
-        return http.get('/api/v1/filters', {headers: create_headers(params[:headers])})
+        params.deep_symbolize_keys!
+        response = http.get('/api/v1/filters', {headers: create_headers(params[:headers])})
+        case params
+        in {phrase: phrase}
+          return response.parsed_response.select {|v| v['phrase'] == phrase}
+        in {tag: tag}
+          return response.parsed_response.select {|v| v['phrase'] == tag.to_hashtag}
+        else
+          return response
+        end
       end
 
       def register_filter(params)
