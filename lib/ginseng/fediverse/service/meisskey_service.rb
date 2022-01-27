@@ -20,6 +20,10 @@ module Ginseng
         return length
       end
 
+      def max_media_attachments
+        return @config['/meisskey/attachment/limit']
+      end
+
       def default_token
         return @config['/meisskey/token']
       end
