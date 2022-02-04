@@ -81,12 +81,13 @@ module Ginseng
       end
 
       def update_media(id, payload, params = {})
-        payload[:thumbnail] = case payload.dig(:thumbnail, :tempfile)
+        case payload.dig(:thumbnail, :tempfile)
         in File | Tempfile
-          File.new(body[:thumbnail][:tempfile].path, 'rb')
+          payload[:thumbnail] = File.new(payload[:thumbnail][:tempfile].path, 'rb')
         in String
-          File.new(body[:thumbnail][:tempfile], 'rb')
+          payload[:thumbnail] = File.new(payload[:thumbnail][:tempfile], 'rb')
         in NilClass
+          payload.delete(:thumbnail)
         end
         return RestClient::Request.new(
           url: create_uri("/api/v1/media/#{search_attachment_id(id)}").to_s,
