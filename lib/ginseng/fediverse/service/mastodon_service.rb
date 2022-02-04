@@ -81,15 +81,20 @@ module Ginseng
       end
 
       def update_media(id, payload, params = {})
-        if [File, Tempfile].map {|c| payload.dig(:thumbnail, :tempfile).is_a?(c)}.any?
-          path = payload.dig(:thumbnail, :tempfile).path
+        case payload.dig(:thumbnail, :tempfile)
+        in File | Tempfile
+          payload[:thumbnail] = File.new(payload[:thumbnail][:tempfile].path, 'rb')
+        in String
+          payload[:thumbnail] = File.new(payload[:thumbnail][:tempfile], 'rb')
+        in NilClass
+          payload.delete(:thumbnail)
         end
-        return http.put(
-          "/api/v1/media/#{search_attachment_id(id)}",
-          path,
-          create_headers(params[:headers]),
-          payload,
-        )
+        return RestClient::Request.new(
+          url: create_uri("/api/v1/media/#{search_attachment_id(id)}").to_s,
+          method: :put,
+          headers: create_headers(params[:headers]),
+          payload: payload,
+        ).execute
       end
 
       alias update_attachment update_media
