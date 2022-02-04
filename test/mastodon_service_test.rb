@@ -48,8 +48,22 @@ module Ginseng
         assert_equal(r['text'], 'このあと削除するトゥート')
       end
 
-      def test_upload
-        assert(@service.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id}).positive?)
+      def test_media
+        id = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id})
+        assert(id.positive?)
+
+        r = @service.update_media(id, {description: 'hoge'})
+        assert_equal(r.code, 200)
+
+        r = @service.update_media(id, {thumbnaiil: {
+          tempfile: File.new(File.join(Environment.dir, 'images/pooza.jpg')),
+        }})
+        assert_equal(r.code, 200)
+
+        r = @service.update_media(id, {thumbnaiil: {
+          tempfile: File.join(Environment.dir, 'images/pooza.jpg'),
+        }})
+        assert_equal(r.code, 200)
       end
 
       def test_bookmark
