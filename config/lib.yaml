@@ -61,6 +61,6 @@ meisskey:
   note:
     default_max_length: 500
   attachment:
-    limit: 4
+    limit: 8
 mulukhiya:
   url: https://st.mstdn.b-shock.org/
