@@ -64,6 +64,13 @@ module Ginseng
         })
       end
 
+      def reaction(id, emoji, params = {})
+        return http.post('/api/notes/reactions/create', {
+          body: {noteId: search_status_id(id), reaction: emoji, i: token},
+          headers: create_headers(params[:headers]),
+        })
+      end
+
       alias fav favourite
 
       alias bookmark favourite
