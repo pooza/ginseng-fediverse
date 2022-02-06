@@ -70,12 +70,10 @@ module Ginseng
 
       def upload(path, params = {})
         params[:response] ||= :raw
-        response = http.upload(
-          '/api/drive/files/create',
-          path,
-          create_headers(params[:headers]),
-          {force: 'true', i: token},
-        )
+        response = http.upload('/api/drive/files/create', path, {
+          haaders: create_headers(params[:headers]),
+          payload: {force: 'true', i: token},
+        })
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
       end
