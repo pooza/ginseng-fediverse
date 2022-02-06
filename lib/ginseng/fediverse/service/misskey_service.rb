@@ -64,18 +64,23 @@ module Ginseng
         })
       end
 
+      def reaction(id, emoji, params = {})
+        return http.post('/api/notes/reactions/create', {
+          body: {noteId: search_status_id(id), reaction: emoji, i: token},
+          headers: create_headers(params[:headers]),
+        })
+      end
+
       alias fav favourite
 
       alias bookmark favourite
 
       def upload(path, params = {})
         params[:response] ||= :raw
-        response = http.upload(
-          '/api/drive/files/create',
-          path,
-          create_headers(params[:headers]),
-          {force: 'true', i: token},
-        )
+        response = http.upload('/api/drive/files/create', path, {
+          haaders: create_headers(params[:headers]),
+          payload: {force: 'true', i: token},
+        })
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
       end

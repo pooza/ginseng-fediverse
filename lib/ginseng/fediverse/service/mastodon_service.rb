@@ -71,11 +71,9 @@ module Ginseng
       def upload(path, params = {})
         params[:response] ||= :raw
         params[:version] ||= 1
-        response = http.upload(
-          "/api/v#{params[:version]}/media",
-          path,
-          create_headers(params[:headers]),
-        )
+        response = http.upload("/api/v#{params[:version]}/media", path, {
+          headers: create_headers(params[:headers]),
+        })
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id'].to_i
       end
@@ -89,12 +87,18 @@ module Ginseng
         in NilClass
           payload.delete(:thumbnail)
         end
-        return RestClient::Request.new(
-          url: create_uri("/api/v1/media/#{search_attachment_id(id)}").to_s,
-          method: :put,
-          headers: create_headers(params[:headers]),
-          payload: payload,
-        ).execute
+        if payload[:thumbnail]
+          return http.upload(create_uri("/api/v1/media/#{search_attachment_id(id)}"), nil, {
+            method: :put,
+            payload: payload,
+            headers: create_headers(params[:headers]),
+          })
+        else
+          return http.put(create_uri("/api/v1/media/#{search_attachment_id(id)}"), {
+            payload: payload,
+            headers: create_headers(params[:headers]),
+          })
+        end
       end
 
       alias update_attachment update_media

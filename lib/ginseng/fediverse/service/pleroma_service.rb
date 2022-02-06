@@ -13,9 +13,23 @@ module Ginseng
 
       def upload(path, params = {})
         params[:response] ||= :raw
-        response = http.upload('/api/v1/media', path, create_headers(params[:headers]))
+        response = http.upload('/api/v1/media', path, {
+          headers: create_headers(params[:headers]),
+        })
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id']
+      end
+
+      def reaction(id, emoji, params = {})
+        return http.put("/api/v1/pleroma/statuses/#{id}/reactions/#{emoji}", {
+          headers: create_headers(params[:headers]),
+        })
+      end
+
+      def delete_reaction(id, emoji, params = {})
+        return http.delete("/api/v1/pleroma/statuses/#{id}/reactions/#{emoji}", {
+          headers: create_headers(params[:headers]),
+        })
       end
 
       def announcements(params = {})
