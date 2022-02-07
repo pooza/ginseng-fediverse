@@ -95,7 +95,7 @@ module Ginseng
           })
         else
           return http.put(create_uri("/api/v1/media/#{search_attachment_id(id)}"), {
-            payload: payload,
+            body: payload,
             headers: create_headers(params[:headers]),
           })
         end
