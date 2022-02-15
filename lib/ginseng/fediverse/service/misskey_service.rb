@@ -14,6 +14,7 @@ module Ginseng
       def post(body, params = {})
         body = {text: body.to_s} unless body.is_a?(Hash)
         body = body.deep_symbolize_keys
+        body[:replyId] = params.dig(:reply, :id) if params[:reply]
         body.delete(:text) unless body[:text].present?
         body.delete(:fileIds) unless body[:fileIds].present?
         body[:i] ||= token
