@@ -3,9 +3,8 @@ module Ginseng
     class TootParser < Parser
       include Package
 
-      def initialize(text = '')
-        @service ||= (MastodonService.new rescue PleromaService.new)
-        super
+      def default_service
+        return (MastodonService.new rescue PleromaService.new)
       end
 
       def to_md
