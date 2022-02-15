@@ -11,8 +11,8 @@ module Ginseng
         self.text = text
         @config = config_class.instance
         @logger = logger_class.new
-        @max_length = (default_max_length rescue nil)
         @service = (default_service rescue nil)
+        @max_length = (default_max_length rescue nil)
       end
 
       alias to_s text
