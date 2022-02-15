@@ -6,9 +6,8 @@ module Ginseng
       ATMARK = '__ATMARK__'.freeze
       HASH = '__HASH__'.freeze
 
-      def service
-        @service ||= (MisskeyService.new rescue MeisskeyService.new)
-        return @service
+      def default_service
+        return (MisskeyService.new rescue MeisskeyService.new)
       end
 
       def to_md

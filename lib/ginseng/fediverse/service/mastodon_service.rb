@@ -52,6 +52,8 @@ module Ginseng
 
       def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
+        body = body.deep_symbolize_keys
+        body[:in_reply_to_id] = params.dig(:reply, :id) if params[:reply]
         return http.post('/api/v1/statuses', {
           body: body.compact,
           headers: create_headers(params[:headers]),

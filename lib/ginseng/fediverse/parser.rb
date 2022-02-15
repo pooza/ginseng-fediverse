@@ -5,13 +5,14 @@ module Ginseng
     class Parser
       include Package
       attr_reader :text
-      attr_accessor :max_length
+      attr_accessor :max_length, :service
 
       def initialize(text = '')
         self.text = text
         @config = config_class.instance
         @logger = logger_class.new
-        @max_length = default_max_length
+        @max_length = (default_max_length rescue nil)
+        @service = (default_service rescue nil)
       end
 
       alias to_s text
@@ -42,10 +43,6 @@ module Ginseng
 
       def nowplaying?
         return /#nowplaying\s/i.match?(text)
-      end
-
-      def service
-        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       def length
@@ -107,7 +104,11 @@ module Ginseng
       end
 
       def default_max_length
-        return nil
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
+
+      def default_service
+        raise ImplementError, "'#{__method__}' not implemented"
       end
 
       def self.sanitize(text)
