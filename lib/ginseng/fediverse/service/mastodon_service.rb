@@ -1,5 +1,3 @@
-require 'rest-client'
-
 module Ginseng
   module Fediverse
     class MastodonService < Service
