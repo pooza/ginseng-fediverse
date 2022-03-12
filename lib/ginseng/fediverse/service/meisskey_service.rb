@@ -4,13 +4,12 @@ module Ginseng
       include Package
 
       def announcements(params = {})
-        return info.dig('metadata', 'announcements').map do |entry|
-          {
+        response = http.get('/api/meta')
+        return response['announcements'].map do |entry|
+          entry.deep_symbolize_keys.merge(
             id: entry.to_json.adler32,
-            title: entry['title'],
-            text: entry['text'],
             content: entry['text'],
-          }
+          )
         end
       end
 

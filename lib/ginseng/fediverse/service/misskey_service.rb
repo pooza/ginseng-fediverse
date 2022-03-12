@@ -168,11 +168,11 @@ module Ginseng
           body: {i: token},
           headers: create_headers(params[:headers]),
         })
-        return response.parsed_response.map do |announcement|
-          entry = announcement.deep_symbolize_keys
-          entry[:content] = entry[:text]
-          entry[:imate_url] = entry[:imageUrl]
-          entry
+        return response.parsed_response.map do |entry|
+          entry.deep_symbolize_keys.merge(
+            content: entry['text'],
+            image_url: entry['imageUrl'],
+          )
         end
       end
 
