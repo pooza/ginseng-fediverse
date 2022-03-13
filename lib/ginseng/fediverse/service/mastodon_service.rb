@@ -1,5 +1,3 @@
-require 'rest-client'
-
 module Ginseng
   module Fediverse
     class MastodonService < Service
@@ -156,11 +154,12 @@ module Ginseng
 
       def announcements(params = {})
         response = http.get('/api/v1/announcements', {headers: create_headers(params[:headers])})
-        return response.parsed_response.map do |announcement|
-          entry = announcement.deep_symbolize_keys
-          entry[:text] = entry[:content].sanitize.strip
-          entry.delete(:read)
-          entry
+        return response.parsed_response.map do |entry|
+          entry.deep_symbolize_keys.merge(
+            text: entry['content'].sanitize.strip,
+          ).except(
+            :read,
+          )
         end
       end
 

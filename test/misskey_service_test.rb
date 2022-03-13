@@ -48,10 +48,12 @@ module Ginseng
 
       def test_announcements
         assert_kind_of(Array, @service.announcements)
-        @service.announcements do |announcement|
-          assert_kind_of(Hash, announcement)
-          assert(announcement['id'].present?)
-          assert(announcement['title'].present?)
+        @service.announcements.each do |entry|
+          assert_kind_of(Hash, entry)
+          assert(entry[:id].present?)
+          assert(entry[:title].present?)
+          assert(entry[:text].present?)
+          assert(entry[:content].present?)
         end
       end
 
