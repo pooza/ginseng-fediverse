@@ -4,7 +4,7 @@ module Ginseng
   module Fediverse
     class Parser
       include Package
-      attr_reader :text
+      attr_reader :text, :body, :footer
       attr_accessor :max_length, :service
 
       def initialize(text = '')
@@ -32,9 +32,17 @@ module Ginseng
       end
 
       def text=(text)
-        @text = text.to_s.dup
+        @text = text.to_s.strip
         @params = nil
-        @all_tags = nil
+        tags = TagContainer.new
+        lines = text.each_line.to_a
+
+        lines.dup.reverse_each do |line|
+          break unless line.match?(/^\s*(#[^\s]+\s?)+\s*$/)
+          tags.merge(lines.pop.strip.split(/\s+/))
+        end
+        @body = lines.map(&:chomp).join("\n").strip
+        @footer = tags.map(&:to_hashtag).join(' ')
       end
 
       def to_md

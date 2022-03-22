@@ -5,10 +5,20 @@ module Ginseng
         @parser = Parser.new
       end
 
-      def test_body
+      def test_text
         @parser.text = 'ローリン♪ローリン♪ココロにズッキュン'
         assert_equal(@parser.text, 'ローリン♪ローリン♪ココロにズッキュン')
         assert_equal(@parser.to_s, 'ローリン♪ローリン♪ココロにズッキュン')
+      end
+
+      def test_body
+        @parser.text = "ローリン♪ローリン♪\nココロにズッキュン\n\n#precure_fun #シュビドゥビ"
+        assert_equal(@parser.body, "ローリン♪ローリン♪\nココロにズッキュン")
+      end
+
+      def test_footer
+        @parser.text = "ローリン♪ローリン♪\nココロにズッキュン\n\n#precure_fun #シュビドゥビ"
+        assert_equal(@parser.footer, '#precure_fun #シュビドゥビ')
       end
 
       def test_exec

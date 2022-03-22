@@ -70,7 +70,6 @@ module Ginseng
 
       def test_visibility_names
         assert_kind_of(Hash, TootParser.visibility_names)
-        pp TootParser.visibility_names
       end
 
       def test_visibility_name
