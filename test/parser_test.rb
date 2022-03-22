@@ -14,11 +14,17 @@ module Ginseng
       def test_body
         @parser.text = "ローリン♪ローリン♪\nココロにズッキュン\n\n#precure_fun #シュビドゥビ"
         assert_equal(@parser.body, "ローリン♪ローリン♪\nココロにズッキュン")
+
+        @parser.text = '<p>スマイルプリキュア<br /><a href=\"https://st.mstdn.b-shock.org/tags/mulukhiya\" class=\"mention hashtag\" rel=\"tag\">#<span>mulukhiya</span></a> <a href=\"https://st.mstdn.b-shock.org/tags/Example\" class=\"mention hashtag\" rel=\"tag\">#<span>Example</span></a> <a href=\"https://st.mstdn.b-shock.org/tags/%E3%82%B9%E3%83%9E%E3%82%A4%E3%83%AB%E3%83%97%E3%83%AA%E3%82%AD%E3%83%A5%E3%82%A2\" class=\"mention hashtag\" rel=\"tag\">#<span>スマイルプリキュア</span></a> <a href=\"https://st.mstdn.b-shock.org/tags/precure_fun\" class=\"mention hashtag\" rel=\"tag\">#<span>precure_fun</span></a></p>'
+        assert_equal(@parser.body, 'スマイルプリキュア')
       end
 
       def test_footer
         @parser.text = "ローリン♪ローリン♪\nココロにズッキュン\n\n#precure_fun #シュビドゥビ"
         assert_equal(@parser.footer, '#precure_fun #シュビドゥビ')
+
+        @parser.text = '<p>スマイルプリキュア<br /><a href=\"https://st.mstdn.b-shock.org/tags/mulukhiya\" class=\"mention hashtag\" rel=\"tag\">#<span>mulukhiya</span></a> <a href=\"https://st.mstdn.b-shock.org/tags/Example\" class=\"mention hashtag\" rel=\"tag\">#<span>Example</span></a> <a href=\"https://st.mstdn.b-shock.org/tags/%E3%82%B9%E3%83%9E%E3%82%A4%E3%83%AB%E3%83%97%E3%83%AA%E3%82%AD%E3%83%A5%E3%82%A2\" class=\"mention hashtag\" rel=\"tag\">#<span>スマイルプリキュア</span></a> <a href=\"https://st.mstdn.b-shock.org/tags/precure_fun\" class=\"mention hashtag\" rel=\"tag\">#<span>precure_fun</span></a></p>'
+        assert_equal(@parser.footer, '#mulukhiya #Example #スマイルプリキュア #precure_fun')
       end
 
       def test_exec

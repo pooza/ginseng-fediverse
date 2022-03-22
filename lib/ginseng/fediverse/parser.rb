@@ -35,8 +35,7 @@ module Ginseng
         @text = text.to_s.strip
         @params = nil
         tags = TagContainer.new
-        lines = text.each_line.to_a
-
+        lines = self.class.sanitize(text).each_line.to_a
         lines.dup.reverse_each do |line|
           break unless line.match?(/^\s*(#[^\s]+\s?)+\s*$/)
           tags.merge(lines.pop.strip.split(/\s+/))
