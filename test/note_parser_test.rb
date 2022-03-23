@@ -73,8 +73,18 @@ module Ginseng
       end
 
       def test_visibility_name
-        ['public', 'unlisted', 'private', 'direct'].each do |key|
+        [:public, :unlisted, :private, :direct, :home, :followers, :specified].each do |key|
           assert_kind_of(String, NoteParser.visibility_name(key))
+        end
+      end
+
+      def test_visibility_icons
+        assert_kind_of(Hash, NoteParser.visibility_icons)
+      end
+
+      def test_visibility_icon
+        [:public, :unlisted, :private, :direct, :home, :followers, :specified].each do |key|
+          assert_kind_of(String, NoteParser.visibility_icon(key))
         end
       end
     end
