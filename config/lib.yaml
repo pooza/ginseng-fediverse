@@ -14,12 +14,18 @@ acct:
 parser:
   toot:
     visibility:
+      public:
+        name: public
+        icon: earth-asia
       unlisted:
         name: unlisted
+        icon: lock-open
       private:
         name: private
+        icon: lock
       direct:
         name: direct
+        icon: envelope
     url:
       patterns:
         - ^/web/statuses/([[:digit:]]+)
@@ -28,12 +34,18 @@ parser:
         - ^/notice/([[:word:]]+)
   note:
     visibility:
+      public:
+        name: public
+        icon: globe
       unlisted:
         name: home
+        icon: house
       private:
         name: followers
+        icon: lock
       direct:
         name: specified
+        icon: envelope
     url:
       patterns:
         - ^/notes/([[:alnum:]]+)

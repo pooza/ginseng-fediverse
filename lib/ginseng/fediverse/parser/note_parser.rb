@@ -29,22 +29,42 @@ module Ginseng
 
       def self.visibility_name(name)
         return visibility_names[name.to_sym] if visibility_names.key?(name.to_sym)
-        return name if visibility_names.values.member?(name)
+        return name.to_s if visibility_names.values.member?(name.to_s)
         return visibility_names[:public]
       rescue
         return visibility_names[:public]
       end
 
-      def default_max_length
-        return @config['/misskey/note/default_max_length']
+      def self.visibility_names
+        names = [:public, :unlisted, :private, :direct].to_h do |name|
+          [name.to_sym, Config.instance["/parser/note/visibility/#{name}/name"]]
+        end
+        return names.merge(names.to_h {|_, v| [v.to_sym, v.to_s]})
       end
 
-      def self.visibility_names
-        return {public: 'public'}.merge(
-          [:unlisted, :private, :direct].to_h do |name|
-            [name, Config.instance["/parser/note/visibility/#{name}/name"]]
-          end,
-        )
+      def self.visibility_icon(name)
+        return visibility_icons[name.to_sym] if visibility_icons.key?(name.to_sym)
+        return name.to_s if visibility_icons.values.member?(name.to_s)
+        return nil
+      rescue
+        return nil
+      end
+
+      def self.visibility_icons
+        config = Config.instance
+        names = [:public, :unlisted, :private, :direct].to_h do |name|
+          [name.to_sym, config["/parser/note/visibility/#{name}/icon"].to_s]
+        end
+        return names.merge([:public, :unlisted, :private, :direct].to_h do |name|
+          [
+            config["/parser/note/visibility/#{name}/name"].to_sym,
+            config["/parser/note/visibility/#{name}/icon"].to_s,
+          ]
+        end)
+      end
+
+      def default_max_length
+        return @config['/misskey/note/default_max_length']
       end
     end
   end

@@ -73,8 +73,18 @@ module Ginseng
       end
 
       def test_visibility_name
-        ['public', 'unlisted', 'private', 'direct'].each do |key|
+        [:public, :unlisted, :private, :direct].each do |key|
           assert_kind_of(String, TootParser.visibility_name(key))
+        end
+      end
+
+      def test_visibility_icons
+        assert_kind_of(Hash, TootParser.visibility_icons)
+      end
+
+      def test_visibility_icon
+        [:public, :unlisted, :private, :direct].each do |key|
+          assert_kind_of(String, TootParser.visibility_icon(key))
         end
       end
     end
