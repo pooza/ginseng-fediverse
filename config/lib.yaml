@@ -1,5 +1,5 @@
 package:
-  version: 1.7.13
+  version: 1.7.14
   url: https://github.com/pooza/ginseng-fediverse
   authors:
     - Tatsuya Koishi
@@ -14,9 +14,12 @@ acct:
 parser:
   toot:
     visibility:
-      unlisted: unlisted
-      private: private
-      direct: direct
+      unlisted:
+        name: unlisted
+      private:
+        name: private
+      direct:
+        name: direct
     url:
       patterns:
         - ^/web/statuses/([[:digit:]]+)
@@ -25,9 +28,12 @@ parser:
         - ^/notice/([[:word:]]+)
   note:
     visibility:
-      unlisted: home
-      private: followers
-      direct: specified
+      unlisted:
+        name: home
+      private:
+        name: followers
+      direct:
+        name: specified
     url:
       patterns:
         - ^/notes/([[:alnum:]]+)
