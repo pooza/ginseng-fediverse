@@ -15,36 +15,36 @@ module Ginseng
       end
 
       def test_tag_uri
-        assert_equal(@service.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+        assert_equal('/tags/日本語のタグ', @service.create_tag_uri('日本語のタグ').path)
       end
 
       def test_mulukhiya?
         assert_false(@service.mulukhiya?)
         assert_false(@service.mulukhiya_enable?)
         @service.mulukhiya_enable = true
-        assert(@service.mulukhiya?)
-        assert(@service.mulukhiya_enable?)
+        assert_predicate(@service, :mulukhiya?)
+        assert_predicate(@service, :mulukhiya_enable?)
         @service.mulukhiya_enable = false
       end
 
       def test_toot
         r = @service.toot('文字列からトゥート')
         assert_kind_of(HTTParty::Response, r)
-        assert_equal(r.code, 200)
-        assert_equal(r['content'], '文字列からトゥート')
+        assert_equal(200, r.code)
+        assert_equal('文字列からトゥート', r['content'])
 
         r = @service.toot(status: 'ハッシュからプライベートなトゥート', visibility: 'private')
         assert_kind_of(HTTParty::Response, r)
-        assert_equal(r.code, 200)
-        assert_equal(r['content'], 'ハッシュからプライベートなトゥート')
-        assert_equal(r['visibility'], 'private')
+        assert_equal(200, r.code)
+        assert_equal('ハッシュからプライベートなトゥート', r['content'])
+        assert_equal('private', r['visibility'])
       end
 
       def test_delete_status
         id = @service.toot('このあと削除するトゥート')['id']
         r = @service.delete_status(id)
-        assert_equal(r.code, 200)
-        assert_equal(r['text'], 'このあと削除するトゥート')
+        assert_equal(200, r.code)
+        assert_equal('このあと削除するトゥート', r['text'])
       end
 
       def test_announcements
@@ -87,15 +87,15 @@ module Ginseng
       end
 
       def test_max_post_text_length
-        assert(@service.max_post_text_length.positive?)
+        assert_predicate(@service.max_post_text_length, :positive?)
       end
 
       def test_characters_reserved_per_url
-        assert(@service.characters_reserved_per_url.positive?)
+        assert_predicate(@service.characters_reserved_per_url, :positive?)
       end
 
       def test_max_media_attachments
-        assert(@service.max_media_attachments.positive?)
+        assert_predicate(@service.max_media_attachments, :positive?)
       end
     end
   end

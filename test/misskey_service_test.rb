@@ -15,45 +15,45 @@ module Ginseng
       end
 
       def test_tag_uri
-        assert_equal(@service.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+        assert_equal('/tags/日本語のタグ', @service.create_tag_uri('日本語のタグ').path)
       end
 
       def test_mulukhiya?
         assert_false(@service.mulukhiya?)
         assert_false(@service.mulukhiya_enable?)
         @service.mulukhiya_enable = true
-        assert(@service.mulukhiya?)
-        assert(@service.mulukhiya_enable?)
+        assert_predicate(@service, :mulukhiya?)
+        assert_predicate(@service, :mulukhiya_enable?)
         @service.mulukhiya_enable = false
       end
 
       def test_note
         r = @service.note('文字列からノート')
         assert_kind_of(HTTParty::Response, r)
-        assert_equal(r.code, 200)
-        assert_equal(r['createdNote']['text'], '文字列からノート')
+        assert_equal(200, r.code)
+        assert_equal('文字列からノート', r['createdNote']['text'])
 
         body = {text: 'HashWithIndifferentAccessからノート'}.with_indifferent_access
         r = @service.note(body)
         assert_kind_of(HTTParty::Response, r)
-        assert_equal(r.code, 200)
-        assert_equal(r['createdNote']['text'], 'HashWithIndifferentAccessからノート')
+        assert_equal(200, r.code)
+        assert_equal('HashWithIndifferentAccessからノート', r['createdNote']['text'])
       end
 
       def test_delete_status
         id = @service.note('このあと削除するトゥート')['createdNote']['id']
         r = @service.delete_status(id)
-        assert_equal(r.code, 204)
+        assert_equal(204, r.code)
       end
 
       def test_announcements
         assert_kind_of(Array, @service.announcements)
         @service.announcements.each do |entry|
           assert_kind_of(Hash, entry)
-          assert(entry[:id].present?)
-          assert(entry[:title].present?)
-          assert(entry[:text].present?)
-          assert(entry[:content].present?)
+          assert_predicate(entry[:id], :present?)
+          assert_predicate(entry[:title], :present?)
+          assert_predicate(entry[:text], :present?)
+          assert_predicate(entry[:content], :present?)
         end
       end
 
@@ -61,8 +61,8 @@ module Ginseng
         assert_kind_of(Array, @service.antennas)
         @service.antennas do |antenna|
           assert_kind_of(Hash, antenna)
-          assert(antenna['id'].present?)
-          assert(antenna['title'].present?)
+          assert_predicate(antenna['id'], :present?)
+          assert_predicate(antenna['title'], :present?)
         end
       end
 
@@ -101,7 +101,7 @@ module Ginseng
         response = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         id = JSON.parse(response.body)['id']
         r = @service.delete_attachment(id)
-        assert_equal(r.code, 204)
+        assert_equal(204, r.code)
       end
 
       def test_create_parser
@@ -109,15 +109,15 @@ module Ginseng
       end
 
       def test_max_post_text_length
-        assert(@service.max_post_text_length.positive?)
+        assert_predicate(@service.max_post_text_length, :positive?)
       end
 
       def test_max_media_attachments
-        assert(@service.max_media_attachments.positive?)
+        assert_predicate(@service.max_media_attachments, :positive?)
       end
 
       def test_characters_reserved_per_url
-        assert(@service.characters_reserved_per_url.positive?)
+        assert_predicate(@service.characters_reserved_per_url, :positive?)
       end
 
       def test_search_dupllicated_attachment

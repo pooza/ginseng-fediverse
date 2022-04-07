@@ -16,75 +16,75 @@ module Ginseng
       end
 
       def test_tag_uri
-        assert_equal(@service.create_tag_uri('日本語のタグ').path, '/tags/日本語のタグ')
+        assert_equal('/tags/日本語のタグ', @service.create_tag_uri('日本語のタグ').path)
       end
 
       def test_mulukhiya?
         assert_false(@service.mulukhiya?)
         assert_false(@service.mulukhiya_enable?)
         @service.mulukhiya_enable = true
-        assert(@service.mulukhiya?)
-        assert(@service.mulukhiya_enable?)
+        assert_predicate(@service, :mulukhiya?)
+        assert_predicate(@service, :mulukhiya_enable?)
         @service.mulukhiya_enable = false
       end
 
       def test_toot
         r = @service.toot('文字列からトゥート')
         assert_kind_of(HTTParty::Response, r)
-        assert_equal(r.code, 200)
-        assert_equal(r['content'], '<p>文字列からトゥート</p>')
+        assert_equal(200, r.code)
+        assert_equal('<p>文字列からトゥート</p>', r['content'])
 
         r = @service.toot(status: 'ハッシュからプライベートなトゥート', visibility: 'private')
         assert_kind_of(HTTParty::Response, r)
-        assert_equal(r.code, 200)
-        assert_equal(r['content'], '<p>ハッシュからプライベートなトゥート</p>')
-        assert_equal(r['visibility'], 'private')
+        assert_equal(200, r.code)
+        assert_equal('<p>ハッシュからプライベートなトゥート</p>', r['content'])
+        assert_equal('private', r['visibility'])
       end
 
       def test_delete_status
         id = @service.toot('このあと削除するトゥート')['id']
         r = @service.delete_status(id)
-        assert_equal(r.code, 200)
-        assert_equal(r['text'], 'このあと削除するトゥート')
+        assert_equal(200, r.code)
+        assert_equal('このあと削除するトゥート', r['text'])
       end
 
       def test_media
         id = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id})
-        assert(id.positive?)
+        assert_predicate(id, :positive?)
 
         r = @service.update_media(id, {description: 'hoge'})
-        assert_equal(r.code, 200)
+        assert_equal(200, r.code)
 
         r = @service.update_media(id, {thumbnaiil: {
           tempfile: File.new(File.join(Environment.dir, 'images/pooza.jpg')),
         }})
-        assert_equal(r.code, 200)
+        assert_equal(200, r.code)
 
         r = @service.update_media(id, {thumbnaiil: {
           tempfile: File.join(Environment.dir, 'images/pooza.jpg'),
         }})
-        assert_equal(r.code, 200)
+        assert_equal(200, r.code)
       end
 
       def test_bookmark
-        assert_equal(@service.bookmark(@toot_id).code, 200)
+        assert_equal(200, @service.bookmark(@toot_id).code)
       end
 
       def test_favourite
-        assert_equal(@service.favourite(@toot_id).code, 200)
+        assert_equal(200, @service.favourite(@toot_id).code)
       end
 
       def test_reblog
-        assert_equal(@service.reblog(@toot_id).code, 200)
+        assert_equal(200, @service.reblog(@toot_id).code)
       end
 
       def test_announcements
         assert_kind_of(Array, @service.announcements)
         @service.announcements.each do |entry|
           assert_kind_of(Hash, entry)
-          assert(entry[:id].present?)
-          assert(entry[:text].present?)
-          assert(entry[:content].present?)
+          assert_predicate(entry[:id], :present?)
+          assert_predicate(entry[:text], :present?)
+          assert_predicate(entry[:content], :present?)
         end
       end
 
@@ -112,16 +112,16 @@ module Ginseng
       end
 
       def test_followers
-        assert_equal(@service.followers.code, 200)
+        assert_equal(200, @service.followers.code)
       end
 
       def test_followees
-        assert_equal(@service.followees.code, 200)
+        assert_equal(200, @service.followees.code)
       end
 
       def test_search
-        assert_equal(@service.search('pooza').code, 200)
-        assert_equal(@service.search('pooza', {version: 2}).code, 200)
+        assert_equal(200, @service.search('pooza').code)
+        assert_equal(200, @service.search('pooza', {version: 2}).code)
       end
 
       def test_create_parser
@@ -129,7 +129,7 @@ module Ginseng
       end
 
       def test_upload_remote_resource
-        assert(@service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}).positive?)
+        assert_predicate(@service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}), :positive?)
       end
 
       def test_filters
@@ -150,15 +150,15 @@ module Ginseng
       end
 
       def test_max_post_text_length
-        assert(@service.max_post_text_length.positive?)
+        assert_predicate(@service.max_post_text_length, :positive?)
       end
 
       def test_max_media_attachments
-        assert(@service.max_media_attachments.positive?)
+        assert_predicate(@service.max_media_attachments, :positive?)
       end
 
       def test_characters_reserved_per_url
-        assert(@service.characters_reserved_per_url.positive?)
+        assert_predicate(@service.characters_reserved_per_url, :positive?)
       end
 
       def test_create_streaming_uri

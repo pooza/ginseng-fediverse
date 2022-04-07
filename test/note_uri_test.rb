@@ -9,8 +9,8 @@ module Ginseng
       end
 
       def test_id
-        assert_equal(@uris[:misskey].id, '8kjdew1qgd')
-        assert_equal(@uris[:meisskey].id, '7179245f89349aea2ea290f0')
+        assert_equal('8kjdew1qgd', @uris[:misskey].id)
+        assert_equal('7179245f89349aea2ea290f0', @uris[:meisskey].id)
       end
 
       def test_service

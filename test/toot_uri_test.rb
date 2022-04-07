@@ -3,14 +3,14 @@ module Ginseng
     class TootURITest < TestCase
       def setup
         @uris = {
-          mastodon: TootURI.parse('https://st.mstdn.b-shock.org/web/statuses/106057223567166956'),
+          mastodon: TootURI.parse('https://st.mstdn.b-shock.org/web/statuses/108087957312825264'),
           pleroma: TootURI.parse('https://leroma.shrieker.net/notice/ABlMankKYujQhR84WW'),
         }
       end
 
       def test_id
-        assert_equal(@uris[:mastodon].id, 106_057_223_567_166_956)
-        assert_equal(@uris[:pleroma].id, 'ABlMankKYujQhR84WW')
+        assert_equal(108_087_957_312_825_264, @uris[:mastodon].id)
+        assert_equal('ABlMankKYujQhR84WW', @uris[:pleroma].id)
       end
 
       def test_service
@@ -19,7 +19,7 @@ module Ginseng
       end
 
       def test_subject
-        assert(@uris[:mastodon].subject.start_with?('ネギトロ丼'))
+        assert(@uris[:mastodon].subject.start_with?('モーニングセット'))
         assert(@uris[:pleroma].subject.start_with?('羽田空港'))
       end
     end
