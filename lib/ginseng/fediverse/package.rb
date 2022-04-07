@@ -21,6 +21,10 @@ module Ginseng
         return HTTP
       end
 
+      def tag_container_class
+        return TagContainer
+      end
+
       def self.name
         return 'ginseng-fediverse'
       end
