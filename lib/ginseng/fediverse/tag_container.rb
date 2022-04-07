@@ -27,6 +27,10 @@ module Ginseng
 
       alias body text
 
+      def delete(tag)
+        reject! {|v| v.casecmp(tag).zero?}
+      end
+
       def text=(text)
         @tags = nil
         @text = text.nfkc
