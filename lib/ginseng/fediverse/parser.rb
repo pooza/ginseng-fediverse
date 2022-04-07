@@ -2,17 +2,20 @@ require 'nokogiri'
 
 module Ginseng
   module Fediverse
+    include Package
+
     class Parser
       include Package
-      attr_reader :text, :body, :footer
+      attr_reader :text, :body, :footer, :footer_tags
       attr_accessor :max_length, :service
 
       def initialize(text = '')
-        self.text = text
         @config = config_class.instance
         @logger = logger_class.new
         @service = (default_service rescue nil)
         @max_length = (default_max_length rescue nil)
+        @footer_tags = tag_container_class.new
+        self.text = text
       end
 
       alias to_s text
@@ -34,14 +37,14 @@ module Ginseng
       def text=(text)
         @text = text.to_s.strip
         @params = nil
-        tags = TagContainer.new
+        @footer_tags.clear
         lines = self.class.sanitize(text).each_line.to_a
         lines.dup.reverse_each do |line|
           break unless line.match?(/^\s*(#[^\s]+\s?)+\s*$/)
-          tags.merge(lines.pop.strip.split(/\s+/))
+          @footer_tags.merge(lines.pop.strip.split(/\s+/))
         end
         @body = lines.map(&:chomp).join("\n").strip
-        @footer = tags.map(&:to_hashtag).join(' ')
+        @footer = @footer_tags.map(&:to_hashtag).join(' ')
       end
 
       def to_md
@@ -81,7 +84,7 @@ module Ginseng
       alias params exec
 
       def hashtags
-        return TagContainer.new(TagContainer.scan(text))
+        return tag_container_class.new(tag_container_class.scan(text))
       end
 
       alias tags hashtags

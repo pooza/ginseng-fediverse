@@ -13,25 +13,25 @@ module Ginseng
         assert_false(@parser.too_long?)
 
         @parser.text = '0' * (@parser.max_length + 1)
-        assert(@parser.too_long?)
+        assert_predicate(@parser, :too_long?)
       end
 
       def test_accts
         @parser.text = '@pooza @poozZa @pooza@mstdn.example.com pooza@b-shock.org'
         @parser.accts do |acct|
           assert_kind_of(Acct, acct)
-          assert(acct.valid?)
+          assert_predicate(acct, :valid?)
         end
-        assert_equal(@parser.accts.map(&:to_s), ['@pooza', '@poozZa', '@pooza@mstdn.example.com'])
+        assert_equal(['@pooza', '@poozZa', '@pooza@mstdn.example.com'], @parser.accts.map(&:to_s))
       end
 
       def test_uris
         @parser.text = 'https://www.google.co.jp https://mstdn.b-shock.co.jp'
         @parser.uris do |uri|
           assert_kind_of(Ginseng::URI, uri)
-          assert(uri.absolute?)
+          assert_predicate(uri, :absolute?)
         end
-        assert_equal(@parser.uris.map(&:to_s), ['https://www.google.co.jp', 'https://mstdn.b-shock.co.jp'])
+        assert_equal(['https://www.google.co.jp', 'https://mstdn.b-shock.co.jp'], @parser.uris.map(&:to_s))
       end
 
       def test_nokogiri
@@ -43,25 +43,25 @@ module Ginseng
 
       def test_length
         @parser.text = 'ローリン♪ローリン♪ココロにズッキュン'
-        assert_equal(@parser.length, 19)
+        assert_equal(19, @parser.length)
 
         @parser.text = '@admin ローリン♪ローリン♪ココロにズッキュン'
-        assert_equal(@parser.length, 26)
+        assert_equal(26, @parser.length)
 
         @parser.text = '@admin@mstdn.example.com ローリン♪ローリン♪ココロにズッキュン'
-        assert_equal(@parser.length, 26)
+        assert_equal(26, @parser.length)
 
         @parser.text = 'ローリン♪ローリン♪ココロにズッキュン https://mstdn.example.com'
-        assert_equal(@parser.length, 43)
+        assert_equal(43, @parser.length)
 
         @parser.text = 'ローリン♪ローリン♪ココロにズッキュン https://mstdn.example.com/1/2/3'
-        assert_equal(@parser.length, 43)
+        assert_equal(43, @parser.length)
       end
 
       def test_max_length
-        assert(@parser.max_length.positive?)
+        assert_predicate(@parser.max_length, :positive?)
         @parser.max_length = 5000
-        assert_equal(@parser.max_length, 5000)
+        assert_equal(5000, @parser.max_length)
       end
 
       def test_to_md

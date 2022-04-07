@@ -6,15 +6,15 @@ module Ginseng
       end
 
       def test_valid?
-        assert(@acct.valid?)
+        assert_predicate(@acct, :valid?)
       end
 
       def test_username
-        assert_equal(@acct.username, 'pooza')
+        assert_equal('pooza', @acct.username)
       end
 
       def test_host
-        assert_equal(@acct.host, 'example.com')
+        assert_equal('example.com', @acct.host)
       end
 
       def test_pattern

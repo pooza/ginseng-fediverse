@@ -9,7 +9,7 @@ module Ginseng
       def test_about
         response = @mulukhiya.about
         assert_kind_of(HTTParty::Response, response)
-        assert_equal(response.code, 200)
+        assert_equal(200, response.code)
       end
 
       def test_base_uri
@@ -19,7 +19,7 @@ module Ginseng
       def test_health
         response = @mulukhiya.health
         assert_kind_of(HTTParty::Response, response)
-        assert_equal(response.code, 200)
+        assert_equal(200, response.code)
       end
 
       def test_search_hashtags
