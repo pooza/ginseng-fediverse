@@ -40,8 +40,8 @@ module Ginseng
         @footer_tags.clear
         lines = self.class.sanitize(text).each_line.to_a
         lines.dup.reverse_each do |line|
-          break unless line.match?(/^\s*(#[^\s]+\s?)+\s*$/)
-          @footer_tags.merge(lines.pop.strip.split(/\s+/))
+          break unless line.match?(/^[[:blank:]]*(#[^[:blank:]]+[[:blank:]]?)+[[:blank:]]*$/)
+          @footer_tags.merge(lines.pop.strip.split(/[[:blank:]]+/))
         end
         @body = lines.map(&:chomp).join("\n").strip
         @footer = @footer_tags.map(&:to_hashtag).join(' ')
@@ -52,7 +52,7 @@ module Ginseng
       end
 
       def nowplaying?
-        return /#nowplaying\s/i.match?(text)
+        return /#nowplaying[[:blank:]]/i.match?(text)
       end
 
       def length
@@ -84,7 +84,7 @@ module Ginseng
       alias params exec
 
       def hashtags
-        return tag_container_class.new(tag_container_class.scan(text))
+        return tag_container_class.scan(text)
       end
 
       alias tags hashtags
@@ -124,8 +124,8 @@ module Ginseng
       def self.sanitize(text)
         text = text.dup
         text.delete!("\n") if text.match?(/<br.*?>/)
-        text.gsub!(/\s*<br.*?>/, "\n")
-        text.gsub!(%r{\s*</p.*?>}, "\n\n")
+        text.gsub!(/[[:blank:]]*<br.*?>/, "\n")
+        text.gsub!(%r{[[:blank:]]*</p.*?>}, "\n\n")
         text.gsub!(/<p.*?>/, '')
         text.sanitize!
         return text.strip

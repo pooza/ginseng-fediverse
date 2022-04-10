@@ -51,7 +51,7 @@ module Ginseng
         unless @subject
           @subject = toot['spoiler_text'] if toot['spoiler_text'].present?
           @subject ||= toot['content']
-          @subject.gsub!(/\s+/, ' ')
+          @subject.gsub!(/[[:blank:]]+/, ' ')
           @subject.sanitize!
         end
         return @subject
