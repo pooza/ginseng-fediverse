@@ -52,7 +52,7 @@ module Ginseng
         unless @subject
           @subject = note['cw'] if note['cw'].present?
           @subject ||= note['text']
-          @subject.gsub!(/\s+/, ' ')
+          @subject.gsub!(/[[:blank:]]+/, ' ')
           @subject.sanitize!
         end
         return @subject
