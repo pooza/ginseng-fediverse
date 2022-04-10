@@ -48,8 +48,7 @@ module Ginseng
 
       def create_tags
         @tags ||= map {|tag| tag.gsub(/([a-z0-9]{2,})[[:blank:]]/i, '\\1_')}
-          .map {|tag| tag.gsub(/[[:blank:]]/, '')}
-          .compact
+          .filter_map {|tag| tag.gsub(/[[:blank:]]/, '')}
           .map(&:to_hashtag)
           .reject {|tag| @text&.match?(create_pattern(tag))}
           .to_set
