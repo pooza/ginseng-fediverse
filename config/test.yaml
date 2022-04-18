@@ -1,8 +1,0 @@
-filters:
-  - name: ci
-    cases:
-      - mastodon_service_test
-      - misskey_service_test
-      - meisskey_service_test
-      - mulukhiya_ervice_test
-      - pleroma_service_test

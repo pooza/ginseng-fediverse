@@ -14,15 +14,22 @@ module Ginseng
       end
 
       def about
-        return @http.get('/mulukhiya/api/about')
+        return @http.get('/mulukhiya/api/about', {
+          mock: {class: self.class, method: __method__},
+        })
       end
 
       def health
-        return @http.get('/mulukhiya/api/health')
+        return @http.get('/mulukhiya/api/health', {
+          mock: {class: self.class, method: __method__},
+        })
       end
 
       def search_hashtags(text)
-        params = {body: {q: text.sanitize}}
+        params = {
+          body: {q: text.sanitize},
+          mock: {class: self.class, method: __method__},
+        }
         tags = []
         @http.post('/mulukhiya/api/tagging/tag/search', params).each_value do |entry|
           tags.concat(entry['words'])

@@ -4,7 +4,9 @@ module Ginseng
       include Package
 
       def announcements(params = {})
-        response = http.get('/api/meta')
+        response = http.get('/api/meta', {
+          mock: {class: self.class, method: __method__},
+        })
         return response['announcements'].map do |entry|
           entry.deep_symbolize_keys.merge(
             id: entry.to_json.adler32,
