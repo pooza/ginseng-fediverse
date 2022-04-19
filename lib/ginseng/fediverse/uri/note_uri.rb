@@ -52,8 +52,9 @@ module Ginseng
         unless @subject
           @subject = note['cw'] if note['cw'].present?
           @subject ||= note['text']
-          @subject.gsub!(/[[:blank:]]+/, ' ')
           @subject.sanitize!
+          URI.scan(@subject.dup) {|uri| @subject.gsub!(uri.to_s, '')}
+          @subject.gsub!(/[\s[:blank:]]+/, ' ')
         end
         return @subject
       end

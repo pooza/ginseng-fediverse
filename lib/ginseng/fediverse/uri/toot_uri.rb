@@ -51,8 +51,9 @@ module Ginseng
         unless @subject
           @subject = toot['spoiler_text'] if toot['spoiler_text'].present?
           @subject ||= toot['content']
-          @subject.gsub!(/[[:blank:]]+/, ' ')
           @subject.sanitize!
+          URI.scan(@subject.dup) {|uri| @subject.gsub!(uri.to_s, '')}
+          @subject.gsub!(/[\s[:blank:]]+/, ' ')
         end
         return @subject
       end
