@@ -5,9 +5,7 @@ module Ginseng
 
       def info
         unless @nodeinfo
-          @nodeinfo = http.get('/api/v1/instance', {
-            mock: {class: self.class, method: __method__},
-          }).parsed_response.merge(super)
+          @nodeinfo = http.get('/api/v1/instance').parsed_response.merge(super)
           contact = @nodeinfo['contact_account']
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
@@ -43,7 +41,6 @@ module Ginseng
       def fetch_status(id, params = {})
         response = http.get("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
         raise GatewayError, response['error'] if response['error']
         return response
@@ -58,7 +55,6 @@ module Ginseng
         return http.post('/api/v1/statuses', {
           body: body.compact,
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -67,7 +63,6 @@ module Ginseng
       def delete_status(id, params = {})
         return http.delete("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -111,7 +106,6 @@ module Ginseng
       def favourite(id, params = {})
         return http.post("/api/v1/statuses/#{search_status_id(id)}/favourite", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -120,7 +114,6 @@ module Ginseng
       def reblog(id, params = {})
         return http.post("/api/v1/statuses/#{search_status_id(id)}/reblog", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -129,7 +122,6 @@ module Ginseng
       def bookmark(id, params = {})
         return http.post("/api/v1/statuses/#{search_status_id(id)}/bookmark", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -138,41 +130,30 @@ module Ginseng
         params[:q] = keyword
         uri = create_uri("/api/v#{params[:version]}/search")
         uri.query_values = params
-        return http.get(uri, {
-          headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
-        })
+        return http.get(uri, {headers: create_headers(params[:headers])})
       end
 
       def follow(id, params = {})
         return http.post("/api/v1/accounts/#{id}/follow", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
       def unfollow(id, params = {})
         return http.post("/api/v1/accounts/#{id}/unfollow", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
       def statuses(params = {})
-        response = http.get('/api/v1/timelines/home', {
-          headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
-        })
+        response = http.get('/api/v1/timelines/home', {headers: create_headers(params[:headers])})
         return response.parsed_response
       end
 
       alias toots statuses
 
       def announcements(params = {})
-        response = http.get('/api/v1/announcements', {
-          headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
-        })
+        response = http.get('/api/v1/announcements', {headers: create_headers(params[:headers])})
         return response.parsed_response.map do |entry|
           entry.deep_symbolize_keys.merge(
             text: entry['content'].sanitize.strip,
@@ -186,20 +167,14 @@ module Ginseng
         id = params[:id] || @config['/mastodon/account/id']
         uri = create_uri("/api/v1/accounts/#{id}/followers")
         uri.query_values = {limit: @config['/mastodon/followers/limit']}
-        return http.get(uri, {
-          headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
-        })
+        return http.get(uri, {headers: create_headers(params[:headers])})
       end
 
       def followees(params = {})
         id = params[:id] || @config['/mastodon/account/id']
         uri = create_uri("/api/v1/accounts/#{id}/following")
         uri.query_values = {limit: @config['/mastodon/followees/limit']}
-        return http.get(uri, {
-          headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
-        })
+        return http.get(uri, {headers: create_headers(params[:headers])})
       end
 
       alias following followees
@@ -207,16 +182,12 @@ module Ginseng
       def fetch_featured_tags(id, params = {})
         return http.get("/api/v1/accounts/#{id}/featured_tags", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
       def filters(params = {})
         params.deep_symbolize_keys!
-        response = http.get('/api/v1/filters', {
-          headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
-        })
+        response = http.get('/api/v1/filters', {headers: create_headers(params[:headers])})
         case params
         in {phrase: phrase}
           return response.parsed_response.select {|v| v['phrase'] == phrase}
@@ -234,14 +205,12 @@ module Ginseng
             context: params[:context] || [:home, :public],
           },
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
       def unregister_filter(id, params = {})
         return http.delete("/api/v1/filters/#{id}", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -254,7 +223,6 @@ module Ginseng
               redirect_uris: @config['/mastodon/oauth/redirect_uri'],
               scopes: @config['/mastodon/oauth/scopes'].join(' '),
             },
-            mock: {class: self.class, method: __method__},
           })
           File.write(oauth_client_path, response.body)
         end

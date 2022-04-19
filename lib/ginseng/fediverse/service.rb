@@ -37,9 +37,7 @@ module Ginseng
       end
 
       def nodeinfo
-        return http.get('/nodeinfo/2.0', {
-          mock: {class: self.class, method: __method__},
-        }).parsed_response
+        return http.get('/nodeinfo/2.0').parsed_response
       end
 
       alias info nodeinfo
@@ -74,9 +72,7 @@ module Ginseng
 
       def upload_remote_resource(uri, params = {})
         path = File.join(environment_class.dir, 'tmp/media', uri.to_s.adler32)
-        File.write(path, http.get(uri, {
-          mock: {class: self.class, method: __method__},
-        }))
+        File.write(path, http.get(uri))
         return upload(path, params)
       ensure
         File.unlink(path) if File.exist?(path)

@@ -8,7 +8,6 @@ module Ginseng
         return http.post("/api/v1/pleroma/chats/#{params[:chat_id]}/messages", {
           body: body,
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -30,7 +29,6 @@ module Ginseng
       def delete_reaction(id, emoji, params = {})
         return http.delete("/api/v1/pleroma/statuses/#{id}/reactions/#{emoji}", {
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -51,7 +49,6 @@ module Ginseng
               redirect_uris: @config['/pleroma/oauth/redirect_uri'],
               scopes: @config['/pleroma/oauth/scopes'].join(' '),
             },
-            mock: {class: self.class, method: __method__},
           })
           File.write(oauth_client_path, response.body)
         end
@@ -85,9 +82,7 @@ module Ginseng
 
       def nodeinfo
         unless @nodeinfo
-          @nodeinfo = http.get('/api/v1/instance', {
-            mock: {class: self.class, method: __method__},
-          }).parsed_response
+          @nodeinfo = http.get('/api/v1/instance').parsed_response
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
             'maintainer' => {

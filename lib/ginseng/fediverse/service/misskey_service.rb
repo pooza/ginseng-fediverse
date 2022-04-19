@@ -22,7 +22,6 @@ module Ginseng
         return http.post('/api/notes/create', {
           body: body.compact,
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -44,7 +43,6 @@ module Ginseng
         return http.post('/api/notes/delete', {
           body: {noteId: search_status_id(id), i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -58,7 +56,6 @@ module Ginseng
         return http.post('/api/messaging/messages/create', {
           body: body,
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -66,7 +63,6 @@ module Ginseng
         return http.post('/api/notes/favorites/create', {
           body: {noteId: search_status_id(id), i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -74,7 +70,6 @@ module Ginseng
         return http.post('/api/notes/reactions/create', {
           body: {noteId: search_status_id(id), reaction: emoji, i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -103,7 +98,6 @@ module Ginseng
         return http.post('/api/drive/files/find-by-hash', {
           body: {md5: md5, i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -111,7 +105,6 @@ module Ginseng
         response = http.post('/api/users/notes', {
           body: {userId: params[:account_id], i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
         return response.parsed_response
       end
@@ -122,7 +115,6 @@ module Ginseng
         return http.post('/api/notes/show', {
           body: {noteId: search_status_id(id), i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -132,7 +124,6 @@ module Ginseng
         return http.post('/api/drive/files/show', {
           body: {fileId: search_attachment_id(id), i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
       end
 
@@ -145,7 +136,6 @@ module Ginseng
               permission: @config['/misskey/oauth/permission'],
               callbackUrl: create_uri(@config['/misskey/oauth/callback_url']).to_s,
             },
-            mock: {class: self.class, method: __method__},
           })
           File.write(oauth_client_path, response.body)
         end
@@ -160,7 +150,6 @@ module Ginseng
         return nil unless oauth_client(type)
         response = http.post('/api/auth/session/generate', {
           body: {appSecret: oauth_client(type)['secret']},
-          mock: {class: self.class, method: __method__},
         })
         return URI.parse(response['url'])
       end
@@ -178,7 +167,6 @@ module Ginseng
         response = http.post('/api/announcements', {
           body: {i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
         return response.parsed_response.map do |entry|
           entry.deep_symbolize_keys.merge(
@@ -192,7 +180,6 @@ module Ginseng
         response = http.post('/api/antennas/list', {
           body: {i: token},
           headers: create_headers(params[:headers]),
-          mock: {class: self.class, method: __method__},
         })
         return response.parsed_response
       end

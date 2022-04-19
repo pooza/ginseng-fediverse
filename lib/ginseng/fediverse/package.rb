@@ -18,7 +18,7 @@ module Ginseng
       end
 
       def http_class
-        return Ginseng::Fediverse::HTTP
+        return HTTP
       end
 
       def tag_container_class
