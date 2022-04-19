@@ -82,7 +82,3 @@ meisskey:
     limit: 8
 mulukhiya:
   url: https://st.mstdn.b-shock.org/
-http:
-  retry:
-    limit: 3
-    seconds: 5
