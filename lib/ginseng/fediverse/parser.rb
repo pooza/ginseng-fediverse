@@ -15,7 +15,7 @@ module Ginseng
         @service = (default_service rescue nil)
         @max_length = (default_max_length rescue nil)
         @footer_tags = tag_container_class.new
-        self.text = text
+        self.text = text || ''
       end
 
       alias to_s text

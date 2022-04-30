@@ -5,6 +5,12 @@ module Ginseng
         @parser = Parser.new
       end
 
+      def test_initialize
+        Parser.new('ローリン♪ローリン♪ココロにズッキュン')
+        Parser.new('')
+        Parser.new(nil)
+      end
+
       def test_text
         @parser.text = 'ローリン♪ローリン♪ココロにズッキュン'
         assert_equal('ローリン♪ローリン♪ココロにズッキュン', @parser.text)
