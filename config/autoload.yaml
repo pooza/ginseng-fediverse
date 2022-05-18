@@ -1,12 +1,12 @@
+entries:
+  - namespace: Ginseng::Fediverse
+    path: lib/ginseng/fediverse
+  - namespace: Ginseng::Fediverse
+    path: lib/ginseng/fediverse/parser
+  - namespace: Ginseng::Fediverse
+    path: lib/ginseng/fediverse/service
+  - namespace: Ginseng::Fediverse
+    path: lib/ginseng/fediverse/uri
 inflections:
   note_uri: NoteURI
   toot_uri: TootURI
-entries:
-  - path: lib/ginseng/fediverse
-    namespace: Ginseng::Fediverse
-  - path: lib/ginseng/fediverse/parser
-    namespace: Ginseng::Fediverse
-  - path: lib/ginseng/fediverse/service
-    namespace: Ginseng::Fediverse
-  - path: lib/ginseng/fediverse/uri
-    namespace: Ginseng::Fediverse
