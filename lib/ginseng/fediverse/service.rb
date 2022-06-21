@@ -102,7 +102,7 @@ module Ginseng
 
       def create_headers(headers = {})
         headers ||= {}
-        headers['X-Mulukhiya'] = package_class.full_name unless mulukhiya_enable?
+        headers['X-Mulukhiya'] ||= package_class.full_name unless mulukhiya_enable?
         return headers
       end
 
