@@ -75,7 +75,7 @@ module Ginseng
         File.write(path, http.get(uri))
         return upload(path, params)
       ensure
-        File.unlink(path) if File.exist?(path)
+        FileUtils.rm_f(path)
       end
 
       def fetch_featured_tags(id, params = {})
@@ -129,7 +129,7 @@ module Ginseng
       end
 
       def clear_oauth_client
-        File.unlink(oauth_client_path) if File.exist?(oauth_client_path)
+        FileUtils.rm_f(oauth_client_path)
       end
     end
   end

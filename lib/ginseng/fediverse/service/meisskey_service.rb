@@ -15,7 +15,7 @@ module Ginseng
 
       def max_post_text_length
         length = info.dig('metadata', 'maxNoteTextLength')
-        length ||= config['/meisskey/note/default_max_length']
+        length ||= config['/meisskey/status/default_max_length']
         return length
       end
 
