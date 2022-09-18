@@ -64,7 +64,7 @@ module Ginseng
       end
 
       def default_max_length
-        return @config['/misskey/note/default_max_length']
+        return @config['/misskey/status/default_max_length']
       end
     end
   end

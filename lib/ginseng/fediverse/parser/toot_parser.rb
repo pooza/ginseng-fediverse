@@ -56,7 +56,7 @@ module Ginseng
       end
 
       def default_max_length
-        return @config['/mastodon/toot/default_max_length']
+        return @config['/mastodon/status/default_max_length']
       end
     end
   end

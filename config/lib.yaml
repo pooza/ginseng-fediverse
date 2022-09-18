@@ -7,22 +7,22 @@ mastodon:
     limit: 500
   followers:
     limit: 500
+  status:
+    default_max_length: 500
   test_toot: 1
   token: test
-  toot:
-    default_max_length: 500
   url: https://st.mstdn.b-shock.org/
 meisskey:
   attachment:
     limit: 8
-  note:
+  status:
     default_max_length: 1000
   token: test
   url: https://st.reco.shrieker.net/
 misskey:
   attachment:
     limit: 16
-  note:
+  status:
     default_max_length: 3000
   token: test
   url: https://dev.mis.b-shock.org/
@@ -78,7 +78,7 @@ parser:
 pleroma:
   attachment:
     limit: 4
-  token: test
-  toot:
+  status:
     default_max_length: 5000
+  token: test
   url: https://leroma.shrieker.net/
