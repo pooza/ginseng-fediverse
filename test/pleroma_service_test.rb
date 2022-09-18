@@ -15,7 +15,7 @@ module Ginseng
       end
 
       def test_tag_uri
-        assert_equal('/tags/日本語のタグ', @service.create_tag_uri('日本語のタグ').path)
+        assert_equal('/tag/日本語のタグ', @service.create_tag_uri('日本語のタグ').path)
       end
 
       def test_mulukhiya?

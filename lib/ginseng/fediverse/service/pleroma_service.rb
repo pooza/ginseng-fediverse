@@ -55,6 +55,10 @@ module Ginseng
         return JSON.parse(File.read(oauth_client_path))
       end
 
+      def create_tag_uri(tag)
+        return create_uri("/tag/#{tag.to_hashtag_base}")
+      end
+
       def oauth_uri(type = :default)
         return nil unless oauth_client(type)
         uri = create_uri('/oauth/authorize')
