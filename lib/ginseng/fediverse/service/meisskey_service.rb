@@ -7,7 +7,7 @@ module Ginseng
         response = http.get('/api/meta')
         return response['announcements'].map do |entry|
           entry.deep_symbolize_keys.merge(
-            id: entry.to_json.adler32,
+            id: entry.to_json.sha256,
             content: entry['text'],
           )
         end
