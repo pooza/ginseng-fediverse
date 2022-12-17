@@ -13,7 +13,7 @@ module Ginseng
       def to_md
         md = text.dup
         tags.sort_by(&:length).reverse_each do |tag|
-          md.gsub!("\##{tag}", "[\\#{HASH}#{tag}](#{service.create_uri("/tags/#{tag}")})")
+          md.gsub!("##{tag}", "[\\#{HASH}#{tag}](#{service.create_uri("/tags/#{tag}")})")
         end
         accts = self.accts.map(&:to_s).sort_by do |acct|
           v = acct.to_s

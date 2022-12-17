@@ -23,6 +23,7 @@ module Ginseng
         assert_false(@service.mulukhiya?)
         assert_false(@service.mulukhiya_enable?)
         @service.mulukhiya_enable = true
+
         assert_predicate(@service, :mulukhiya?)
         assert_predicate(@service, :mulukhiya_enable?)
         @service.mulukhiya_enable = false
@@ -30,11 +31,13 @@ module Ginseng
 
       def test_toot
         r = @service.toot('文字列からトゥート')
+
         assert_kind_of(HTTParty::Response, r)
         assert_equal(200, r.code)
         assert_equal('<p>文字列からトゥート</p>', r['content'])
 
         r = @service.toot(status: 'ハッシュからプライベートなトゥート', visibility: 'private')
+
         assert_kind_of(HTTParty::Response, r)
         assert_equal(200, r.code)
         assert_equal('<p>ハッシュからプライベートなトゥート</p>', r['content'])
@@ -44,25 +47,30 @@ module Ginseng
       def test_delete_status
         id = @service.toot('このあと削除するトゥート')['id']
         r = @service.delete_status(id)
+
         assert_equal(200, r.code)
         assert_equal('このあと削除するトゥート', r['text'])
       end
 
       def test_media
         id = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'), {response: :id})
+
         assert_predicate(id, :positive?)
 
         r = @service.update_media(id, {description: 'hoge'})
+
         assert_equal(200, r.code)
 
         r = @service.update_media(id, {thumbnaiil: {
           tempfile: File.new(File.join(Environment.dir, 'images/pooza.jpg')),
         }})
+
         assert_equal(200, r.code)
 
         r = @service.update_media(id, {thumbnaiil: {
           tempfile: File.join(Environment.dir, 'images/pooza.jpg'),
         }})
+
         assert_equal(200, r.code)
       end
 
@@ -90,6 +98,7 @@ module Ginseng
 
       def test_nodeinfo
         info = @service.nodeinfo
+
         assert_kind_of(String, info['metadata']['nodeName'])
         assert_kind_of(String, info['metadata']['maintainer']['name'])
         assert_kind_of(String, info['metadata']['maintainer']['email'])
@@ -134,6 +143,7 @@ module Ginseng
 
       def test_filters
         filters = @service.filters.parsed_response
+
         assert_kind_of(Array, filters)
         return unless filters.present?
 

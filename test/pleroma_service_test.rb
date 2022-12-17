@@ -22,6 +22,7 @@ module Ginseng
         assert_false(@service.mulukhiya?)
         assert_false(@service.mulukhiya_enable?)
         @service.mulukhiya_enable = true
+
         assert_predicate(@service, :mulukhiya?)
         assert_predicate(@service, :mulukhiya_enable?)
         @service.mulukhiya_enable = false
@@ -29,11 +30,13 @@ module Ginseng
 
       def test_toot
         r = @service.toot('文字列からトゥート')
+
         assert_kind_of(HTTParty::Response, r)
         assert_equal(200, r.code)
         assert_equal('文字列からトゥート', r['content'])
 
         r = @service.toot(status: 'ハッシュからプライベートなトゥート', visibility: 'private')
+
         assert_kind_of(HTTParty::Response, r)
         assert_equal(200, r.code)
         assert_equal('ハッシュからプライベートなトゥート', r['content'])
@@ -43,6 +46,7 @@ module Ginseng
       def test_delete_status
         id = @service.toot('このあと削除するトゥート')['id']
         r = @service.delete_status(id)
+
         assert_equal(200, r.code)
         assert_equal('このあと削除するトゥート', r['text'])
       end
@@ -53,6 +57,7 @@ module Ginseng
 
       def test_nodeinfo
         info = @service.nodeinfo
+
         assert_kind_of(String, info['metadata']['nodeName'])
         assert_kind_of(String, info['metadata']['maintainer']['name'])
         assert_kind_of(String, info['metadata']['maintainer']['email'])

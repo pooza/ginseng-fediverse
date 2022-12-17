@@ -37,7 +37,9 @@ module Ginseng
       end
 
       def nodeinfo
-        return http.get('/nodeinfo/2.0').parsed_response
+        return http.get('/nodeinfo/2.0.json', {
+          headers: {'X-Mulukhiya' => Package.full_name},
+        }).parsed_response
       end
 
       alias info nodeinfo
@@ -71,7 +73,7 @@ module Ginseng
       end
 
       def upload_remote_resource(uri, params = {})
-        path = File.join(environment_class.dir, 'tmp/media', uri.to_s.adler32)
+        path = File.join(environment_class.dir, 'tmp/media', uri.to_s.sha256)
         File.write(path, http.get(uri))
         return upload(path, params)
       ensure

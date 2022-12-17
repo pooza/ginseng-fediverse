@@ -11,22 +11,27 @@ module Ginseng
 
       def test_create_tags
         @container.concat(['カレー担々麺', 'コスモグミ'])
+
         assert_equal(@container.create_tags, Set['#カレー担々麺', '#コスモグミ'])
 
         @container.push('剣崎 真琴')
         @container.push('Makoto Kenzaki')
+
         assert_equal(@container.create_tags, Set['#カレー担々麺', '#コスモグミ', '#剣崎真琴', '#Makoto_Kenzaki'])
 
         @container.clear
         @container.push('武田 信玄')
+
         assert_equal(@container.create_tags, Set['#武田信玄'])
 
         @container.clear
         @container.push('Yes!プリキュア5 GoGo!')
+
         assert_equal(@container.create_tags, Set['#Yes_プリキュア5GoGo'])
 
         @container.clear
         @container.push('よにんでSUPER TEUCHI STATION ONLINE')
+
         assert_equal(@container.create_tags, Set['#よにんでSUPER_TEUCHI_STATION_ONLINE'])
       end
 
