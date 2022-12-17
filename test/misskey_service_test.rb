@@ -22,6 +22,7 @@ module Ginseng
         assert_false(@service.mulukhiya?)
         assert_false(@service.mulukhiya_enable?)
         @service.mulukhiya_enable = true
+
         assert_predicate(@service, :mulukhiya?)
         assert_predicate(@service, :mulukhiya_enable?)
         @service.mulukhiya_enable = false
@@ -29,12 +30,14 @@ module Ginseng
 
       def test_note
         r = @service.note('文字列からノート')
+
         assert_kind_of(HTTParty::Response, r)
         assert_equal(200, r.code)
         assert_equal('文字列からノート', r['createdNote']['text'])
 
         body = {text: 'HashWithIndifferentAccessからノート'}.with_indifferent_access
         r = @service.note(body)
+
         assert_kind_of(HTTParty::Response, r)
         assert_equal(200, r.code)
         assert_equal('HashWithIndifferentAccessからノート', r['createdNote']['text'])
@@ -43,6 +46,7 @@ module Ginseng
       def test_delete_status
         id = @service.note('このあと削除するトゥート')['createdNote']['id']
         r = @service.delete_status(id)
+
         assert_equal(204, r.code)
       end
 
@@ -68,6 +72,7 @@ module Ginseng
 
       def test_nodeinfo
         info = @service.nodeinfo
+
         assert_kind_of(String, info['metadata']['nodeName'])
         assert_kind_of(String, info['metadata']['maintainer']['name'])
         assert_kind_of(String, info['metadata']['maintainer']['email'])
@@ -101,6 +106,7 @@ module Ginseng
         response = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         id = JSON.parse(response.body)['id']
         r = @service.delete_attachment(id)
+
         assert_equal(204, r.code)
       end
 
@@ -124,6 +130,7 @@ module Ginseng
         response = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'))
         md5 = JSON.parse(response.body)['md5']
         r = @service.search_dupllicated_attachment(md5)
+
         assert_equal(r.parsed_response.first['md5'], md5)
       end
     end
