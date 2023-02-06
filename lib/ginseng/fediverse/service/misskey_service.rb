@@ -54,7 +54,7 @@ module Ginseng
         body.delete(:text) unless body[:text].present?
         body[:i] ||= token
         return http.post('/api/messaging/messages/create', {
-          body: body,
+          body:,
           headers: create_headers(params[:headers]),
         })
       end
@@ -96,7 +96,7 @@ module Ginseng
 
       def search_dupllicated_attachment(md5, params = {})
         return http.post('/api/drive/files/find-by-hash', {
-          body: {md5: md5, i: token},
+          body: {md5:, i: token},
           headers: create_headers(params[:headers]),
         })
       end
@@ -158,7 +158,7 @@ module Ginseng
         return http.post('/api/auth/session/userkey', {
           body: {
             appSecret: oauth_client(type)['secret'],
-            token: token,
+            token:,
           },
         })
       end

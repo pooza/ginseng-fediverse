@@ -10,7 +10,7 @@ module Ginseng
       end
 
       def test_create_tags
-        @container.concat(['カレー担々麺', 'コスモグミ'])
+        @container.push('カレー担々麺', 'コスモグミ')
 
         assert_equal(@container.create_tags, Set['#カレー担々麺', '#コスモグミ'])
 

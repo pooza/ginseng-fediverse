@@ -90,7 +90,7 @@ module Ginseng
         if payload[:thumbnail]
           return http.upload(create_uri("/api/v1/media/#{search_attachment_id(id)}"), nil, {
             method: :put,
-            payload: payload,
+            payload:,
             headers: create_headers(params[:headers]),
           })
         else

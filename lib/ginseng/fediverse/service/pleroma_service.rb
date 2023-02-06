@@ -6,7 +6,7 @@ module Ginseng
       def say(body, params = {})
         params[:chat_id] ||= body[:chat_id]
         return http.post("/api/v1/pleroma/chats/#{params[:chat_id]}/messages", {
-          body: body,
+          body:,
           headers: create_headers(params[:headers]),
         })
       end
