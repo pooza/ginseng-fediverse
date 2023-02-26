@@ -122,7 +122,7 @@ module Ginseng
       end
 
       def self.sanitize(text)
-        text = text.dup
+        text = text.to_s.dup
         text.delete!("\n") if text.match?(/<br.*?>/)
         text.gsub!(/[[:blank:]]*<br.*?>/, "\n")
         text.gsub!(%r{[[:blank:]]*</p.*?>}, "\n\n")
