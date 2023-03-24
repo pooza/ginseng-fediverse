@@ -100,13 +100,6 @@ module Ginseng
         })
       end
 
-      def search_dupllicated_attachment(md5, params = {})
-        return http.post('/api/drive/files/find-by-hash', {
-          body: {md5:, i: token},
-          headers: create_headers(params[:headers]),
-        })
-      end
-
       def statuses(params = {})
         response = http.post('/api/users/notes', {
           body: {userId: params[:account_id], i: token},

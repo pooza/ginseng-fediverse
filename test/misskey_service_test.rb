@@ -125,14 +125,6 @@ module Ginseng
       def test_characters_reserved_per_url
         assert_predicate(@service.characters_reserved_per_url, :positive?)
       end
-
-      def test_search_dupllicated_attachment
-        response = @service.upload(File.join(Environment.dir, 'images/pooza.jpg'))
-        md5 = JSON.parse(response.body)['md5']
-        r = @service.search_dupllicated_attachment(md5)
-
-        assert_equal(r.parsed_response.first['md5'], md5)
-      end
     end
   end
 end
