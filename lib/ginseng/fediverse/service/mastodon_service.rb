@@ -187,29 +187,34 @@ module Ginseng
 
       def filters(params = {})
         params.deep_symbolize_keys!
-        response = http.get('/api/v1/filters', {headers: create_headers(params[:headers])})
+        response = http.get('/api/v2/filters', {headers: create_headers(params[:headers])})
         case params
         in {phrase: phrase}
-          return response.parsed_response.select {|v| v['phrase'] == phrase}
+          return response.parsed_response.select do |filter|
+            filter['keywords'].any? {|v| v['keyword'] == phrase}
+          end
         in {tag: tag}
-          return response.parsed_response.select {|v| v['phrase'] == tag.to_hashtag}
+          return response.parsed_response.select do |filter|
+            filter['keywords'].any? {|v| v['keyword'] == tag.to_hashtag}
+          end
         else
           return response
         end
       end
 
       def register_filter(params)
-        return http.post('/api/v1/filters', {
+        return http.post('/api/v2/filters', {
           body: {
-            phrase: params[:phrase],
+            title: params[:title] || params[:phrase],
             context: params[:context] || [:home, :public],
+            keywords_attributes: [{keyword: params[:phrase], whole_word: false}],
           },
           headers: create_headers(params[:headers]),
         })
       end
 
       def unregister_filter(id, params = {})
-        return http.delete("/api/v1/filters/#{id}", {
+        return http.delete("/api/v2/filters/#{id}", {
           headers: create_headers(params[:headers]),
         })
       end
