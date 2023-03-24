@@ -25,7 +25,7 @@ misskey:
   status:
     default_max_length: 3000
   token: test
-  url: https://dev.mis.b-shock.org/
+  url: https://st.misskey.delmulin.com/
 mulukhiya:
   url: https://st.mstdn.b-shock.org/
 package:
@@ -36,7 +36,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 1.8.8
+  version: 1.8.9
 parser:
   note:
     url:

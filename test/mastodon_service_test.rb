@@ -1,3 +1,5 @@
+require 'securerandom'
+
 module Ginseng
   module Fediverse
     class MastodonServiceTest < TestCase
@@ -5,6 +7,7 @@ module Ginseng
         @config = Config.instance
         @service = MastodonService.new(@config['/mastodon/url'], @config['/mastodon/token'])
         @toot_id = @config['/mastodon/test_toot']
+        @filte_title = SecureRandom.hex
       end
 
       def test_new
@@ -149,14 +152,18 @@ module Ginseng
 
         filters.first(5).each do |filter|
           assert_kind_of(String, filter['id'])
-          assert_kind_of(String, filter['phrase'])
+          assert_kind_of(Array, filter['keywords'])
         end
 
-        sample = filters.first
-        @service.filters(phrase: sample['phrase']).each do |filter|
-          assert_kind_of(String, filter['id'])
-          assert_equal(filter['phrase'], sample['phrase'])
+        filters.first['keywords'].each do |keyword|
+          assert_kind_of(String, keyword['keyword'])
+          assert_boolean(keyword['whole_word'])
         end
+      end
+
+      def test_register_filter
+        filter = @service.register_filter(title: @filte_title, phrase: '実況')
+        @service.unregister_filter(filter['id'])
       end
 
       def test_max_post_text_length
