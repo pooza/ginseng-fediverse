@@ -18,6 +18,7 @@ module Ginseng
       def test_escape_toot
         assert_equal('# キボウレインボウ#', '#キボウレインボウ#'.escape_toot)
         assert_equal('IDOLM@ STER', 'IDOLM@STER'.escape_toot)
+        assert_equal('search／# サーチ2', 'search／#サーチ2'.escape_toot)
       end
     end
   end
