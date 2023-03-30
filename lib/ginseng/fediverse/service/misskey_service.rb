@@ -187,7 +187,7 @@ module Ginseng
       end
 
       def register_filter(params)
-        response = http.post('/api/i/registry/set', {
+        return http.post('/api/i/registry/set', {
           body: {
             scope: ['client', 'base'],
             key: 'mutedWords',
