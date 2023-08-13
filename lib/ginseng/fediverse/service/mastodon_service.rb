@@ -76,6 +76,8 @@ module Ginseng
         })
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id'].to_i
+      rescue RestClient::UnprocessableEntity => e
+        raise ValidateError, "UploadError (#{e.message})"
       end
 
       def update_media(id, payload, params = {})
