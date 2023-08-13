@@ -183,6 +183,24 @@ module Ginseng
         return response.parsed_response
       end
 
+      def filters(params = {})
+      end
+
+      def register_filter(params)
+        return http.post('/api/i/registry/set', {
+          body: {
+            scope: ['client', 'base'],
+            key: 'mutedWords',
+            value: [[params[:phrase]]],
+            i: token,
+          },
+          headers: create_headers(params[:headers]),
+        })
+      end
+
+      def unregister_filter(id, params = {})
+      end
+
       def create_tag_uri(tag)
         return create_uri("/tags/#{tag.to_hashtag_base}")
       end
