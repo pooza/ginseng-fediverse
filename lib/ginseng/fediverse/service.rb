@@ -84,6 +84,10 @@ module Ginseng
         return nil
       end
 
+      def fetch_followed_tags(params = {})
+        return nil
+      end
+
       def filters(params = {})
         return nil
       end

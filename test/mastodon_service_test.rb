@@ -181,6 +181,10 @@ module Ginseng
       def test_create_streaming_uri
         assert_kind_of(Ginseng::URI, @service.create_streaming_uri)
       end
+
+      def test_fetch_followed_tags
+        assert_kind_of(Ginseng::URI, @service.create_streaming_uri)
+      end
     end
   end
 end
