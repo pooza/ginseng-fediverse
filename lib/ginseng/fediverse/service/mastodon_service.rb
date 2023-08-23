@@ -187,6 +187,12 @@ module Ginseng
         })
       end
 
+      def fetch_followed_tags(params = {})
+        return http.get('/api/v1/followed_tags', {
+          headers: create_headers(params[:headers]),
+        })
+      end
+
       def filters(params = {})
         params.deep_symbolize_keys!
         response = http.get('/api/v2/filters', {headers: create_headers(params[:headers])})
