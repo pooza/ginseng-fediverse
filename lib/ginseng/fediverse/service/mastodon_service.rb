@@ -188,7 +188,7 @@ module Ginseng
       end
 
       def fetch_followed_tags(params = {})
-        return http.get("/api/v1/followed_tags", {
+        return http.get('/api/v1/followed_tags', {
           headers: create_headers(params[:headers]),
         })
       end
