@@ -148,7 +148,7 @@ module Ginseng
       end
 
       def test_upload_remote_resource
-        assert_predicate(@service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}), :positive?)
+        assert_predicate(@service.upload_remote_resource('https://anime-precure.com/import/images/precure20th_logo.webp', {response: :id}), :positive?)
       end
 
       def test_filters

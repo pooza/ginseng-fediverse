@@ -43,8 +43,15 @@ module Ginseng
         assert_equal('HashWithIndifferentAccessからノート', r['createdNote']['text'])
       end
 
+      def test_update_status
+        id = @service.note('このあと更新するノート')['createdNote']['id']
+        r = @service.update_status(id, '更新されたノート')
+
+        assert_equal(204, r.code)
+      end
+
       def test_delete_status
-        id = @service.note('このあと削除するトゥート')['createdNote']['id']
+        id = @service.note('このあと削除するノート')['createdNote']['id']
         r = @service.delete_status(id)
 
         assert_equal(204, r.code)
@@ -99,7 +106,7 @@ module Ginseng
       end
 
       def test_upload_remote_resource
-        assert_kind_of(RestClient::Response, @service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif'))
+        assert_kind_of(RestClient::Response, @service.upload_remote_resource('https://anime-precure.com/import/images/precure20th_logo.webp'))
       end
 
       def test_delete_attachment

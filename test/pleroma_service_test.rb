@@ -84,7 +84,7 @@ module Ginseng
       end
 
       def test_upload_remote_resource
-        assert_kind_of(String, @service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}))
+        assert_kind_of(String, @service.upload_remote_resource('https://anime-precure.com/import/images/precure20th_logo.webp', {response: :id}))
       end
 
       def test_create_parser
