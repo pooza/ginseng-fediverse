@@ -127,6 +127,15 @@ module Ginseng
         })
       end
 
+      def update_status(id, body, params = {})
+        body = {status: body.to_s} unless body.is_a?(Hash)
+        body.deep_symbolize_keys!
+        return http.put("/api/v1/statuses/#{id}", {
+          body: body.compact,
+          headers: create_headers(params[:headers]),
+        })
+      end
+
       def search(keyword, params = {})
         params[:version] ||= 2
         params[:q] = keyword

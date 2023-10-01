@@ -47,6 +47,13 @@ module Ginseng
         assert_equal('private', r['visibility'])
       end
 
+      def test_update_status
+        id = @service.toot('このあと削除するトゥート')['id']
+        r = @service.update_status(id, '更新されたトゥート')
+
+        assert_equal(200, r.code)
+      end
+
       def test_delete_status
         id = @service.toot('このあと削除するトゥート')['id']
         r = @service.delete_status(id)
