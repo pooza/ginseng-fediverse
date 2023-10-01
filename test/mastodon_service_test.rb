@@ -47,6 +47,13 @@ module Ginseng
         assert_equal('private', r['visibility'])
       end
 
+      def test_update_status
+        id = @service.toot('このあと削除するトゥート')['id']
+        r = @service.update_status(id, '更新されたトゥート')
+
+        assert_equal(200, r.code)
+      end
+
       def test_delete_status
         id = @service.toot('このあと削除するトゥート')['id']
         r = @service.delete_status(id)
@@ -141,7 +148,7 @@ module Ginseng
       end
 
       def test_upload_remote_resource
-        assert_predicate(@service.upload_remote_resource('https://www.b-shock.co.jp/images/ota-m.gif', {response: :id}), :positive?)
+        assert_predicate(@service.upload_remote_resource('https://anime-precure.com/import/images/precure20th_logo.webp', {response: :id}), :positive?)
       end
 
       def test_filters

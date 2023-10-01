@@ -18,7 +18,7 @@ meisskey:
   status:
     default_max_length: 1000
   token: test
-  url: https://st.reco.shrieker.net/
+  url: https://reco.shrieker.net/
 misskey:
   attachment:
     limit: 16
@@ -36,7 +36,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 1.8.11
+  version: 1.8.12
 parser:
   note:
     url:
