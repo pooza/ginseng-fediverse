@@ -72,23 +72,6 @@ module Ginseng
 
       alias bookmark favourite
 
-      def update_status(id, body, params = {})
-        body = {text: body.to_s} unless body.is_a?(Hash)
-        body = body.deep_symbolize_keys
-        body[:replyId] = params.dig(:reply, :id) if params[:reply]
-        body[:visibility] ||= NoteParser.visibility_name(:public)
-        body[:poll] ||= nil
-        body[:cw] ||= nil
-        body[:localOnly] ||= false
-        body[:reactionAcceptance] ||= 'nonSensitiveOnly'
-        body[:noteId] ||= id
-        body[:i] ||= token
-        return http.post('/api/notes/update', {
-          body:,
-          headers: create_headers(params[:headers]),
-        })
-      end
-
       def upload(path, params = {})
         params[:response] ||= :raw
         response = http.upload('/api/drive/files/create', path, {
