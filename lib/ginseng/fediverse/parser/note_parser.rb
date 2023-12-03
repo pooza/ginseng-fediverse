@@ -27,6 +27,25 @@ module Ginseng
         return Parser.sanitize(md)
       end
 
+      def mfmize
+        temp = text.dup
+        matches = text.scan(/\[.*?\]\(.*?\)/)
+        matches.each_with_index do |match, i|
+          temp.gsub!(match, "____#{i}____")
+        end
+        uris.select {|v| v.to_s.start_with?('http')}.each do |uri|
+          temp.gsub!(uri.to_s, "[#{uri.host}](#{uri})")
+        end
+        matches.each_with_index do |match, i|
+          temp.gsub!("____#{i}____", match)
+        end
+        return temp
+      end
+
+      def default_max_length
+        return @config['/misskey/status/default_max_length']
+      end
+
       def self.visibility_name(name)
         return visibility_names[name.to_sym] if visibility_names.key?(name.to_sym)
         return name.to_s if visibility_names.values.member?(name.to_s)
@@ -61,10 +80,6 @@ module Ginseng
             config["/parser/note/visibility/#{name}/icon"].to_s,
           ]
         end)
-      end
-
-      def default_max_length
-        return @config['/misskey/status/default_max_length']
       end
     end
   end
