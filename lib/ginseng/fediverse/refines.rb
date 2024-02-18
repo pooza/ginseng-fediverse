@@ -11,7 +11,11 @@ module Ginseng
         end
 
         def escape_status
-          return sub(/[@#]/, '\\0 ')
+          return Service.sanitize_status(self)
+        end
+
+        def sanitize_status
+          return Service.sanitize_status(self)
         end
 
         alias escape_note escape_status
