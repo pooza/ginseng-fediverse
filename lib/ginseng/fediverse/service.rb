@@ -120,6 +120,15 @@ module Ginseng
         raise ImplementError, "'#{__method__}' not implemented"
       end
 
+      def self.sanitize_status(text)
+        dest = text.dup
+        dest.gsub!(%r{<br */?>}, "\n")
+        dest.sanitize!
+        dest.gsub!(/[@#]/, '\\0 ')
+        dest.strip!
+        return dest
+      end
+
       def self.create_tag(word)
         return "##{create_tag_base(word)}"
       end
