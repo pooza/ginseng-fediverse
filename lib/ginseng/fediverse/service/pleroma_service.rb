@@ -86,13 +86,10 @@ module Ginseng
 
       def nodeinfo
         unless @nodeinfo
-          @nodeinfo = http.get('/api/v1/instance').parsed_response
+          @nodeinfo = super
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
-            'maintainer' => {
-              'name' => @nodeinfo['email'],
-              'email' => @nodeinfo['email'],
-            },
+            'maintainer' => {'name' => @nodeinfo['email'], 'email' => @nodeinfo['email']},
           }
         end
         return @nodeinfo

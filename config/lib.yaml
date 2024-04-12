@@ -11,23 +11,23 @@ mastodon:
     default_max_length: 500
   test_toot: 1
   token: test
-  url: https://st.mstdn.b-shock.org/
+  url: https://mstdn.b-shock.org/
 meisskey:
   attachment:
     limit: 8
   status:
     default_max_length: 1000
   token: test
-  url: https://reco.shrieker.net/
+  url: null
 misskey:
   attachment:
     limit: 16
   status:
     default_max_length: 3000
   token: test
-  url: https://st.misskey.delmulin.com/
+  url: https://misskey.delmulin.com/
 mulukhiya:
-  url: https://st.mstdn.b-shock.org/
+  url: https://mstdn.b-shock.org/
 package:
   authors:
     - Tatsuya Koishi
@@ -36,7 +36,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 1.8.13
+  version: 1.8.14
 parser:
   note:
     url:
@@ -81,4 +81,4 @@ pleroma:
   status:
     default_max_length: 5000
   token: test
-  url: https://leroma.shrieker.net/
+  url: null

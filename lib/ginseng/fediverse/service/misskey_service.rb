@@ -5,12 +5,6 @@ module Ginseng
     class MisskeyService < Service
       include Package
 
-      def nodeinfo
-        return http.get('/nodeinfo/2.0', {
-          headers: {'X-Mulukhiya' => Package.full_name},
-        }).parsed_response
-      end
-
       def create_parser(text = '')
         parser = NoteParser.new(text)
         parser.max_length = max_post_text_length

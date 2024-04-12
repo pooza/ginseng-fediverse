@@ -37,9 +37,11 @@ module Ginseng
       end
 
       def nodeinfo
-        return http.get('/nodeinfo/2.0.json', {
-          headers: {'X-Mulukhiya' => Package.full_name},
-        }).parsed_response
+        headers = {'X-Mulukhiya' => Package.full_name}
+        r = http.get('/.well-known/nodeinfo', {headers:}).parsed_response
+        return http.get(r['links'].first['href'], {headers:}).parsed_response
+      rescue
+        return {}
       end
 
       alias info nodeinfo
