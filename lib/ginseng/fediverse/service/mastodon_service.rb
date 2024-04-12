@@ -3,7 +3,7 @@ module Ginseng
     class MastodonService < Service
       include Package
 
-      def info
+      def nodeinfo
         unless @nodeinfo
           @nodeinfo = http.get('/api/v1/instance').parsed_response.merge(super)
           contact = @nodeinfo['contact_account']
@@ -18,7 +18,7 @@ module Ginseng
         return @nodeinfo
       end
 
-      alias nodeinfo info
+      alias info nodeinfo
 
       def create_parser(text = '')
         parser = TootParser.new(text)
