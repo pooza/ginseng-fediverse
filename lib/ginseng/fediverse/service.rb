@@ -123,10 +123,14 @@ module Ginseng
       end
 
       def self.sanitize_status(text)
-        dest = text.dup
-        dest.sanitize!
-        dest.gsub!(/[@#]/, '\\0 ')
-        return dest
+        text = text.dup
+        text.delete!("\n") if text.match?(/<br.*?>/)
+        text.gsub!(/[[:blank:]]*<br.*?>/, "\n")
+        text.gsub!(%r{[[:blank:]]*</p.*?>}, "\n\n")
+        text.gsub!(/<p.*?>/, '')
+        text.sanitize!
+        text.gsub!(/[@#]/, '\\0 ')
+        return text.strip
       end
 
       def self.create_tag(word)
