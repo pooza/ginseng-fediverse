@@ -205,8 +205,10 @@ module Ginseng
 
       def max_post_text_length
         length = info.dig('metadata', 'maxNoteTextLength')
-        length ||= config['/meisskey/status/default_max_length']
+        length ||= config['/misskey/status/default_max_length']
         return length
+      rescue
+        return config['/misskey/status/default_max_length']
       end
 
       def max_media_attachments

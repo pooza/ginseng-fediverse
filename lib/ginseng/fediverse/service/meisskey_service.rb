@@ -17,6 +17,8 @@ module Ginseng
         length = info.dig('metadata', 'maxNoteTextLength')
         length ||= config['/meisskey/status/default_max_length']
         return length
+      rescue
+        misskey config['/meisskey/status/default_max_length']
       end
 
       def max_media_attachments
