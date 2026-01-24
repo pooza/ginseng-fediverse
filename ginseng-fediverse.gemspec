@@ -13,5 +13,5 @@ Gem::Specification.new do |spec|
   spec.metadata['homepage_uri'] = package['url']
   spec.metadata['rubygems_mfa_required'] = 'true'
   spec.require_paths = ['lib']
-  spec.required_ruby_version = '>=3.2'
+  spec.required_ruby_version = '>=3.4'
 end
