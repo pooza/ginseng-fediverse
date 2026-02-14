@@ -145,6 +145,28 @@ module Ginseng
         })
       end
 
+      def oauth_server_metadata
+        @oauth_server_metadata ||= http.get('/.well-known/oauth-authorization-server').parsed_response
+        return @oauth_server_metadata
+      rescue
+        return nil
+      end
+
+      def oauth2_auth(code, redirect_uri:, code_verifier:, client_id:)
+        metadata = oauth_server_metadata
+        return nil unless metadata
+        return http.post(metadata['token_endpoint'], {
+          headers: {'Content-Type' => 'application/x-www-form-urlencoded'},
+          body: {
+            'grant_type' => 'authorization_code',
+            'code' => code,
+            'redirect_uri' => redirect_uri,
+            'code_verifier' => code_verifier,
+            'client_id' => client_id,
+          },
+        })
+      end
+
       def announcements(params = {})
         response = http.post('/api/announcements', {
           body: {i: token},
