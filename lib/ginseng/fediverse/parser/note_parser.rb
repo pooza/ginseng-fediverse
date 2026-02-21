@@ -10,6 +10,13 @@ module Ginseng
         return (MisskeyService.new rescue MeisskeyService.new)
       end
 
+      def uris(&block)
+        return enum_for(__method__) unless block
+        text.scan(%r{https?://[^()[:space:]]+}) do |link|
+          yield Ginseng::URI.parse(link.gsub(/[[:cntrl:]]/, ''))
+        end
+      end
+
       def to_md
         md = text.dup
         tags.sort_by(&:length).reverse_each do |tag|
