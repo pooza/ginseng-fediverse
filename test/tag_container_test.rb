@@ -36,6 +36,15 @@ module Ginseng
         assert_equal(@container.create_tags, Set['#よにんでSUPER_TEUCHI_STATION_ONLINE'])
       end
 
+      def test_delete
+        @container.push('ダイの大冒険')
+        @container.push('即売会')
+        @container.delete('ダイの大冒険')
+
+        assert_false(@container.member?('ダイの大冒険'))
+        assert_true(@container.member?('即売会'))
+      end
+
       def test_scan
         assert_equal(TagContainer.scan('#フワ #プルンス'), Set['フワ', 'プルンス'])
       end

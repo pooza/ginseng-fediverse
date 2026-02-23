@@ -28,7 +28,8 @@ module Ginseng
       alias body text
 
       def delete(tag)
-        reject! {|v| v.casecmp(tag).zero?}
+        target = find {|v| v.casecmp(tag).zero?}
+        return super(target) if target
       end
 
       def text=(text)
