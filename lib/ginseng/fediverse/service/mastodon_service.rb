@@ -76,7 +76,7 @@ module Ginseng
         })
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id'].to_i
-      rescue RestClient::UnprocessableEntity => e
+      rescue GatewayError => e
         raise ValidateError, "UploadError (#{e.message})"
       end
 
