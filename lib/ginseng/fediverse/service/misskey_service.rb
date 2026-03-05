@@ -68,8 +68,12 @@ module Ginseng
 
       def upload(path, params = {})
         params[:response] ||= :raw
+        body = {force: 'true', i: token}
+        body[:name] = params[:name] if params[:name]
+        body[:comment] = params[:comment] if params[:comment]
+        body[:isSensitive] = params[:isSensitive] unless params[:isSensitive].nil?
         response = http.upload('/api/drive/files/create', path, {
-          body: {force: 'true', i: token},
+          body:,
           headers: create_headers(params[:headers]),
         })
         return response if params[:response] == :raw
