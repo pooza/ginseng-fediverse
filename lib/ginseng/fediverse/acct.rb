@@ -2,6 +2,7 @@ module Ginseng
   module Fediverse
     class Acct
       include Package
+
       attr_reader :contents, :username, :host
 
       def initialize(contents)

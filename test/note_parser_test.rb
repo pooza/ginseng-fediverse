@@ -37,6 +37,7 @@ module Ginseng
         assert_equal(['https://www.google.co.jp', 'https://mstdn.b-shock.co.jp'], @parser.uris.map(&:to_s))
 
         @parser.text = '[リンク](https://example.com/path) 本文'
+
         assert_equal(['https://example.com/path'], @parser.uris.map(&:to_s))
       end
 

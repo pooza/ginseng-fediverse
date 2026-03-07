@@ -4,7 +4,7 @@ module Ginseng
       include Package
 
       def default_service
-        return (MastodonService.new rescue PleromaService.new)
+        return MastodonService.new rescue PleromaService.new
       end
 
       def to_md

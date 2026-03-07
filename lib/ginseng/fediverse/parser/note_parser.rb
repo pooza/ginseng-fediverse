@@ -7,7 +7,7 @@ module Ginseng
       HASH = '__HASH__'.freeze
 
       def default_service
-        return (MisskeyService.new rescue MeisskeyService.new)
+        return MisskeyService.new rescue MeisskeyService.new
       end
 
       def uris(&block)

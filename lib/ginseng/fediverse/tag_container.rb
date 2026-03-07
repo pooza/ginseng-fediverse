@@ -2,6 +2,7 @@ module Ginseng
   module Fediverse
     class TagContainer < Set
       include Package
+
       attr_reader :text
 
       def add(word)

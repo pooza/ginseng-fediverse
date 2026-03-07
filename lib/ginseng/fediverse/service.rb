@@ -2,6 +2,7 @@ module Ginseng
   module Fediverse
     class Service
       include Package
+
       attr_reader :token, :http
       attr_accessor :mulukhiya_enable
 

@@ -150,7 +150,10 @@ module Ginseng
       end
 
       def oauth_server_metadata
-        @oauth_server_metadata ||= http.get('/.well-known/oauth-authorization-server').parsed_response
+        unless @oauth_server_metadata
+          response = http.get('/.well-known/oauth-authorization-server')
+          @oauth_server_metadata = response.parsed_response
+        end
         return @oauth_server_metadata
       rescue
         return nil

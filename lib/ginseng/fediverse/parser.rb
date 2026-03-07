@@ -6,14 +6,15 @@ module Ginseng
 
     class Parser
       include Package
+
       attr_reader :text, :body, :footer, :footer_tags
       attr_accessor :max_length, :service
 
       def initialize(text = '')
         @config = config_class.instance
         @logger = logger_class.new
-        @service = (default_service rescue nil)
-        @max_length = (default_max_length rescue nil)
+        @service = default_service rescue nil
+        @max_length = default_max_length rescue nil
         @footer_tags = tag_container_class.new
         self.text = text || ''
       end
