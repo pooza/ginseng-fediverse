@@ -71,7 +71,10 @@ module Ginseng
       def upload(path, params = {})
         params[:response] ||= :raw
         params[:version] ||= 1
+        body = {}
+        body[:description] = params[:description] if params[:description]
         response = http.upload("/api/v#{params[:version]}/media", path, {
+          body:,
           headers: create_headers(params[:headers]),
         })
         return response if params[:response] == :raw
