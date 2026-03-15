@@ -48,6 +48,14 @@ module Ginseng
 
       alias fetch_toot fetch_status
 
+      def fetch_status_source(id, params = {})
+        response = http.get("/api/v1/statuses/#{search_status_id(id)}/source", {
+          headers: create_headers(params[:headers]),
+        })
+        raise GatewayError, response['error'] if response['error']
+        return response
+      end
+
       def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body = body.deep_symbolize_keys
@@ -139,12 +147,7 @@ module Ginseng
           headers['Content-Type'] = 'application/x-www-form-urlencoded'
           body = ::URI.encode_www_form(flatten_media_attributes(body))
         end
-        uri = create_uri("/api/v1/statuses/#{id}")
-        all_headers = create_headers(headers)
-        response = HTTParty.put(uri.normalize, body:, headers: all_headers)
-        logger.info({debug_update_status: {code: response.code, body: response.body[0..500], sent_body: body.to_s[0..500], content_type: all_headers['Content-Type']}})
-        raise Ginseng::GatewayError, "Bad response #{response.code}" unless response.code < 400
-        return response
+        return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end
 
       def search(keyword, params = {})
