@@ -133,10 +133,13 @@ module Ginseng
       def update_status(id, body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body.deep_symbolize_keys!
-        return http.put("/api/v1/statuses/#{id}", {
-          body: body.compact,
-          headers: create_headers(params[:headers]),
-        })
+        body = body.compact
+        headers = create_headers(params[:headers])
+        if body[:media_attributes]
+          headers['Content-Type'] = 'application/x-www-form-urlencoded'
+          body = flatten_media_attributes(body)
+        end
+        return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end
 
       def search(keyword, params = {})
@@ -322,6 +325,15 @@ module Ginseng
 
       def default_uri
         return URI.parse(@config['/mastodon/url'])
+      end
+
+      def flatten_media_attributes(body)
+        flat = {}
+        flat['status'] = body[:status] if body[:status]
+        body[:media_attributes].each_with_index do |attr, i|
+          attr.each {|k, v| flat["media_attributes[#{i}][#{k}]"] = v}
+        end
+        return flat
       end
     end
   end
