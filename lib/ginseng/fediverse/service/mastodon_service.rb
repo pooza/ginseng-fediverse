@@ -134,10 +134,10 @@ module Ginseng
         body = {status: body.to_s} unless body.is_a?(Hash)
         body.deep_symbolize_keys!
         body = body.compact
-        headers = create_headers(params[:headers])
+        headers = params[:headers] || {}
         if body[:media_attributes]
           headers['Content-Type'] = 'application/x-www-form-urlencoded'
-          body = flatten_media_attributes(body)
+          body = URI.encode_www_form(flatten_media_attributes(body))
         end
         return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end
