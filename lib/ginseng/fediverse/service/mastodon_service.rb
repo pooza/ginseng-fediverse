@@ -139,7 +139,12 @@ module Ginseng
           headers['Content-Type'] = 'application/x-www-form-urlencoded'
           body = ::URI.encode_www_form(flatten_media_attributes(body))
         end
-        return http.put("/api/v1/statuses/#{id}", {body:, headers:})
+        uri = create_uri("/api/v1/statuses/#{id}")
+        all_headers = create_headers(headers)
+        response = HTTParty.put(uri.normalize, body:, headers: all_headers)
+        logger.info({debug_update_status: {code: response.code, body: response.body[0..500], sent_body: body.to_s[0..500], content_type: all_headers['Content-Type']}})
+        raise Ginseng::GatewayError, "Bad response #{response.code}" unless response.code < 400
+        return response
       end
 
       def search(keyword, params = {})
