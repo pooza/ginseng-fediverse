@@ -137,7 +137,7 @@ module Ginseng
         headers = params[:headers] || {}
         if body[:media_attributes]
           headers['Content-Type'] = 'application/x-www-form-urlencoded'
-          body = URI.encode_www_form(flatten_media_attributes(body))
+          body = ::URI.encode_www_form(flatten_media_attributes(body))
         end
         return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end
