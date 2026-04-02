@@ -6,8 +6,10 @@ module Ginseng
       attr_reader :text
 
       def add(word)
+        normalized = normalize(word.to_s)
+        return self if normalized.empty?
         @tags = nil
-        return super(normalize(word.to_s))
+        return super(normalized)
       end
 
       alias push add
@@ -49,7 +51,7 @@ module Ginseng
 
       def create_tags
         @tags ||= map {|tag| tag.gsub(/([a-z0-9]{2,})[[:blank:]]/i, '\\1_')}
-          .filter_map {|tag| tag.gsub(/[[:blank:]]/, '')}
+          .filter_map {|tag| tag.gsub(/[[:blank:]]/, '').presence}
           .map(&:to_hashtag)
           .reject {|tag| @text&.match?(create_pattern(tag))}
           .to_set

@@ -36,6 +36,22 @@ module Ginseng
         assert_equal(@container.create_tags, Set['#よにんでSUPER_TEUCHI_STATION_ONLINE'])
       end
 
+      def test_push_blank
+        @container.push('')
+        @container.push(nil)
+        @container.push('#')
+
+        assert_equal(Set[], @container)
+        assert_equal(Set[], @container.create_tags)
+      end
+
+      def test_new_with_blank
+        container = TagContainer.new(['foo', '', nil, '#', 'bar'])
+
+        assert_equal(Set['foo', 'bar'], container)
+        assert_equal(Set['#foo', '#bar'], container.create_tags)
+      end
+
       def test_scan
         assert_equal(TagContainer.scan('#フワ #プルンス'), Set['フワ', 'プルンス'])
       end
