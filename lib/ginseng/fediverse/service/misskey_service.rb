@@ -72,6 +72,7 @@ module Ginseng
         body[:name] = params[:name] if params[:name]
         body[:comment] = params[:comment] if params[:comment]
         body[:isSensitive] = params[:isSensitive] unless params[:isSensitive].nil?
+        body[:folderId] = params[:folderId] if params[:folderId]
         response = http.upload('/api/drive/files/create', path, {
           body:,
           headers: create_headers(params[:headers]),
