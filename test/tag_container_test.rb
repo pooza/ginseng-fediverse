@@ -55,6 +55,39 @@ module Ginseng
       def test_scan
         assert_equal(TagContainer.scan('#フワ #プルンス'), Set['フワ', 'プルンス'])
       end
+
+      def test_delete
+        @container.push('実況')
+        @container.push('precure_fun')
+
+        assert_equal(@container.delete('実況'), @container)
+        assert_equal(Set['precure_fun'], @container)
+      end
+
+      def test_delete_case_insensitive
+        @container.push('Makoto')
+        @container.push('precure_fun')
+
+        assert_equal(@container.delete('MAKOTO'), @container)
+        assert_equal(Set['precure_fun'], @container)
+      end
+
+      def test_delete_missing
+        @container.push('precure_fun')
+
+        assert_nil(@container.delete('実況'))
+        assert_equal(Set['precure_fun'], @container)
+      end
+
+      def test_select_bang_with_short_tags
+        @container.push('実況')
+        @container.push('precure_fun')
+
+        assert_nothing_raised do
+          @container.select! {|v| v.to_s.length > 2}
+        end
+        assert_equal(Set['precure_fun'], @container)
+      end
     end
   end
 end

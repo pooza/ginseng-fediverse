@@ -31,7 +31,11 @@ module Ginseng
       alias body text
 
       def delete(tag)
-        reject! {|v| v.casecmp(tag).zero?}
+        matches = filter {|v| v.casecmp(tag).zero?}
+        return nil if matches.empty?
+        matches.each {|v| super(v)}
+        @tags = nil
+        return self
       end
 
       def text=(text)
