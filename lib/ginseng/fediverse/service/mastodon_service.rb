@@ -6,16 +6,23 @@ module Ginseng
       def nodeinfo
         unless @nodeinfo
           @nodeinfo = http.get('/api/v1/instance').parsed_response.merge(super)
-          contact = @nodeinfo['contact_account']
           @nodeinfo['metadata'] = {
             'nodeName' => @nodeinfo['title'],
-            'maintainer' => {
-              'name' => contact['display_name'] || contact['username'],
-              'email' => @nodeinfo['email'],
-            },
+            'maintainer' => maintainer,
           }
         end
         return @nodeinfo
+      end
+
+      # 管理画面で連絡先アカウントが未設定のインスタンスでは contact_account が
+      # nil になる。以前はここで NoMethodError になり nodeinfo 全体が取れなかった
+      # (#238)。email だけは instance API から取れるので、名前のみ落として返す。
+      def maintainer
+        contact = @nodeinfo['contact_account']
+        return {
+          'name' => contact && (contact['display_name'].presence || contact['username']),
+          'email' => @nodeinfo['email'],
+        }
       end
 
       alias info nodeinfo
