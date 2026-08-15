@@ -342,9 +342,24 @@ module Ginseng
         return URI.parse(@config['/mastodon/url'])
       end
 
+      # media_attributes を含む body を form-urlencoded 用の平坦なハッシュへ畳む。
+      #
+      # ⚠ **media_attributes 以外のキーを落とさないこと。** Mastodon の
+      # `PUT /api/v1/statuses/:id` は、送らなかったパラメータを「現状維持」では
+      # なく「空で更新」として扱う（`UpdateStatusService` が `options.key?` で
+      # 分岐しており、コントローラのハッシュリテラルによってキーは常に存在する）。
+      # status しか通していなかった頃は、ALT を 1 つ直すだけで **投稿から添付が
+      # 全部外れ、CW と閲覧注意フラグが消えた**（mulukhiya #4589）。
+      #
+      # 配列（media_ids 等）は値を配列のまま置く。`URI.encode_www_form` が
+      # `media_ids[]=1&media_ids[]=2` の形へ展開し、Rails の
+      # `params.permit(media_ids: [])` はそれを配列として受ける。
       def flatten_media_attributes(body)
         flat = {}
-        flat['status'] = body[:status] if body[:status]
+        body.each do |key, value|
+          next if key == :media_attributes || value.nil?
+          flat[value.is_a?(Array) ? "#{key}[]" : key.to_s] = value
+        end
         body[:media_attributes].each_with_index do |attr, i|
           attr.each {|k, v| flat["media_attributes[#{i}][#{k}]"] = v}
         end
