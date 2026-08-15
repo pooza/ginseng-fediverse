@@ -35,9 +35,9 @@ module Ginseng
       # 添付が外れないために必須。配列は `key[]` に置き、
       # URI.encode_www_form が `media_ids[]=1&media_ids[]=2` へ展開する。
       def test_media_ids_survive_as_array
-        flat = flatten({media_ids: %w[1 2], media_attributes: [{id: '1'}]})
+        flat = flatten({media_ids: ['1', '2'], media_attributes: [{id: '1'}]})
 
-        assert_equal(%w[1 2], flat['media_ids[]'])
+        assert_equal(['1', '2'], flat['media_ids[]'])
         assert_equal(
           'media_ids%5B%5D=1&media_ids%5B%5D=2&media_attributes%5B0%5D%5Bid%5D=1',
           ::URI.encode_www_form(flat),
@@ -55,14 +55,15 @@ module Ginseng
       def test_false_survives
         flat = flatten({sensitive: false, media_attributes: [{id: '1'}]})
 
-        assert_equal(false, flat['sensitive'])
+        # ⚠ refute だけだと nil でも通る。キーの存在と対で見る。
+        refute(flat['sensitive'])
         assert(flat.key?('sensitive'))
       end
 
       def test_nil_is_dropped
         flat = flatten({status: nil, media_attributes: [{id: '1'}]})
 
-        assert(!flat.key?('status'))
+        refute(flat.key?('status'))
       end
     end
   end
