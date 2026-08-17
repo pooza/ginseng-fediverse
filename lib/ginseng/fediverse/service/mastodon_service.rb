@@ -83,6 +83,21 @@ module Ginseng
 
       alias delete_toot delete_status
 
+      # ⚠ **上流の GatewayError を握り潰さない** (#246)。かつてここには
+      # `rescue GatewayError => e; raise ValidateError, "UploadError (...)"` が
+      # あったが、`ValidateError` は `RequestError` の子で `GatewayError` の子で
+      # はないため、詰め替えた時点で `response` / `source_status` /
+      # `source_body` がすべて失われ、呼び側は `"UploadError (Bad response
+      # 401)"` という**文字列**しか受け取れなくなっていた。
+      #
+      # そのせいで mulukhiya 側では、`rescue Ginseng::GatewayError` に掛からず
+      # 401 のアラート抑止も 413 の「上限サイズ超過」文言も一切到達せず、
+      # ボットの無効トークン連打がそのまま管理者へのアラートメールになった。
+      # クライアントに返るステータスも上流の 401/413 ではなく 422 だった。
+      #
+      # アップロード失敗であることは呼び側では経路で分かっているので、例外
+      # クラスで区別する必要はない。MisskeyService / PleromaService の
+      # `#upload` と同じく、上流が返した理由をそのまま素通しする。
       def upload(path, params = {})
         params[:response] ||= :raw
         params[:version] ||= 1
@@ -94,8 +109,6 @@ module Ginseng
         })
         return response if params[:response] == :raw
         return JSON.parse(response.body)['id'].to_i
-      rescue GatewayError => e
-        raise ValidateError, "UploadError (#{e.message})"
       end
 
       def update_media(id, payload, params = {})
