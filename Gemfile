@@ -2,8 +2,9 @@ source 'https://rubygems.org'
 gemspec
 gem 'ginseng-core', github: 'pooza/ginseng-core', require: 'ginseng'
 gem 'ricecream'
-gem 'rubocop'
-gem 'rubocop-minitest'
-gem 'rubocop-performance'
-gem 'rubocop-rake'
 gem 'test-unit'
+
+group :development, :test do
+  # ⚠ rubocop 本体とプラグインはこの gem が依存として持つ。設定の正本も同じ場所。
+  gem 'ginseng-style', github: 'pooza/ginseng-style', branch: 'main', require: false
+end
