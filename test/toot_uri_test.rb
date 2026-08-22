@@ -52,6 +52,36 @@ module Ginseng
         assert_nil(uri.toot_id)
         assert_false(uri.valid?)
       end
+
+      # 🔴 **数字だけの username を numeric AP ID と取り違えていた (#251)。**
+      #
+      # `/users/123/statuses/456` は Mastodon で有効な形で、`/@123/456` へ
+      # 書き換えられるべきもの。⚠ 値の見た目（数字だけかどうか）で判定して
+      # いたため `account_username` が nil を返し、**publicize が黙って
+      # no-op になっていた**（#243 以前は書き換えられていた）。
+      def test_publicize_numeric_username
+        uri = TootURI.parse('https://mstdn.example.com/users/123/statuses/456').publicize
+
+        assert_equal('/@123/456', uri.path)
+      end
+
+      def test_account_username_numeric
+        uri = TootURI.parse('https://mstdn.example.com/users/123/statuses/456')
+
+        assert_equal('123', uri.account_id)
+        assert_equal('123', uri.account_username)
+      end
+
+      # ⚠ 一方 `/ap/users/` 由来は**数値 AP ID のまま**。見た目が同じでも
+      # 種別が違うので、こちらは username を名乗らせない。
+      def test_account_username_by_pattern_not_by_shape
+        {
+          'https://mstdn.example.com/users/123/statuses/456' => '123',
+          'https://mstdn.example.com/ap/users/123/statuses/456' => nil,
+        }.each do |url, username|
+          assert_equal(username, TootURI.parse(url).account_username, url)
+        end
+      end
     end
   end
 end

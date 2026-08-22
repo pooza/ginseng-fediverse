@@ -21,28 +21,28 @@ module Ginseng
 
       alias id toot_id
 
-      ACCOUNT_ID_PATTERNS = [
-        %r{^/users/([[:word:]]+)/statuses/[[:digit:]]+}i,
-        %r{^/ap/users/([[:digit:]]+)/statuses/[[:digit:]]+}i,
-      ].freeze
+      # ⚠⚠ **どのパターンに一致したかで種別を決める (#251)。** 値の見た目
+      # （数字だけかどうか）で判定してはいけない — **数字だけの username は
+      # Mastodon で有効**（`/users/123/statuses/456`）なので、見た目で振ると
+      # numeric_ap_id と区別がつかず、`publicize` が黙って no-op になる。
+      ACCOUNT_ID_PATTERNS = {
+        username: %r{^/users/([[:word:]]+)/statuses/[[:digit:]]+}i,
+        numeric_ap_id: %r{^/ap/users/([[:digit:]]+)/statuses/[[:digit:]]+}i,
+      }.freeze
 
       # path に現れるアカウント識別子。`/users/<username>/` では username を、
       # numeric_ap_id 形式 `/ap/users/<id>/` では数値 ID を返す (#243)。
       def account_id
-        ACCOUNT_ID_PATTERNS.each do |pattern|
-          next unless matches = pattern.match(path)
-          return matches[1]
-        end
-        return nil
+        return account_id_entry&.last
       end
 
       # 公開 URL `/@<username>/<id>` を組み立てられる場合の username。
       # numeric_ap_id 形式では数値 ID しか分からず、`/@` は username を前提と
       # するため nil を返す。
       def account_username
-        id = account_id
-        return nil if id.nil? || id.match?(/^[[:digit:]]+$/)
-        return id
+        entry = account_id_entry
+        return nil unless entry&.first == :username
+        return entry.last
       end
 
       def valid?
@@ -105,6 +105,18 @@ module Ginseng
       end
 
       alias status toot
+
+      private
+
+      # ⚠ 一致したパターンの**種別と捕獲した値を対で**返す。種別を捨てると、
+      # 受け取った側が値の見た目で判定し直すことになり #251 が再発する。
+      def account_id_entry
+        ACCOUNT_ID_PATTERNS.each do |kind, pattern|
+          next unless matches = pattern.match(path)
+          return [kind, matches[1]]
+        end
+        return nil
+      end
     end
   end
 end
