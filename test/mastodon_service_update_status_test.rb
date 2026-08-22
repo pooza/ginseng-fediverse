@@ -43,6 +43,42 @@ module Ginseng
         return JSON.parse(options[:body].to_json)
       end
 
+      # ⚠ **本丸その 2。**モロヘイヤは上流 Mastodon の前に立つプロキシで、
+      # nginx は `X-Mulukhiya` の有無で「モロヘイヤへ通す／素通しする」を
+      # 振り分ける。名乗らずに出ると**自分自身へ送り返される**
+      # (pooza/mulukhiya-toot-proxy#4621・ステージング実機で 405 / ループ)。
+      def test_service_identifies_itself
+        options = update({media_attributes: [{id: '1'}]})
+
+        assert_predicate(options[:headers]['X-Mulukhiya'], :present?)
+      end
+
+      # media_attributes を伴わない更新でも名乗ること。
+      def test_service_identifies_itself_without_media_attributes
+        options = update({status: '本文'})
+
+        assert_predicate(options[:headers]['X-Mulukhiya'], :present?)
+      end
+
+      # ⚠ **呼び側のトークンを上書きしない。**`create_headers` の
+      # `Authorization` は `||=`。潰すと利用者の投稿を設定のトークンで
+      # 書き換えることになる。
+      def test_given_authorization_wins
+        options = update(
+          {media_attributes: [{id: '1'}]},
+          {headers: {'Authorization' => 'Bearer ゴメちゃん'}},
+        )
+
+        assert_equal('Bearer ゴメちゃん', options[:headers]['Authorization'])
+      end
+
+      # 渡されなければ設定のトークンで名乗る。
+      def test_authorization_falls_back_to_config
+        options = update({media_attributes: [{id: '1'}]})
+
+        assert_predicate(options[:headers]['Authorization'], :present?)
+      end
+
       def test_content_type_is_json
         options = update({media_attributes: [{id: '1', description: 'ゴメちゃん'}]})
 
