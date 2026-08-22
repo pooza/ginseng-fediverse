@@ -194,11 +194,17 @@ module Ginseng
       #
       # ⚠ `create_headers` の `Authorization` は `||=` なので、呼び側が渡した
       # 利用者のトークンは上書きされない（渡されなければ設定のトークンが入る）。
+      #
+      # ⚠⚠ **`dup` を外さないこと (#256)。** `create_headers` は
+      # `Authorization` と `X-Mulukhiya` を**渡された hash そのもの**へ書き込む。
+      # 複製しないと、呼び側の hash に**設定のトークンが残り**、同じ hash を
+      # 使い回す次の要求（別ホスト宛でも）へ持ち越される。⚠ `Content-Type` だけを
+      # 書いていた頃は既定と同じ値なので無害だったが、**トークンは無害ではない**。
       def update_status(id, body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body.deep_symbolize_keys!
         body = body.compact
-        headers = create_headers(params[:headers])
+        headers = create_headers(params[:headers].dup)
         headers['Content-Type'] = 'application/json' if body[:media_attributes]
         return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end

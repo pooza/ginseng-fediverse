@@ -79,6 +79,16 @@ module Ginseng
         assert_predicate(options[:headers]['Authorization'], :present?)
       end
 
+      # ⚠⚠ **渡された hash を書き換えない (#256)。** `create_headers` は
+      # `Authorization` と `X-Mulukhiya` を渡された hash そのものへ書き込むので、
+      # 複製しないと**設定のトークンが呼び側に残る**。
+      def test_does_not_mutate_given_headers
+        headers = {'X-Trace' => 'abc'}
+        update({media_attributes: [{id: '1'}]}, {headers:})
+
+        assert_equal({'X-Trace' => 'abc'}, headers)
+      end
+
       def test_content_type_is_json
         options = update({media_attributes: [{id: '1', description: 'ゴメちゃん'}]})
 
