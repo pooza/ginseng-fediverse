@@ -180,11 +180,25 @@ module Ginseng
       # form-urlencode する（`HashConversions.to_params` でまた数字の添字）。
       # ⚠ mulukhiya は受信ヘッダをそのまま `params[:headers]` に乗せて渡すので、
       # これは実際に起こりうる経路。⚠⚠ **`||=` に「直す」と 500 に戻る。**
+      # ⚠ **`create_headers` を必ず通す。**このメソッドだけ素の
+      # `params[:headers]` を使っており、**`X-Mulukhiya` が付かなかった**
+      # (pooza/mulukhiya-toot-proxy#4621)。
+      #
+      # モロヘイヤは上流 Mastodon の前に立つプロキシで、nginx は
+      # `X-Mulukhiya` の有無で「モロヘイヤへ通す／素通しする」を振り分ける。
+      # 名乗らずに出ると **モロヘイヤ自身の PUT がモロヘイヤへ送り返される**。
+      # ステージング実機（dev24）では、`X-Mulukhiya-Purpose` を引き継いだ場合は
+      # ループ、引き継がない場合は map の reject で **405** になった。
+      # `fetch_status` / `fetch_status_source` / `bookmark` 等は通しており、
+      # ここだけが例外だった。
+      #
+      # ⚠ `create_headers` の `Authorization` は `||=` なので、呼び側が渡した
+      # 利用者のトークンは上書きされない（渡されなければ設定のトークンが入る）。
       def update_status(id, body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body.deep_symbolize_keys!
         body = body.compact
-        headers = params[:headers] || {}
+        headers = create_headers(params[:headers])
         headers['Content-Type'] = 'application/json' if body[:media_attributes]
         return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end
