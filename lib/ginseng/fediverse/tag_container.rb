@@ -6,7 +6,7 @@ module Ginseng
       attr_reader :text
 
       def add(word)
-        normalized = normalize(word.to_s)
+        normalized = normalize(self.class.to_utf8(word))
         return self if normalized.empty?
         @tags = nil
         return super(normalized)
@@ -15,7 +15,7 @@ module Ginseng
       alias push add
 
       def member?(tag)
-        return super(tag.to_s.to_hashtag_base)
+        return super(self.class.to_utf8(tag).to_hashtag_base)
       end
 
       def merge(words)
@@ -30,7 +30,10 @@ module Ginseng
 
       alias body text
 
+      # ⚠ `casecmp` はエンコーディングが噛み合わないと **nil を返す**ので、
+      # 検査を挟まないと `.zero?` が `NoMethodError` になる（#248）。
       def delete(tag)
+        tag = self.class.to_utf8(tag)
         matches = filter {|v| v.casecmp(tag).zero?}
         return nil if matches.empty?
         matches.each {|v| super(v)}
@@ -40,7 +43,7 @@ module Ginseng
 
       def text=(text)
         @tags = nil
-        @text = text.nfkc
+        @text = self.class.to_utf8(text).nfkc
       end
 
       alias body= text=
@@ -63,9 +66,36 @@ module Ginseng
       end
 
       def self.scan(text)
-        return TagContainer.new(
-          text.scan(Parser.hashtag_pattern).map(&:first),
+        return new(
+          # ⚠ `scan` 自体が不正バイト列で `ArgumentError` を上げるので、
+          #   `add` へ届く前にここで検査する（#248）。
+          to_utf8(text).scan(Parser.hashtag_pattern).map(&:first),
         )
+      end
+
+      # ⚠⚠ **入口で UTF-8 を保証する (#248)。** このクラスは押し込まれた文字列が
+      # UTF-8 であることを決め打ちしていたが検査しておらず、入口ごとに
+      # **4 通りに挙動が割れていた**。
+      #
+      #   add / scan  不正バイト列 → ArgumentError（型が不明瞭で捕まえにくい）
+      #   add         Shift_JIS    → 🔴 **黙って中身が消える**（"#" になる）
+      #   member?     Shift_JIS    → 🔴 **黙って false**
+      #   delete      Shift_JIS    → casecmp が nil を返し NoMethodError
+      #
+      # ⚠ **UTF-8 に寄せられるものは寄せ**（Shift_JIS など）、**寄せられないものは
+      # 弾いて呼び側に返す**。⚠⚠ **scrub で黙って直さないこと** —
+      # "\xE3\x81ほげ" が "�ほげ" になり、**化けたタグが投稿される**。
+      def self.to_utf8(value)
+        string = value.to_s
+        unless string.encoding == Encoding::UTF_8
+          begin
+            string = string.encode(Encoding::UTF_8)
+          rescue EncodingError => e
+            raise ValidateError, "cannot convert to UTF-8 (#{string.encoding}): #{e.message}"
+          end
+        end
+        raise ValidateError, 'invalid byte sequence in UTF-8' unless string.valid_encoding?
+        return string
       end
 
       private
