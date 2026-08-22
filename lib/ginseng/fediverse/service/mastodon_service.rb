@@ -195,16 +195,14 @@ module Ginseng
       # ⚠ `create_headers` の `Authorization` は `||=` なので、呼び側が渡した
       # 利用者のトークンは上書きされない（渡されなければ設定のトークンが入る）。
       #
-      # ⚠⚠ **`dup` を外さないこと (#256)。** `create_headers` は
-      # `Authorization` と `X-Mulukhiya` を**渡された hash そのもの**へ書き込む。
-      # 複製しないと、呼び側の hash に**設定のトークンが残り**、同じ hash を
-      # 使い回す次の要求（別ホスト宛でも）へ持ち越される。⚠ `Content-Type` だけを
-      # 書いていた頃は既定と同じ値なので無害だったが、**トークンは無害ではない**。
+      # ⚠ `create_headers` は複製を返すので、下の `Content-Type` の書き込みが
+      # 呼び側の hash へ漏れることはない（#256 / #258）。**複製は
+      # `create_headers` の側に 1 つだけ置いてある。ここで `dup` し直さない。**
       def update_status(id, body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body.deep_symbolize_keys!
         body = body.compact
-        headers = create_headers(params[:headers].dup)
+        headers = create_headers(params[:headers])
         headers['Content-Type'] = 'application/json' if body[:media_attributes]
         return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end
@@ -384,10 +382,15 @@ module Ginseng
         return @config['/mastodon/token']
       end
 
+      # ⚠ **`super` を先に呼ぶ。** 複製は基底の `create_headers` が行うので、
+      # ここは**返ってきた複製へ書き込む**（#258）。自分で複製してから `super`
+      # に渡すと、複製が二重になる。⚠⚠ **`super` は括弧なし**なので、引数の
+      # `headers` がそのまま基底へ渡る。**`headers` を書き換えてから呼ぶと
+      # 渡るものが変わる。**
       def create_headers(headers = {})
-        headers ||= {}
-        headers['Authorization'] ||= "Bearer #{token}"
-        return super
+        result = super
+        result['Authorization'] ||= "Bearer #{token}"
+        return result
       end
 
       def default_uri

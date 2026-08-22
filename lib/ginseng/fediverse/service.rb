@@ -109,8 +109,14 @@ module Ginseng
 
       alias streaming_uri create_streaming_uri
 
+      # ⚠⚠ **渡された hash を書き換えないこと (#258)。** 複製せずに書き込むと、
+      # 呼び側の hash に `X-Mulukhiya` や（`MastodonService` では）**設定の
+      # トークン**が残り、**同じ hash を使い回す次の要求（別ホスト宛でも）へ
+      # 持ち越される**。⚠ 呼び出しは 3 サービス 38 箇所あり、そのすべてが
+      # `create_headers(params[:headers])` の形なので、**複製はここに 1 つ置く**。
+      # ⚠ `ginseng-core` も同じ型を `HTTP#request` 側の複製で潰している。
       def create_headers(headers = {})
-        headers ||= {}
+        headers = (headers || {}).dup
         headers['X-Mulukhiya'] ||= package_class.full_name unless mulukhiya_enable?
         return headers
       end
