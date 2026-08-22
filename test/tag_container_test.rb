@@ -88,6 +88,111 @@ module Ginseng
         end
         assert_equal(Set['precure_fun'], @container)
       end
+
+      # ⚠⚠ **エンコーディングの契約 (#248)。**
+      #
+      # このクラスは押し込まれた文字列が UTF-8 であることを決め打ちしていたが
+      # 検査しておらず、入口ごとに 4 通りに挙動が割れていた。⚠ **黙って中身が
+      # 消える経路があるのが本質的な問題**で、例外になる経路より質が悪い。
+      #
+      # ⚠ `scrub` で直す案は採らない。`"\xE3\x81ほげ"` が `"�ほげ"` になり、
+      # **化けたタグがそのまま投稿される**。
+
+      def invalid_utf8
+        return "\xE3\x81ほげ".dup.force_encoding(Encoding::UTF_8)
+      end
+
+      def sjis
+        return 'ほげ'.encode('Windows-31J')
+      end
+
+      # 🔴 **本丸。**Shift_JIS を押し込むと `"#"` になって**中身だけが消えていた**。
+      def test_push_shift_jis
+        @container.push(sjis)
+
+        assert_equal(Set['ほげ'], @container)
+        assert_equal('#ほげ', @container.to_s)
+      end
+
+      # ⚠ 寄せた結果は UTF-8 になっていること（元の encoding を引きずらない）。
+      def test_push_shift_jis_is_utf8
+        @container.push(sjis)
+
+        assert_equal(Encoding::UTF_8, @container.first.encoding)
+      end
+
+      # ⚠ ASCII の範囲なら ASCII-8BIT でも通る。
+      def test_push_binary_ascii
+        @container.push('precure'.b)
+
+        assert_equal(Set['precure'], @container)
+      end
+
+      # ⚠⚠ **寄せられないものは弾く。**黙って落とさない。
+      def test_push_undecodable_binary
+        assert_raise(ValidateError) do
+          @container.push("abc\xFF".b)
+        end
+      end
+
+      # ⚠ 不正バイト列は ArgumentError ではなく ValidateError で返す
+      # （`Ginseng::Error` の系で捕まえられるようにする）。
+      def test_push_invalid_utf8
+        assert_raise(ValidateError) do
+          @container.push(invalid_utf8)
+        end
+      end
+
+      def test_scan_invalid_utf8
+        assert_raise(ValidateError) do
+          TagContainer.scan(invalid_utf8)
+        end
+      end
+
+      def test_scan_shift_jis
+        assert_equal('#ほげ', TagContainer.scan('#ほげ です'.encode('Windows-31J')).to_s)
+      end
+
+      # 🔴 **黙って false になっていた。**
+      #
+      # ⚠ `assert_includes` を使わない。`TagContainer` が上書きしているのは
+      # `member?` **だけ**で、`Set#include?` / `#===` は素のままなので、
+      # `assert_includes` では**この上書きを通らない**（#260）。
+      def test_member_shift_jis
+        @container.push('ほげ')
+
+        # ⚠ 直に書くと Minitest/AssertIncludes と Minitest/AssertTruthy が
+        #   互いに反対を要求して収まらない。局所変数に受けて外す。
+        member = @container.member?(sjis)
+
+        assert(member)
+      end
+
+      # 🔴 `casecmp` が nil を返し、`.zero?` が NoMethodError になっていた。
+      def test_delete_shift_jis
+        @container.push('ほげ')
+        @container.delete(sjis)
+
+        assert_empty(@container)
+      end
+
+      def test_text_shift_jis
+        @container.text = sjis
+
+        assert_equal('ほげ', @container.text)
+      end
+
+      def test_text_invalid_utf8
+        assert_raise(ValidateError) do
+          @container.text = invalid_utf8
+        end
+      end
+
+      # ⚠ 正常系を壊していないこと。UTF-8 はそのまま通る。
+      def test_utf8_is_untouched
+        assert_equal('ほげ', TagContainer.to_utf8('ほげ'))
+        assert_equal(Encoding::UTF_8, TagContainer.to_utf8('ほげ').encoding)
+      end
     end
   end
 end
