@@ -172,10 +172,14 @@ module Ginseng
       # 「同じキーが再出現したら次の要素」という Rack の暗黙のグルーピングに
       # 依存し、要素ごとのキーの並びで壊れうる。JSON なら配列は配列のまま届く。
       #
-      # ⚠ **Content-Type を明示しないと JSON にならない。**ginseng-core の
-      # `create_body` は Content-Type が `application/json` のときだけ `to_json`
-      # する。無指定だと HTTParty が Hash を form-urlencode し、そこでも
-      # 数字の添字（`HashConversions.to_params`）になって同じ 500 に戻る。
+      # ⚠ **Content-Type は「立てる」ではなく「上書きする」ために書いている。**
+      # ginseng-core の `create_headers` は `Content-Type ||= 'application/json'`
+      # なので、**無指定なら放っておいても JSON になる**。潰しているのは
+      # **呼び出し側が非 JSON の Content-Type を渡してくる場合**で、`||=` では
+      # それが残り、`create_body` が `to_json` せず HTTParty が Hash を
+      # form-urlencode する（`HashConversions.to_params` でまた数字の添字）。
+      # ⚠ mulukhiya は受信ヘッダをそのまま `params[:headers]` に乗せて渡すので、
+      # これは実際に起こりうる経路。⚠⚠ **`||=` に「直す」と 500 に戻る。**
       def update_status(id, body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body.deep_symbolize_keys!

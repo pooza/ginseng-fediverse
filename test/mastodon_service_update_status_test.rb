@@ -122,6 +122,20 @@ module Ginseng
         assert_equal('ゴメちゃん', options[:headers]['Idempotency-Key'])
       end
 
+      # ⚠⚠ **この行の本来の効き目。**ginseng-core の `create_headers` は
+      # `Content-Type ||= 'application/json'` なので、無指定なら放っておいても
+      # JSON になる。潰さねばならないのは **呼び出し側が非 JSON の Content-Type
+      # を渡してくる場合**で、`||=` ではそれが残り 500 に戻る。mulukhiya は
+      # 受信ヘッダをそのまま渡すので、これは実在する経路。
+      def test_content_type_overrides_the_caller_s_one
+        options = update(
+          {media_attributes: [{id: '1'}]},
+          {headers: {'Content-Type' => 'application/x-www-form-urlencoded'}},
+        )
+
+        assert_equal('application/json', options[:headers]['Content-Type'])
+      end
+
       # media_attributes を伴わない更新（本文だけの送り直し）は従来どおり。
       # ⚠ ここで Content-Type を立てると、無関係な経路の送出まで変わる。
       def test_content_type_is_untouched_without_media_attributes
