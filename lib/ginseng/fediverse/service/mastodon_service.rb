@@ -158,15 +158,30 @@ module Ginseng
         })
       end
 
+      # ⚠ **media_attributes を含む body は JSON で送る。**form-urlencoded に
+      # 畳むと Hash の配列を表現できない (pooza/mulukhiya-toot-proxy#4621)。
+      #
+      # `media_attributes[0][id]=...` という数字の添字は、Rack / Rails 側で
+      # **`fields_for` 形式の Hash `{"0" => {...}}`** に解釈され、配列にならない。
+      # Mastodon の `UpdateStatusService#update_media_attachments!` は
+      # `(@options[:media_attributes] || []).each do |attributes|` と回すので、
+      # Hash を each した `["0", {...}]`（Array）が渡り、`attributes[:id]` で
+      # **`TypeError: no implicit conversion of Symbol into Integer` ＝ 500** になる。
+      #
+      # ⚠ **空添字 `media_attributes[][id]` でも配列にはなるが、採らない。**
+      # 「同じキーが再出現したら次の要素」という Rack の暗黙のグルーピングに
+      # 依存し、要素ごとのキーの並びで壊れうる。JSON なら配列は配列のまま届く。
+      #
+      # ⚠ **Content-Type を明示しないと JSON にならない。**ginseng-core の
+      # `create_body` は Content-Type が `application/json` のときだけ `to_json`
+      # する。無指定だと HTTParty が Hash を form-urlencode し、そこでも
+      # 数字の添字（`HashConversions.to_params`）になって同じ 500 に戻る。
       def update_status(id, body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body.deep_symbolize_keys!
         body = body.compact
         headers = params[:headers] || {}
-        if body[:media_attributes]
-          headers['Content-Type'] = 'application/x-www-form-urlencoded'
-          body = ::URI.encode_www_form(flatten_media_attributes(body))
-        end
+        headers['Content-Type'] = 'application/json' if body[:media_attributes]
         return http.put("/api/v1/statuses/#{id}", {body:, headers:})
       end
 
@@ -353,30 +368,6 @@ module Ginseng
 
       def default_uri
         return URI.parse(@config['/mastodon/url'])
-      end
-
-      # media_attributes を含む body を form-urlencoded 用の平坦なハッシュへ畳む。
-      #
-      # ⚠ **media_attributes 以外のキーを落とさないこと。** Mastodon の
-      # `PUT /api/v1/statuses/:id` は、送らなかったパラメータを「現状維持」では
-      # なく「空で更新」として扱う（`UpdateStatusService` が `options.key?` で
-      # 分岐しており、コントローラのハッシュリテラルによってキーは常に存在する）。
-      # status しか通していなかった頃は、ALT を 1 つ直すだけで **投稿から添付が
-      # 全部外れ、CW と閲覧注意フラグが消えた**（mulukhiya #4589）。
-      #
-      # 配列（media_ids 等）は値を配列のまま置く。`URI.encode_www_form` が
-      # `media_ids[]=1&media_ids[]=2` の形へ展開し、Rails の
-      # `params.permit(media_ids: [])` はそれを配列として受ける。
-      def flatten_media_attributes(body)
-        flat = {}
-        body.each do |key, value|
-          next if key == :media_attributes || value.nil?
-          flat[value.is_a?(Array) ? "#{key}[]" : key.to_s] = value
-        end
-        body[:media_attributes].each_with_index do |attr, i|
-          attr.each {|k, v| flat["media_attributes[#{i}][#{k}]"] = v}
-        end
-        return flat
       end
     end
   end
