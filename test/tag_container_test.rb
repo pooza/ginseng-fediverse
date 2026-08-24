@@ -128,6 +128,24 @@ module Ginseng
         assert_equal(Set['precure'], @container)
       end
 
+      # ⚠ **中身が妥当な UTF-8 なら、ASCII-8BIT でも通ること。**
+      #
+      # ⚠⚠ **ASCII-8BIT は符号化ではなくラベルなので、`encode` に掛けると非 ASCII が
+      # 必ず UndefinedConversionError になる。**⚠ Sequel / SQLite が非 ASCII をこの形で
+      # 返すので、利用側は素直に踏む（pooza/makoto2#171）。
+      def test_push_binary_utf8
+        @container.push('ほげ'.b)
+
+        assert_equal(Set['ほげ'], @container)
+        assert_equal(Encoding::UTF_8, @container.first.encoding)
+      end
+
+      def test_text_binary_utf8
+        @container.text = 'ほげ です'.b
+
+        assert_equal('ほげ です', @container.text)
+      end
+
       # ⚠⚠ **寄せられないものは弾く。**黙って落とさない。
       def test_push_undecodable_binary
         assert_raise(ValidateError) do
