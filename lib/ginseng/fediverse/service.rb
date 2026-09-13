@@ -136,8 +136,35 @@ module Ginseng
         text.gsub!(%r{[[:blank:]]*</p.*?>}, "\n\n")
         text.gsub!(/<p.*?>/, '')
         text.sanitize!
-        text.gsub!(/[@#]/, '\\0 ')
-        return text.strip
+        return escape_sigils(text).strip
+      end
+
+      # 🔴 **本文を投稿先に再解釈させないための区切りを入れる**（#273）。
+      #
+      # ⚠⚠ **当てるのは「実際にリンク化する `#` / `@`」だけ。** 以前は
+      # `gsub!(/[@#]/, '\\0 ')` で無条件に全部置換していたが、⚠ **無毒化の必要が
+      # 無い場所まで目に見えて壊していた** — 実データ（`pooza/makoto2` の楽曲
+      # コーパス 4,305 行）では `@` を含む曲名 12 行がすべて `H@ppy Together!!!`
+      # 系で、**投稿先のメンションに 1 件も当たらないのに `H@ ppy` に変わっていた**。
+      #
+      # ⚠⚠ **判定はこの gem の正本（`Parser` のパターン ＝ config/lib.yaml）を使う。**
+      # 🔴 **投稿先 1 実装の正規表現を写さない** — 写すと向こうが動いた日に黙ってずれる。
+      #
+      # ⚠ **区切りは半角スペースのまま。ZWSP へは寄せない**（#273 で判断）。
+      # 効き目は同等だが、🔴 **ZWSP は「壊れているのに壊れて見えない」状態を作り**、
+      # コピペ・検索・他実装へ見えない文字が付いて回る。⚠ **スペースなら、次に読む
+      # 人が「なぜここに空白が」と辿れる。**
+      #
+      # 🔴 **拾えないものが 2 つある**（⚠ **以前の無条件置換でも拾えていない**）。
+      # 全角の `＃` と、数字だけのタグ（`#123`）。⚠⚠ **無毒化は「広く取る」ほうが
+      # 安全で、抽出は「正確」なほうが安全** — 向きが逆なので、同じパターンを共有
+      # している限りこの穴は残る。
+      def self.escape_sigils(text)
+        text = text.gsub(Parser.hashtag_pattern) do
+          matched = Regexp.last_match
+          "#{matched[0].delete_suffix("##{matched[1]}")}# #{matched[1]}"
+        end
+        return text.gsub(Parser.acct_pattern) {Regexp.last_match(1).sub('@', '@ ')}
       end
 
       def self.create_tag(word)
