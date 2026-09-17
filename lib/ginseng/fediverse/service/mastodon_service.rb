@@ -63,6 +63,11 @@ module Ginseng
         return response
       end
 
+      # ⚠⚠ **リダイレクトを追わない。** Mastodon の投稿 API はリダイレクトを返さないので、
+      # 3xx が来た時点で相手が違う。HTTParty の既定（追従する）のままだと、
+      # **301 / 302 で POST が GET に化けて body が捨てられ**、`Authorization` と
+      # `Idempotency-Key` を含むヘッダが**別ホストのリダイレクト先へもそのまま送られる**。
+      # 🔴 3xx は例外にならずに返るので、呼び出し側は応答が status でないことで気づく。
       def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body = body.deep_symbolize_keys
@@ -70,6 +75,7 @@ module Ginseng
         return http.post('/api/v1/statuses', {
           body: body.compact,
           headers: create_headers(params[:headers]),
+          follow_redirects: false,
         })
       end
 
