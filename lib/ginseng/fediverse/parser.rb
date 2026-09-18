@@ -159,7 +159,11 @@ module Ginseng
       # ⚠⚠ **相手は Mastodon だけではないので、境界を Mastodon へ揃えると穴が開く**。
       # 実測（mfm-js 0.26.0 を走らせた）: Misskey は**直前が ASCII 英数でなければタグにする**ので、
       # 🔴 `search／#サーチ2` `あ#タグ` `##tag` は**リンク化される**（Mastodon はどれもしない）。
-      # ⚠ 逆に全角 `＃` は Misskey だけがタグにしないが、**打ち消しても害は無い**ので共有する。
+      #
+      # 🔴🔴 **広げるのは半角 `#` の側だけ (#275 Codex P2)。** 全角 `＃` は **Misskey がそもそも
+      # タグにしない**ので、広げても守る相手がいない。⚠⚠ **守る相手がいない置換は、
+      # ただ本文を壊すだけ** — 実測で `あ＃タグ` `（＃タグ` は Mastodon も Misskey もタグにしない。
+      # ⚠ #273 で `H@ppy Together!!!` を `H@ ppy` にしていたのと同じ失敗の形。
       def self.hashtag_sigil_pattern
         return create_hashtag_pattern(Config.instance['/hashtag/sigil_pattern'])
       end

@@ -43,6 +43,16 @@ module Ginseng
         assert_equal('♪ ＃ 全角タグ', '♪ ＃全角タグ'.escape_toot)
       end
 
+      # 🔴🔴 **全角 `＃` の境界は広げない (#275 Codex P2)。**
+      #
+      # ⚠⚠ **広げても守る相手がいない** — 実測で `あ＃タグ` `（＃タグ` は
+      # **Mastodon（行頭か空白の直後を要求）も Misskey（`＃` をそもそも見ない）もタグにしない**。
+      # 🔴 それを置換するのは、#273 で `H@ppy Together!!!` を `H@ ppy` にしていたのと同じ失敗。
+      def test_escape_toot_does_not_widen_the_fullwidth_sigil
+        assert_equal('あ＃タグ', 'あ＃タグ'.escape_toot)
+        assert_equal('（＃タグ', '（＃タグ'.escape_toot)
+      end
+
       # 🔴🔴 **無毒化の境界を Mastodon へ揃えないこと (#275)。**
       #
       # ⚠⚠ **相手は Mastodon だけではない。** 実測（mfm-js 0.26.0）: Misskey は直前が
