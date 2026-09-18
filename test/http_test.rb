@@ -51,11 +51,33 @@ module Ginseng
         assert_false(options[:follow_redirects])
       end
 
-      # 🔴 **Misskey はトークンを本文に載せる。** ⚠⚠ ヘッダだけ見ていると素通りする。
-      def test_body_borne_token_is_a_credential
-        create.post('/api/notes/create', {body: {text: '本文', i: 'secret'}})
+      # 🔴🔴 **本文を伴うメソッドは無条件で切る (#280 Codex P1)。**
+      #
+      # ⚠⚠ **本文のキーを列挙する形は、口を足すたびに漏れる。** 実際 `i`（Misskey）だけを
+      # 見ていた初版は、**認証の口 4 つを素通りさせていた**。
+      def test_write_requests_never_follow_redirects
+        [
+          {body: {text: '本文', i: 'secret'}},                                 # Misskey のトークン
+          {body: {'client_secret' => 'secret', 'code' => 'authcode'}},       # Mastodon / Pleroma の OAuth
+          {body: {appSecret: 'secret'}},                                     # Misskey のセッション
+          {body: {'code_verifier' => 'secret'}},                             # OAuth 2.0 (PKCE)
+          {},                                                                # 本文無し
+        ].each do |params|
+          create.post('/api/auth/session/userkey', params)
 
-        assert_false(options[:follow_redirects], '本文のトークンも資格情報として見ること')
+          assert_false(options[:follow_redirects], params.inspect)
+        end
+      end
+
+      # ⚠ `put` / `delete` も同じ。
+      def test_other_write_methods_are_guarded
+        create.put('/api/v1/statuses/1', {body: {status: '本文'}})
+
+        assert_false(options[:follow_redirects])
+
+        create.delete('/api/v1/statuses/1')
+
+        assert_false(options[:follow_redirects])
       end
 
       # ⚠ `basic_auth` / `cookies` はヘッダに現れない（HTTParty が後から移す）。
@@ -121,6 +143,7 @@ module Ginseng
       # `follow_redirects` を書いていないが、トークンを本文に持つので切れる。
       def test_service_inherits_the_guard
         MisskeyService.new(Ginseng::URI.parse('https://misskey.example.com/'), 'secret').post('本文')
+        # ⚠ 口の側は `follow_redirects` を書いていない。
 
         assert_false(options[:follow_redirects], '口の側に書かなくても効くこと')
         assert_equal('secret', JSON.parse(options[:body])['i'])

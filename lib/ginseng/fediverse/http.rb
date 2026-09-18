@@ -23,16 +23,27 @@ module Ginseng
       # ⚠ HTTParty が options で受ける資格情報。**ヘッダを見るだけでは落としきれない。**
       CREDENTIAL_OPTIONS = [:basic_auth, :digest_auth, :cookies].freeze
 
-      # 🔴 **Misskey はトークンを本文に載せる**（`i`）。⚠⚠ ヘッダだけ見ていると、
-      # `notes/create` ほか Misskey 系の口が**丸ごと素通りする**。
-      CREDENTIAL_BODY_KEYS = [:i, 'i'].freeze
+      # 🔴🔴 **本文を伴うメソッドは、資格情報の有無を問わず追わない (#280 Codex P1)。**
+      #
+      # ⚠⚠ **本文のキーを列挙しない。** 🔴 列挙すると「口ごとに書く」と同じ失敗に戻る —
+      # 実際、`i`（Misskey）だけを見ていた初版は **`appSecret` / `client_secret` /
+      # `code` / `code_verifier` を本文に載せる認証の口 4 つを素通りさせていた**。
+      # ⚠ この gem の相手は設定された投稿先 1 つなので、**書き込みの口で 3xx が来るのは
+      # それ自体が異常**。
+      UNSAFE_METHODS = [:post, :put, :delete].freeze
 
       # ⚠ 3xx に居るがリダイレクトではない。
       NOT_MODIFIED = 304
 
-      [:head, :get, :post, :put, :delete].each do |method|
+      [:head, :get].each do |method|
         define_method(method) do |uri, options = {}|
           return guard_response(super(uri, guard_redirects(options)))
+        end
+      end
+
+      UNSAFE_METHODS.each do |method|
+        define_method(method) do |uri, options = {}|
+          return guard_response(super(uri, guard_redirects(options, safe: false)))
         end
       end
 
@@ -51,21 +62,24 @@ module Ginseng
       # ⚠ **この継ぎ目は `ginseng-core` の新しめの版にしか無い**（古い版は `upload` の中で
       # 直接組んでいた）。🔴 **古い core を差されている利用側では、ここは黙って効かない。**
       def upload_options(file, options)
-        return guard_redirects(super)
+        return guard_redirects(super, safe: false)
       end
 
       # ⚠ **呼び出し側が明示していたら、そちらを優先する。** 口の側で意図して
       # 追わせている（追わせない）場合に、ここで上書きしない。
-      def guard_redirects(options)
+      # ⚠ `safe:` はこの要求が**本文を伴わない（GET / HEAD）**か。
+      # 本文を伴う側は無条件で切る（上の `UNSAFE_METHODS`）。
+      def guard_redirects(options, safe: true)
         return options if options.key?(:follow_redirects)
-        return options unless credentials?(options)
+        return options if safe && !credentials?(options)
         return options.merge(follow_redirects: false)
       end
 
+      # ⚠ GET / HEAD ではこれを見る。🔴 `cookies:` は HTTParty があとからヘッダへ移すので、
+      # **ヘッダだけ見ていては落とせない**。
       def credentials?(options)
         return true if CREDENTIAL_OPTIONS.any? {|key| options[key].present?}
-        return true if credential_headers?(options[:headers])
-        return credential_body?(options[:payload] || options[:body])
+        return credential_headers?(options[:headers])
       end
 
       def credential_headers?(headers)
@@ -73,11 +87,6 @@ module Ginseng
         return headers.any? do |key, value|
           CREDENTIAL_HEADERS.include?(key.to_s.downcase) && value.present?
         end
-      end
-
-      def credential_body?(body)
-        return false unless body.is_a?(Hash)
-        return CREDENTIAL_BODY_KEYS.any? {|key| body[key].present?}
       end
 
       # ⚠⚠ **3xx を黙って返さない (#282)。** 追わないと決めた以上、3xx は「投稿先が違う」
