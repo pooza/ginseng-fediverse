@@ -132,8 +132,48 @@ module Ginseng
         return text.strip
       end
 
+      # 本文からタグを**抽出**するパターン (#275)。
+      #
+      # ⚠⚠ **投稿先の正規表現をそのまま引く。** 写しているのは
+      # **Mastodon v4.7.2 の `Tag::HASHTAG_RE`**（`app/models/tag.rb`）。🔴 **元の形は
+      # 2017-03 の写しのまま止まっており**、全角 `＃`（v4.5.0 #36103）と
+      # 直前の条件（v4.6.0 #37684 / #38212）と区切り文字（v3.0.0 #11345 / #11821）を
+      # 取りこぼしていた。⚠ **上流が次に変えたらまた追随する**ので、
+      # どの版を写したかをここに残すこと。
+      #
+      # 🔴🔴 **中黒 `・`（U+30FB）だけは意図して外してある**（Mastodon は v4.1.0 #22888 で
+      # 区切りに入れている）。⚠⚠ **この gem では長年タグにならず、その前提で運用されている** —
+      # 認識だけ入れても `TagContainer#create_tags` が `to_hashtag` を通すので、
+      # 🔴 `#プリキュア・オールスターズ` から `#プリキュア_オールスターズ` が**生成される側へ回る**。
+      # `_` と `・` は Mastodon の正規化でも別のタグなので、積み上がったタグが割れる。
+      # ⚠⚠ **「完全互換」へ揃えるときに黙って外さないこと。**
       def self.hashtag_pattern
-        return Regexp.new(Config.instance['/hashtag/pattern'], Regexp::IGNORECASE)
+        return create_hashtag_pattern(Config.instance['/hashtag/pattern'])
+      end
+
+      # 本文を投稿先に再解釈させないための**無毒化**用パターン (#275)。
+      #
+      # ⚠⚠ **タグ名は抽出と共有し、境界（直前の条件）だけ広く取る。**
+      # 🔴 **無毒化と抽出は安全側の向きが逆** — 抽出は「正確」、無毒化は「広く」。
+      #
+      # ⚠⚠ **相手は Mastodon だけではないので、境界を Mastodon へ揃えると穴が開く**。
+      # 実測（mfm-js 0.26.0 を走らせた）: Misskey は**直前が ASCII 英数でなければタグにする**ので、
+      # 🔴 `search／#サーチ2` `あ#タグ` `##tag` は**リンク化される**（Mastodon はどれもしない）。
+      #
+      # 🔴🔴 **広げるのは半角 `#` の側だけ (#275 Codex P2)。** 全角 `＃` は **Misskey がそもそも
+      # タグにしない**ので、広げても守る相手がいない。⚠⚠ **守る相手がいない置換は、
+      # ただ本文を壊すだけ** — 実測で `あ＃タグ` `（＃タグ` は Mastodon も Misskey もタグにしない。
+      # ⚠ #273 で `H@ppy Together!!!` を `H@ ppy` にしていたのと同じ失敗の形。
+      def self.hashtag_sigil_pattern
+        return create_hashtag_pattern(Config.instance['/hashtag/sigil_pattern'])
+      end
+
+      # ⚠ `%{name}` を展開する。🔴 **ブロック形式で渡すこと** —
+      # 置換文字列に渡すと `\1` や `\u` が後方参照・エスケープとして食われる。
+      # ⚠ `%{name}` を含まないパターン（利用側の上書き）はそのまま通る。
+      def self.create_hashtag_pattern(pattern)
+        name = Config.instance['/hashtag/name']
+        return Regexp.new(pattern.gsub('%{name}') {name}, Regexp::IGNORECASE)
       end
 
       def self.acct_pattern

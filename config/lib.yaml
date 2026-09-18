@@ -1,7 +1,19 @@
 acct:
   pattern: ((?<=^|[^\/[:word:]])@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))
 hashtag:
-  pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
+  # タグ名の部分。⚠ **抽出と無毒化で共有する**（`%{name}` へ埋め込む）。
+  # ⚠⚠ Mastodon v4.7.2 の `HASHTAG_FIRST_SEQUENCE` / `HASHTAG_LAST_SEQUENCE` の写し。
+  # 区切りは `_` と U+00B7（ラテンの中点）と U+200C（ZWNJ）だけで、
+  # 🔴 **中黒 U+30FB は意図して入れていない**（理由は parser.rb の `hashtag_pattern`）。
+  name: (?:[[:word:]_][[:word:]_\u00b7\u200c]*[[:alpha:]_\u00b7\u200c][[:word:]_\u00b7\u200c]*[[:word:]_]|[[:word:]_]*[[:alpha:]][[:word:]_]*)
+  # 抽出用。⚠ **Mastodon の `HASHTAG_RE` と同じ境界**（行頭か空白の直後だけ）。
+  pattern: (?<=^|[[:space:]])[#＃](%{name})
+  # 無毒化用。⚠⚠ **境界は印ごとに違う — 「どちらかの投稿先がリンク化する形」の和集合**。
+  # 半角 `#` は広い：Misskey（mfm-js）は直前が ASCII 英数でなければタグにするので、
+  # `search／#サーチ2` や `あ#タグ` もリンク化される。
+  # 🔴 全角 `＃` は Mastodon と同じ境界だけ：**Misskey は `＃` をそもそもタグにしない**ので、
+  # 広げると `あ＃タグ` のような**どこもリンク化しない本文を壊す**（Codex P2 ・実測済み）。
+  sigil_pattern: (?:(?:^|[^\/\)\w])#|(?<=^|[[:space:]])＃)(%{name})
 mastodon:
   followees:
     limit: 500
@@ -36,7 +48,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 2.0.1
+  version: 3.0.0
 parser:
   note:
     url:
