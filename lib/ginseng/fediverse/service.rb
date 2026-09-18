@@ -155,14 +155,17 @@ module Ginseng
       # コピペ・検索・他実装へ見えない文字が付いて回る。⚠ **スペースなら、次に読む
       # 人が「なぜここに空白が」と辿れる。**
       #
-      # 🔴 **拾えないものが 2 つある**（⚠ **以前の無条件置換でも拾えていない**）。
-      # 全角の `＃` と、数字だけのタグ（`#123`）。⚠⚠ **無毒化は「広く取る」ほうが
-      # 安全で、抽出は「正確」なほうが安全** — 向きが逆なので、同じパターンを共有
-      # している限りこの穴は残る。
+      # ⚠⚠ **当てるのは `Parser.hashtag_sigil_pattern`**（#275）。抽出とタグ名は共有し、
+      # 🔴 **境界だけ広く取る** — 無毒化は「広く」、抽出は「正確」で向きが逆なため。
+      # ⚠ 拾えないのは**数字だけのタグ**（`#123`）だけで、🔴 **これは投稿先もタグにしない**
+      # （Mastodon は `[[:alpha:]]` を 1 文字要求し、mfm-js は数字のみを弾く）ので穴ではない。
+      #
+      # ⚠⚠ **置換は元の印をそのまま残す（半角 `#` を決め打ちにしない）** —
+      # 🔴 全角 `＃` を半角へ寄せると、**無毒化のついでに本文を書き換える**ことになる。
       def self.escape_sigils(text)
-        text = text.gsub(Parser.hashtag_pattern) do
+        text = text.gsub(Parser.hashtag_sigil_pattern) do
           matched = Regexp.last_match
-          "#{matched[0].delete_suffix("##{matched[1]}")}# #{matched[1]}"
+          "#{matched[0].delete_suffix(matched[1])} #{matched[1]}"
         end
         return text.gsub(Parser.acct_pattern) {Regexp.last_match(1).sub('@', '@ ')}
       end
