@@ -134,8 +134,24 @@ module Ginseng
         raise ImplementError, "'#{__method__}' not implemented"
       end
 
+      # 🔴🔴 **入口で ASCII-8BIT のラベルだけ剥がす (#276)。**
+      #
+      # ⚠⚠ **「本番の口は無事」は成り立っていなかった。** `#276` は `escape_sigils` を
+      # 直接呼ぶ経路だけが落ちると書いていたが、**こちらは例外にならずに黙って化ける**。
+      # 🔴 実測（`v3.0.0`）: `"ほげ #tag @pooza".b` → `"������ # tag @ pooza"`。
+      # ⚠ `sanitize!` が中で Nokogiri に渡すので、**ASCII-8BIT のラベルが付いた
+      # 妥当な UTF-8 が、1 文字ずつ置換文字に潰される**。
+      # ⚠⚠ **Sequel / SQLite は非 ASCII をこの形で返す**ので、利用側は素直に踏む
+      # （`pooza/makoto2#171` / `#280`）。
+      #
+      # 🔴🔴 **ここでは `to_utf8` を使わない（弾かない）。** ⚠⚠ **本番の投稿の口**なので、
+      # 妥当でないバイト列で例外を上げると **その枠が 1 通も投稿されなくなる** —
+      # `#277` が困っていることそのものを、こちらが作ることになる。
+      # ⚠ **ラベルを剥がすだけなら中身は 1 バイトも動かない**ので、
+      # 🔴 **いま通っているものは全部そのまま通る**（追加だけの変更）。
+      # ⚠ 妥当でないバイト列は従来どおり `sanitize!` の先で潰れる（挙動を変えない）。
       def self.sanitize_status(text)
-        text = text.dup
+        text = Text.relabel_binary(text.to_s).dup
         text.delete!("\n") if text.match?(/<br.*?>/)
         text.gsub!(/[[:blank:]]*<br.*?>/, "\n")
         text.gsub!(%r{[[:blank:]]*</p.*?>}, "\n\n")
@@ -173,6 +189,12 @@ module Ginseng
       # ⚠⚠ **置換は元の印をそのまま残す（半角 `#` を決め打ちにしない）** —
       # 🔴 全角 `＃` を半角へ寄せると、**無毒化のついでに本文を書き換える**ことになる。
       def self.escape_sigils(text)
+        # ⚠⚠ **当てるパターンが UTF-8 なので、先に寄せる (#276)。** 🔴 `hashtag_pattern`
+        # は `·`（U+00B7）を含むため、**ASCII-8BIT の文字列に当てると
+        # `Encoding::CompatibilityError`** になる。⚠ `v2.0.0` でこれを公開したので、
+        # **直接呼ぶ経路が新しく狭かった**。
+        # ⚠ `sanitize_status` 経由では既に寄っているので、そちらでは何も起きない。
+        text = Text.to_utf8(text, "#{name}.#{__callee__}")
         text = text.gsub(Parser.hashtag_sigil_pattern) do
           matched = Regexp.last_match
           "#{matched[0].delete_suffix(matched[1])} #{matched[1]}"
