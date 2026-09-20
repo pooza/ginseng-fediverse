@@ -69,7 +69,11 @@ module Ginseng
       # 別ホストへ POST し直す**。⚠⚠ **どちらでも `Authorization` と `Idempotency-Key` を含む
       # ヘッダはそのまま送られる**（HTTParty がホストをまたいで外すのは `basic_auth` だけ）。
       # ⚠ なので `maintain_method_across_redirects` では塞がらない。
-      # ⚠ 3xx は例外にならずに返るので、呼び出し側は応答が status でないことで気づく (#282)。
+      # ⚠⚠ **いまは `RedirectGuard` が資格情報を持つ要求を一括で止める (#280)。**
+      # 🔴🔴 **ここの明示は「冗長」ではない — 中央の判断を上書きする。**
+      # `guard_redirects` は `options.key?(:follow_redirects)` で早期 return するので、
+      # ⚠⚠ **この行を `true` にした日に中央のガードは黙って譲る**（いまは同値）。
+      # ⚠ 3xx は `RedirectGuard` が `GatewayError` にする (#282)。
       def post(body, params = {})
         body = {status: body.to_s} unless body.is_a?(Hash)
         body = body.deep_symbolize_keys
