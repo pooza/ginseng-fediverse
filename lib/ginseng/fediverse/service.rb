@@ -11,6 +11,11 @@ module Ginseng
         @token = token || default_token
         @mulukhiya_enable = false
         @http = http_class.new
+        # 🔴🔴 **ガードは継承ではなく prepend で差し込む (#280 / #282)。**
+        # ⚠⚠ 利用側は全員 `http_class` を自前の HTTP へ差し替えているので、
+        # `Ginseng::HTTP` のサブクラスとして足すと**継承経路に現れない** — この
+        # gem が出す要求だけに、**`http_class` が何を返しても**効かせる。
+        @http.singleton_class.prepend(RedirectGuard)
         @http.base_uri = uri ? URI.parse(uri) : default_uri
       end
 
