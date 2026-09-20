@@ -132,8 +132,61 @@ module Ginseng
         return text.strip
       end
 
+      # 本文からタグを**抽出**するパターン (#275)。
+      #
+      # ⚠⚠ **投稿先の正規表現をそのまま引く。** 写しているのは
+      # **Mastodon v4.7.2 の `Tag::HASHTAG_RE`**（`app/models/tag.rb`）。🔴 **元の形は
+      # 2017-03 の写しのまま止まっており**、全角 `＃`（v4.5.0 #36103）と
+      # 直前の条件（v4.6.0 #37684 / #38212）と区切り文字（v3.0.0 #11345 / #11821）を
+      # 取りこぼしていた。⚠ **上流が次に変えたらまた追随する**ので、
+      # どの版を写したかをここに残すこと。
+      #
+      # 🔴🔴 **中黒 `・`（U+30FB）だけは意図して外してある**（Mastodon は v4.1.0 #22888 で
+      # 区切りに入れている）。⚠⚠ **この gem では長年タグにならず、その前提で運用されている** —
+      # 認識だけ入れても `TagContainer#create_tags` が `to_hashtag` を通すので、
+      # 🔴 `#プリキュア・オールスターズ` から `#プリキュア_オールスターズ` が**生成される側へ回る**。
+      # `_` と `・` は Mastodon の正規化でも別のタグなので、積み上がったタグが割れる。
+      # ⚠⚠ **「完全互換」へ揃えるときに黙って外さないこと。**
       def self.hashtag_pattern
-        return Regexp.new(Config.instance['/hashtag/pattern'], Regexp::IGNORECASE)
+        return create_hashtag_pattern(Config.instance['/hashtag/pattern'])
+      end
+
+      # 本文を投稿先に再解釈させないための**無毒化**用パターン (#275)。
+      #
+      # ⚠⚠ **タグ名は抽出と共有し、境界（直前の条件）だけ広く取る。**
+      # 🔴 **無毒化と抽出は安全側の向きが逆** — 抽出は「正確」、無毒化は「広く」。
+      #
+      # ⚠⚠ **相手は Mastodon だけではないので、境界を Mastodon へ揃えると穴が開く**。
+      # 実測（mfm-js 0.26.0 を走らせた）: Misskey は**直前が ASCII 英数でなければタグにする**ので、
+      # 🔴 `search／#サーチ2` `あ#タグ` `##tag` は**リンク化される**（Mastodon はどれもしない）。
+      #
+      # 🔴🔴 **広げるのは半角 `#` の側だけ (#275 Codex P2)。** 全角 `＃` は **Misskey がそもそも
+      # タグにしない**ので、広げても守る相手がいない。⚠⚠ **守る相手がいない置換は、
+      # ただ本文を壊すだけ** — 実測で `あ＃タグ` `（＃タグ` は Mastodon も Misskey もタグにしない。
+      # ⚠ #273 で `H@ppy Together!!!` を `H@ ppy` にしていたのと同じ失敗の形。
+      def self.hashtag_sigil_pattern
+        return create_hashtag_pattern(Config.instance['/hashtag/sigil_pattern'])
+      end
+
+      # ⚠ `%{name}` を展開する。🔴 **ブロック形式で渡すこと** —
+      # 置換文字列に渡すと `\\` や `\1` が後方参照・エスケープとして食われる。
+      # ⚠ `%{name}` を含まないパターン（利用側の上書き）はそのまま通る。
+      #
+      # 🔴🔴 **`timeout:` を必ず立てる（リリース前レビューの赤）。** ⚠⚠ タグ名は
+      # Mastodon の `HASHTAG_FIRST_SEQUENCE` の写しで、**区切り（`·` / ZWNJ）が
+      # `[[:word:]]` ではないのに途中に許される**ため、`#a` のあとに区切りが続く
+      # 本文で**二次爆発**する（実測: 30KB で 12.7 秒、旧パターンは 0.0013 秒）。
+      # 🔴 上流は**自分のユーザーが書いた上限付きの本文**にしか当てないが、こちらは
+      # **`sanitize_status` 経由で遠隔のフィード本文**に当たる（`tomato-shrieker` の
+      # RSS の `title` / iCal の `description`。長さの上限は無い）。
+      # ⚠⚠ **握り潰さない** — 無毒化できなかった本文を黙って投稿するほうが危ない。
+      def self.create_hashtag_pattern(pattern)
+        name = Config.instance['/hashtag/name']
+        return Regexp.new(
+          pattern.gsub('%{name}') {name},
+          Regexp::IGNORECASE,
+          timeout: Config.instance['/hashtag/timeout'],
+        )
       end
 
       def self.acct_pattern

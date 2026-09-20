@@ -56,6 +56,44 @@ module Ginseng
         assert_equal(TagContainer.scan('#フワ #プルンス'), Set['フワ', 'プルンス'])
       end
 
+      # ⚠⚠ **抽出の境界は Mastodon 完全互換 (#275)。** 🔴 無毒化と違ってこちらは
+      # 「正確」側 — 行頭か空白の直後だけをタグとして数える。
+      def test_scan_uses_the_mastodon_boundary
+        assert_equal(Set['全角タグ'], TagContainer.scan('＃全角タグ'))
+        assert_equal(Set['タグ'], TagContainer.scan("1 行目\n#タグ"))
+        assert_equal(Set[], TagContainer.scan('あ#タグ'), '直前が空白でなければタグではない')
+        assert_equal(Set[], TagContainer.scan('search／#サーチ2'))
+        assert_equal(Set[], TagContainer.scan('#123'), '数字だけはタグではない')
+      end
+
+      # 🔴🔴 **中黒 `・` は区切りに入れない（Mastodon と意図してずらす・#275）。**
+      # ⚠ 長年タグにならず、その前提で運用されているため。
+      def test_scan_stops_at_middle_dot
+        assert_equal(Set['プリキュア'], TagContainer.scan('#プリキュア・オールスターズ'))
+      end
+
+      # ⚠ **区切り文字は Mastodon の写し (#275)。** U+00B7（ラテンの中点）と
+      # U+200C（ZWNJ）はタグ名の途中に入れる。
+      def test_scan_allows_mastodon_separators
+        assert_equal(Set["l\u00B7l\u00B7l"], TagContainer.scan("#l\u00B7l\u00B7l"))
+        # ⚠⚠ **ZWNJ は目で見えないので必ずエスケープで書く。**
+        assert_equal(Set["a\u200Cb"], TagContainer.scan("#a\u200Cb"))
+      end
+
+      # 🔴 **本文の全角 `＃` を見落とさない (#275)。** ⚠⚠ 見落とすと、本文に
+      # 既にあるタグを**末尾にもう一度足す**。
+      #
+      # ⚠⚠ **守っているのは `create_pattern` の印ではなく、`text=` の NFKC 正規化。**
+      # 🔴 実測で確かめた — `＃` は `@text` に入る時点で `#` になるので、
+      # `create_pattern` を半角決め打ちのままにしてもここは通る。⚠ **正規化を外した日に
+      # 黙って壊れるので、仕様の側をここで固定しておく。**
+      def test_create_tags_sees_a_fullwidth_sigil_in_the_text
+        @container.push('タグ')
+        @container.text = '＃タグ を見た'
+
+        assert_equal(Set[], @container.create_tags, '本文にあるタグを足さないこと')
+      end
+
       def test_delete
         @container.push('実況')
         @container.push('precure_fun')
