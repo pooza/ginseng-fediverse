@@ -1,5 +1,9 @@
 module Ginseng
   module Fediverse
+    # ⚠ 利用側が派生させている（`pooza/mulukhiya-toot-proxy`）ので、
+    # **基底の名前だけ出る形になっていないか**を測るための派生。
+    class DerivedContainer < TagContainer; end
+
     class TagContainerTest < TestCase
       def setup
         @container = TagContainer.new
@@ -242,6 +246,37 @@ module Ginseng
         assert_raise(ValidateError) do
           @container.text = invalid_utf8
         end
+      end
+
+      # 🔴 **どの入口で弾かれたかが分かること (#263)。** ⚠⚠ 入口が 6 通りあるので、
+      # 例外メッセージにこれが無いと**タグを push して落ちたのか、本文を text= して
+      # 落ちたのか、突き合わせに落ちたのか**が利用側のログからは分からない。
+      def test_each_entry_names_itself
+        entries = {
+          'TagContainer#add' => -> {@container.add(invalid_utf8)},
+          'TagContainer#member?' => -> {@container.member?(invalid_utf8)},
+          'TagContainer#delete' => -> {@container.delete(invalid_utf8)},
+          'TagContainer#text=' => -> {@container.text = invalid_utf8},
+          'TagContainer.scan' => -> {TagContainer.scan(invalid_utf8)},
+        }
+        entries.each do |label, entry|
+          error = assert_raise(ValidateError, &entry)
+          assert_include(error.message, label)
+        end
+      end
+
+      # ⚠⚠ **別名は元の名前に畳まれる。** `push` は `#add`、`body=` は `#text=`。
+      # 🔴 切り分けたいのは「どの経路を通ったか」なので、これで足りる。
+      def test_an_alias_reports_the_defined_name
+        error = assert_raise(ValidateError) {@container.push(invalid_utf8)}
+        assert_include(error.message, 'TagContainer#add')
+      end
+
+      # ⚠ **サブクラスは自分の名前を出す。** 利用側が派生させている
+      # （`pooza/mulukhiya-toot-proxy`）ので、基底の名前だけだと辿れない。
+      def test_a_subclass_names_itself
+        error = assert_raise(ValidateError) {DerivedContainer.new.add(invalid_utf8)}
+        assert_include(error.message, 'DerivedContainer#add')
       end
 
       # ⚠ 正常系を壊していないこと。UTF-8 はそのまま通る。
