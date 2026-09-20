@@ -4,7 +4,7 @@ module Ginseng
     #
     # ⚠⚠ **継ぎ目は `HTTParty.public_send`。** `Ginseng::HTTP` の private の分け方は版で
     # 変わる（lock の 1.17 と main の 1.23 で違う）が、ここは両方に在る。
-    class HTTPTest < TestCase
+    class RedirectGuardTest < TestCase
       class FakeResponse
         attr_reader :code, :headers, :body
 
@@ -17,10 +17,17 @@ module Ginseng
 
       METHODS = [:get, :head, :post, :put, :delete].freeze
 
+      # ⚠ 利用側を模した HTTP。**`RedirectGuard` を知らない**（`Ginseng::HTTP` の子）。
+      class ForeignHTTP < Ginseng::HTTP; end
+
+      class ForeignService < MisskeyService
+        def http_class
+          return ForeignHTTP
+        end
+      end
+
       def setup
-        # ⚠ **`HTTParty` を先にロードさせる。** 🔴 `Ginseng::HTTP` が読まれるまで
-        # 定数が無いので、継ぎ目を差し替えようとして `NameError` になる。
-        HTTP.name
+        require 'httparty'
         @code = 200
         @captured = []
         @originals = METHODS.to_h {|method| [method, HTTParty.method(method)]}
@@ -141,7 +148,7 @@ module Ginseng
 
       # 🔴 **口ごとに書く形にしない (#280)。** `MisskeyService#post` は
       # `follow_redirects` を書いていないが、トークンを本文に持つので切れる。
-      def test_service_inherits_the_guard
+      def test_service_applies_the_guard
         MisskeyService.new(Ginseng::URI.parse('https://misskey.example.com/'), 'secret').post('本文')
         # ⚠ 口の側は `follow_redirects` を書いていない。
 
@@ -149,10 +156,30 @@ module Ginseng
         assert_equal('secret', JSON.parse(options[:body])['i'])
       end
 
+      # 🔴🔴 **利用側が `http_class` を差し替えていても届くこと（リリース前レビューの赤）。**
+      #
+      # ⚠⚠ **利用側 3 本（mulukhiya / makoto2 / tomato-shrieker）は全員、自前の
+      # `HTTP` を返す `http_class` を持っている**（gem 側の `Environment` / `Logger` を
+      # 指さないようにするため）。🔴 初版のガードは `Ginseng::HTTP` の**サブクラス**
+      # だったので、**継承経路に一度も現れず 1 本も届いていなかった** — 上の
+      # `test_service_applies_the_guard` は `MisskeyService` を直に使うので**必ず緑**で、
+      # この穴を見つけられない。
+      def test_guard_reaches_a_replaced_http_class
+        service = ForeignService.new(Ginseng::URI.parse('https://misskey.example.com/'), 'secret')
+
+        assert_instance_of(ForeignHTTP, service.http, '利用側の HTTP が使われていること')
+
+        service.post('本文')
+
+        assert_false(options[:follow_redirects], '差し替えられていても効くこと')
+      end
+
       private
 
+      # ⚠ **`Service` と同じ形で組む** — ガードは継承ではなく prepend で入る。
       def create
-        http = HTTP.new
+        http = Ginseng::HTTP.new
+        http.singleton_class.prepend(RedirectGuard)
         http.base_uri = 'https://mstdn.example.com/'
         return http
       end

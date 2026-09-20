@@ -8,6 +8,5 @@ entries:
   - namespace: Ginseng::Fediverse
     path: lib/ginseng/fediverse/uri
 inflections:
-  http: HTTP
   note_uri: NoteURI
   toot_uri: TootURI

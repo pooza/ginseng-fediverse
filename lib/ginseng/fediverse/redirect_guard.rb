@@ -1,6 +1,13 @@
 module Ginseng
   module Fediverse
-    # この gem が投稿先へ出す要求の口 (#280 / #282)。
+    # この gem が投稿先へ出す要求のガード (#280 / #282)。
+    #
+    # 🔴🔴 **クラスではなく module にして、`Service` が持つ HTTP のインスタンスへ
+    # prepend する。** ⚠⚠ 初版は `Ginseng::HTTP` のサブクラスだったが、**利用側は
+    # 全員 `Package#http_class` を自前の HTTP へ差し替えている**（gem 側の
+    # `Environment` / `Logger` を指さないようにするため）ので、**継承経路に一度も
+    # 現れず、ガードが 1 本も届いていなかった**（リリース前レビューで 3/3 を実測）。
+    # ⚠ prepend なら `http_class` が何を返しても効く。
     #
     # 🔴🔴 **資格情報を持つ要求ではリダイレクトを追わない。** ⚠⚠ HTTParty の既定は追従で、
     # **ホストをまたいで外すのは `basic_auth` だけ** — `Authorization` は 301 / 302 でも
@@ -16,7 +23,7 @@ module Ginseng
     # ⚠⚠ **上流（`Ginseng::HTTP`）にも「オリジンをまたいだら資格情報を落とす」機構はあるが、
     # `host_validator` を渡した経路にしか無い** (ginseng-core #527 / #568 / #576)。こちらは
     # 投稿先が 1 つに決まっているので、**落として追う**より**追わない**ほうが合っている。
-    class HTTP < Ginseng::HTTP
+    module RedirectGuard
       # ⚠ どのオリジンに対する資格情報かが値の側に書かれていないヘッダ。
       CREDENTIAL_HEADERS = ['authorization', 'cookie', 'proxy-authorization'].freeze
 
@@ -49,8 +56,12 @@ module Ginseng
 
       # ⚠⚠ **`upload` も同じ扱い。** 🔴 添付の口は `Authorization` を持ち、
       # multipart の本文ごと撃ち直されうる。
+      #
+      # ⚠⚠ **ここで `guard_redirects` を挟んでも効かない** — 上流が multipart 用の
+      # hash を組み直すので黙って捨てられる。効いているのは下の `upload_options`。
+      # 🔴 したがって **`upload` だけは呼び出し側の明示が通らない**（常に追わない）。
       def upload(uri, file, options = {})
-        return guard_response(super(uri, file, guard_redirects(options)))
+        return guard_response(super)
       end
 
       private
@@ -94,8 +105,9 @@ module Ginseng
       # 同じ `info` 1 行なので、**応答を検査しない利用側では「投稿されていないのに成功」
       # と数えられる**（`tomato-shrieker` の `MastodonShrieker` は `return toot(body)`）。
       #
-      # ⚠ **追従している要求では、そもそも 3xx は返ってこない**ので、ここが効くのは
-      # 資格情報付きの口（＝ 追従を切った口）だけ。
+      # ⚠ **「追従しているから 3xx は返らない」ではない。** 🔴 HTTParty が追うのは
+      # `Location` を持つ 3xx だけなので、**`Location` の無い 3xx（300 など）は
+      # 追従したままでもここへ来る**。⚠⚠ どちらも「投稿先が違う」の合図なので落とす。
       def guard_response(response)
         code = response.respond_to?(:code) ? response.code : nil
         return response unless code.is_a?(Integer)
