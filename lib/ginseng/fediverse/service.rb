@@ -136,6 +136,10 @@ module Ginseng
 
       # 🔴🔴 **入口で ASCII-8BIT のラベルだけ剥がす (#276)。**
       #
+      # ⚠⚠ **`Text.relabel` を使う（`relabel_binary` を直に呼ばない）。** 🔴 あちらには
+      # BINARY かどうかの検査が無いので、**他の符号化のラベルを踏み潰す**。
+      # ⚠ **`to_s` で受けない** — `nil` が `""` に化けて、🔴 **本文が無いのに空の投稿**が出る。
+      #
       # ⚠⚠ **「本番の口は無事」は成り立っていなかった。** `#276` は `escape_sigils` を
       # 直接呼ぶ経路だけが落ちると書いていたが、**こちらは例外にならずに黙って化ける**。
       # 🔴 実測（`v3.0.0`）: `"ほげ #tag @pooza".b` → `"������ # tag @ pooza"`。
@@ -151,7 +155,7 @@ module Ginseng
       # 🔴 **いま通っているものは全部そのまま通る**（追加だけの変更）。
       # ⚠ 妥当でないバイト列は従来どおり `sanitize!` の先で潰れる（挙動を変えない）。
       def self.sanitize_status(text)
-        text = Text.relabel_binary(text.to_s).dup
+        text = Text.relabel(text).dup
         text.delete!("\n") if text.match?(/<br.*?>/)
         text.gsub!(/[[:blank:]]*<br.*?>/, "\n")
         text.gsub!(%r{[[:blank:]]*</p.*?>}, "\n\n")

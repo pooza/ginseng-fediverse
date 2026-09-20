@@ -53,12 +53,33 @@ module Ginseng
         return relabeled.valid_encoding? ? relabeled : string
       end
 
+      # ⚠⚠ **弾かない `to_utf8` (#276)。** ラベルが BINARY で**中身が妥当な UTF-8 の
+      # ときだけ剥がし**、それ以外は**何もせず素通しする**。
+      #
+      # 🔴 **本番の投稿の口はこちらを使う。** `to_utf8` で弾くと、妥当でないバイト列の
+      # ときに**その枠が 1 通も投稿されなくなる**（`#277` が困っていることそのもの）。
+      #
+      # 🔴🔴 **`relabel_binary` を直に呼ばないこと。** ⚠⚠ あちらには **BINARY かどうかの
+      # 検査が無い**（`to_utf8` の側が持っている）ので、素の文字列に当てると
+      # **`force_encoding` で他の符号化のラベルを踏み潰す** — バイト列がたまたま妥当な
+      # UTF-8 になる ISO-8859-1 などが化ける。
+      #
+      # ⚠ **String 以外はそのまま返す。** `to_s` で受けると `nil` が `""` に化け、
+      # 🔴 **本文が無いのに空の投稿が出る**（`v3.0.0` は `NoMethodError` で落ちていた）。
+      def self.relabel(value)
+        return value unless value.is_a?(String)
+        return value unless value.encoding == Encoding::BINARY
+        return relabel_binary(value)
+      end
+
       # ⚠ 入口が分かっているときだけ添える。🔴 **前に付けない** — 利用側が
       # メッセージの頭で振り分けている場合に壊すため。
       def self.annotate(message, entry)
         return message unless entry
         return "#{message} (at #{entry})"
       end
+
+      private_class_method :annotate
     end
   end
 end

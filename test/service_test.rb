@@ -33,6 +33,29 @@ module Ginseng
         assert_equal('ほげ # tag', Service.sanitize_status('ほげ #tag'.encode('Windows-31J')))
       end
 
+      # 🔴🔴 **入口を緩めないこと（リリース前レビュー）。** ⚠⚠ `to_s` で受けると
+      # `nil` が `""` に化けて、**本文が無いのに空の投稿が出る**。`v3.0.0` と同じく
+      # 落ちること。
+      def test_sanitize_status_still_refuses_what_is_not_a_string
+        [nil, 123, :sym].each do |value|
+          assert_raise(NoMethodError) {Service.sanitize_status(value)}
+        end
+      end
+
+      # 🔴🔴 **BINARY 以外のラベルを踏み潰さないこと（リリース前レビュー）。**
+      # ⚠⚠ `Text.relabel_binary` には BINARY かどうかの検査が無いので、素の文字列に
+      # 直に当てると **`force_encoding` で他の符号化のラベルが消える** — バイト列が
+      # たまたま妥当な UTF-8 になるものが化ける。
+      def test_sanitize_status_does_not_stamp_utf8_on_another_encoding
+        # ⚠ ISO-8859-1 の "Ã©" は**バイト列としては妥当な UTF-8**（U+00E9）なので、
+        # 検査が抜けると「é」に化ける。
+        text = "\xC3\xA9".dup.force_encoding(Encoding::ISO_8859_1)
+
+        assert_equal(Encoding::ISO_8859_1, text.encoding, '前提')
+        assert_true(text.dup.force_encoding(Encoding::UTF_8).valid_encoding?, '前提')
+        assert_equal('Ã©', Service.sanitize_status(text))
+      end
+
       # 🔴 **`escape_sigils` を直接呼ぶ経路だけが落ちていた (#276)。**
       # ⚠ `hashtag_sigil_pattern` は `·`（U+00B7）を含む UTF-8 の正規表現なので、
       # ASCII-8BIT の文字列に当てると `Encoding::CompatibilityError` になっていた。
