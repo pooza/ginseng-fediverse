@@ -169,11 +169,24 @@ module Ginseng
       end
 
       # ⚠ `%{name}` を展開する。🔴 **ブロック形式で渡すこと** —
-      # 置換文字列に渡すと `\1` や `\u` が後方参照・エスケープとして食われる。
+      # 置換文字列に渡すと `\\` や `\1` が後方参照・エスケープとして食われる。
       # ⚠ `%{name}` を含まないパターン（利用側の上書き）はそのまま通る。
+      #
+      # 🔴🔴 **`timeout:` を必ず立てる（リリース前レビューの赤）。** ⚠⚠ タグ名は
+      # Mastodon の `HASHTAG_FIRST_SEQUENCE` の写しで、**区切り（`·` / ZWNJ）が
+      # `[[:word:]]` ではないのに途中に許される**ため、`#a` のあとに区切りが続く
+      # 本文で**二次爆発**する（実測: 30KB で 12.7 秒、旧パターンは 0.0013 秒）。
+      # 🔴 上流は**自分のユーザーが書いた上限付きの本文**にしか当てないが、こちらは
+      # **`sanitize_status` 経由で遠隔のフィード本文**に当たる（`tomato-shrieker` の
+      # RSS の `title` / iCal の `description`。長さの上限は無い）。
+      # ⚠⚠ **握り潰さない** — 無毒化できなかった本文を黙って投稿するほうが危ない。
       def self.create_hashtag_pattern(pattern)
         name = Config.instance['/hashtag/name']
-        return Regexp.new(pattern.gsub('%{name}') {name}, Regexp::IGNORECASE)
+        return Regexp.new(
+          pattern.gsub('%{name}') {name},
+          Regexp::IGNORECASE,
+          timeout: Config.instance['/hashtag/timeout'],
+        )
       end
 
       def self.acct_pattern
