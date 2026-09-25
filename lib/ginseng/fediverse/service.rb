@@ -203,7 +203,7 @@ module Ginseng
           matched = Regexp.last_match
           "#{matched[0].delete_suffix(matched[1])} #{matched[1]}"
         end
-        return text.gsub(Parser.acct_pattern) {Regexp.last_match(1).sub('@', '@ ')}
+        return text.gsub(Parser.acct_sigil_pattern) {Regexp.last_match(1).sub('@', '@ ')}
       end
 
       def self.create_tag(word)
