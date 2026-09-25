@@ -9,6 +9,14 @@ acct:
   # ⚠ `/` を残すのは `https://example.com/@pooza` を壊さないため（mfm 側も URL として食う）。
   # ⚠ 全角 `＃` と同じく、全角 `＠` は **Misskey がメンションにしない**ので広げない。
   sigil_pattern: ((?<![a-z0-9\/])@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))
+sigil:
+  # 無毒化で**丸ごと除外する URL の範囲** — ⚠⚠ **mfm-js の `urlChar` の写し**（0.26.0）。
+  # 🔴 無毒化の境界を広げると、**URL の途中の `_@name` `_#frag` まで区切って URL を壊す**
+  # （`https://example.com/_@ admin`）。⚠ mfm-js は URL を 1 つのトークンとして食うので、
+  # **中の `@` / `#` はメンションにもタグにもならない**＝守る相手がいない。
+  # ⚠ 括弧は入れていない（mfm-js は対になる括弧だけ URL に含める）。🔴 入れると
+  # `https://a.com)@admin` のような**メンションになる形まで除外する**ので、安全側（区切る側）に倒した。
+  url_pattern: https?://[.,a-z0-9_/:%#@$&?!~=+\-]+
 hashtag:
   # タグ名の部分。⚠ **抽出と無毒化で共有する**（`%{name}` へ埋め込む）。
   # ⚠⚠ Mastodon v4.7.2 の `HASHTAG_FIRST_SEQUENCE` / `HASHTAG_LAST_SEQUENCE` の写し。

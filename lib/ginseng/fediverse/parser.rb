@@ -202,6 +202,11 @@ module Ginseng
       def self.acct_sigil_pattern
         return Regexp.new(Config.instance['/acct/sigil_pattern'], Regexp::IGNORECASE)
       end
+
+      # 無毒化で丸ごと除外する URL の範囲（理由は config/lib.yaml の `sigil/url_pattern`）。
+      def self.sigil_url_pattern
+        return Regexp.new(Config.instance['/sigil/url_pattern'], Regexp::IGNORECASE)
+      end
     end
   end
 end

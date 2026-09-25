@@ -110,6 +110,16 @@ module Ginseng
         assert_equal('ラブ＠pooza', Service.escape_sigils('ラブ＠pooza'))
         assert_equal('https://mstdn.example.com/@pooza', Service.escape_sigils('https://mstdn.example.com/@pooza'))
       end
+
+      # 🔴 **URL の途中は区切らない（#290 Codex P2）。**境界を広げたぶん、`_@` `_#` が
+      # URL の中で当たるようになった。⚠ mfm-js は URL を丸ごと食うので守る相手がいない。
+      def test_escape_sigils_keeps_urls
+        assert_equal('https://example.com/_@admin', Service.escape_sigils('https://example.com/_@admin'))
+        assert_equal('https://example.com/_#frag', Service.escape_sigils('https://example.com/_#frag'))
+        assert_equal('ラブ@ pooza https://example.com/_@admin', Service.escape_sigils('ラブ@pooza https://example.com/_@admin'))
+        assert_equal('https://example.com/"@ admin', Service.escape_sigils('https://example.com/"@admin'))
+        assert_equal('# a https://example.com/_#b # c', Service.escape_sigils('#a https://example.com/_#b #c'))
+      end
     end
   end
 end
