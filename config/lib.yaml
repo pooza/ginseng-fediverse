@@ -1,5 +1,18 @@
 acct:
   pattern: ((?<=^|[^\/[:word:]])@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))
+  # 無毒化用（#291 のバックポート）。⚠⚠ **境界だけ抽出用より広く取る**。
+  # 🔴🔴 抽出用は `[[:word:]]` の直後を除くので、**和文字・`_` の直後の `@` を拾わない**。
+  # ⚠⚠ Misskey（mfm-js）は**直前が ASCII 英数のときだけ**メンションにしないので、
+  # `ラブ@pooza` `_@admin` は**通知が飛ぶ**（実測 0.26.0）。
+  # ⚠ `/` を残すのは `https://example.com/@pooza` を壊さないため。
+  # ⚠ 全角 `＠` は **Misskey がメンションにしない**ので広げない。
+  sigil_pattern: ((?<![a-z0-9\/])@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))
+sigil:
+  # 無毒化で**丸ごと除外する URL の範囲** — ⚠⚠ **mfm-js の `urlChar` の写し**（0.26.0）。
+  # 🔴 URL の途中の `_@name` `=#frag` まで区切って URL を壊さないため。⚠ 投稿先も
+  # URL を 1 つのトークンとして食うので、中の `@` / `#` は守る相手がいない。
+  # ⚠ 括弧は入れない（`https://a.com)@admin` のようなメンションになる形まで除外するため）。
+  url_pattern: https?://[.,a-z0-9_/:%#@$&?!~=+\-]+
 hashtag:
   pattern: (?:^|[^\/\)\w])#([[:word:]_]*[[:alpha:]_·][[:word:]_]*)
 mastodon:
@@ -36,7 +49,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 2.0.1
+  version: 2.0.2
 parser:
   note:
     url:
