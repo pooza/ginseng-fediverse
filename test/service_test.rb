@@ -91,6 +91,35 @@ module Ginseng
         assert_equal('## tag', Service.escape_sigils('##tag'))
         assert_equal('', Service.escape_sigils(''))
       end
+
+      # 🔴🔴 **`@` の境界が抽出用のままで、Misskey がメンションにする形を素通りしていた。**
+      # ⚠⚠ mfm-js は**直前が ASCII 英数のときだけ**メンションにしない（実測 0.26.0）ので、
+      # 和文字・`_` の直後の `@` も通知が飛ぶ。⚠ 曲名・アーティスト名は第三者が付ける。
+      def test_escape_sigils_acct_on_misskey_boundary
+        assert_equal('ラブ@ pooza', Service.escape_sigils('ラブ@pooza'))
+        assert_equal('_@ admin', Service.escape_sigils('_@admin'))
+        assert_equal('曲「@ admin」', Service.escape_sigils('曲「@admin」'))
+        assert_equal('ラブ@ pooza@misskey.io', Service.escape_sigils('ラブ@pooza@misskey.io'))
+        assert_equal('x.@ pooza', Service.escape_sigils('x.@pooza'))
+      end
+
+      # ⚠ **広げすぎない。**どこもメンションにしない形は壊さない（#273 の `H@ppy` と同じ失敗）。
+      def test_escape_sigils_acct_keeps_what_nobody_links
+        assert_equal('H@ppy Together!!!', Service.escape_sigils('H@ppy Together!!!'))
+        assert_equal('info@example.com', Service.escape_sigils('info@example.com'))
+        assert_equal('ラブ＠pooza', Service.escape_sigils('ラブ＠pooza'))
+        assert_equal('https://mstdn.example.com/@pooza', Service.escape_sigils('https://mstdn.example.com/@pooza'))
+      end
+
+      # 🔴 **URL の途中は区切らない（#290 Codex P2）。**境界を広げたぶん、`_@` `_#` が
+      # URL の中で当たるようになった。⚠ mfm-js は URL を丸ごと食うので守る相手がいない。
+      def test_escape_sigils_keeps_urls
+        assert_equal('https://example.com/_@admin', Service.escape_sigils('https://example.com/_@admin'))
+        assert_equal('https://example.com/_#frag', Service.escape_sigils('https://example.com/_#frag'))
+        assert_equal('ラブ@ pooza https://example.com/_@admin', Service.escape_sigils('ラブ@pooza https://example.com/_@admin'))
+        assert_equal('https://example.com/"@ admin', Service.escape_sigils('https://example.com/"@admin'))
+        assert_equal('# a https://example.com/_#b # c', Service.escape_sigils('#a https://example.com/_#b #c'))
+      end
     end
   end
 end

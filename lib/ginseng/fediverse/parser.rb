@@ -192,6 +192,21 @@ module Ginseng
       def self.acct_pattern
         return Regexp.new(Config.instance['/acct/pattern'], Regexp::IGNORECASE)
       end
+
+      # 本文を投稿先に再解釈させないための**無毒化**用パターン。
+      #
+      # ⚠⚠ **名前の部分は抽出と同じで、境界（直前の条件）だけ広く取る**
+      # （`hashtag_sigil_pattern` と同じ理由 — 抽出は「正確」、無毒化は「広く」）。
+      # 🔴 抽出用の `acct_pattern` を当てていたので、**Misskey がメンションにする
+      # `ラブ@pooza` `_@admin` を素通りしていた**（Mastodon は `[[:word:]]` 判定なので無事）。
+      def self.acct_sigil_pattern
+        return Regexp.new(Config.instance['/acct/sigil_pattern'], Regexp::IGNORECASE)
+      end
+
+      # 無毒化で丸ごと除外する URL の範囲（理由は config/lib.yaml の `sigil/url_pattern`）。
+      def self.sigil_url_pattern
+        return Regexp.new(Config.instance['/sigil/url_pattern'], Regexp::IGNORECASE)
+      end
     end
   end
 end

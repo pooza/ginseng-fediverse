@@ -199,11 +199,24 @@ module Ginseng
         # **直接呼ぶ経路が新しく狭かった**。
         # ⚠ `sanitize_status` 経由では既に寄っているので、そちらでは何も起きない。
         text = Text.to_utf8(text, "#{name}.#{__callee__}")
+        # 🔴 **URL の範囲には当てない**（`sigil/url_pattern`）。境界を広げたぶん、
+        # URL の途中の `_@name` `_#frag` まで区切って壊すため。
+        escaped = +''
+        pos = 0
+        text.to_enum(:scan, Parser.sigil_url_pattern).each do
+          matched = Regexp.last_match
+          escaped << escape_sigils_outside_url(text[pos...matched.begin(0)]) << matched[0]
+          pos = matched.end(0)
+        end
+        return escaped << escape_sigils_outside_url(text[pos..])
+      end
+
+      def self.escape_sigils_outside_url(text)
         text = text.gsub(Parser.hashtag_sigil_pattern) do
           matched = Regexp.last_match
           "#{matched[0].delete_suffix(matched[1])} #{matched[1]}"
         end
-        return text.gsub(Parser.acct_pattern) {Regexp.last_match(1).sub('@', '@ ')}
+        return text.gsub(Parser.acct_sigil_pattern) {Regexp.last_match(1).sub('@', '@ ')}
       end
 
       def self.create_tag(word)
