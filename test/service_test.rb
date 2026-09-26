@@ -122,6 +122,53 @@ module Ginseng
         assert_equal('https://example.com/"@ admin', Service.escape_sigils('https://example.com/"@admin'))
         assert_equal('# a https://example.com/_#b # c', Service.escape_sigils('#a https://example.com/_#b #c'))
       end
+
+      # 🔴🔴 **mfm-js が URL と読まない範囲は除外しない (#298)。**除外すると中の `@` が
+      # メンションとして残り、**通知が飛ぶ**（すべて実測 0.26.0）。
+      def test_escape_sigils_urls_misskey_does_not_read
+        # scheme は小文字だけ（mfm-js の `https?://` は大文字小文字を区別する）
+        assert_equal('HTTPS://x/@ admin', Service.escape_sigils('HTTPS://x/@admin'))
+        # `:https:` が絵文字コードになる。⚠ 「詳細:URL」は普通に書かれる形
+        assert_equal('詳細:https://x/@ admin', Service.escape_sigils('詳細:https://x/@admin'))
+        assert_equal('a:bhttps://x/@ admin', Service.escape_sigils('a:bhttps://x/@admin'))
+        # 手前のメンション・タグが scheme まで食う
+        assert_equal('@ https://x/@ admin', Service.escape_sigils('@https://x/@admin'))
+        assert_equal('# タグ・https://x/@ admin', Service.escape_sigils('#タグ・https://x/@admin'))
+        assert_equal('#0**http://@ admin', Service.escape_sigils('#0**http://@admin'))
+        # 閉じない fn も `$[https` までテキストとして読み進める
+        assert_equal('$[https://x/@ admin', Service.escape_sigils('$[https://x/@admin'))
+        assert_equal('$[x.y=1,https://x/@ admin', Service.escape_sigils('$[x.y=1,https://x/@admin'))
+        # 🔴 mfm-js のタグ名は NBSP・U+2028 を越える（止まるのは半角・全角空白、タブ、改行だけ）
+        assert_equal("#12\u00A0https://x/@ admin", Service.escape_sigils("#12\u00A0https://x/@admin"))
+        assert_equal("#12\u2028https://x/@ admin", Service.escape_sigils("#12\u2028https://x/@admin"))
+        # 除外しなかった URL の末尾の `$` と次の `[` で fn が開く
+        assert_equal(':https://x/$[https://y/@ admin', Service.escape_sigils(':https://x/$[https://y/@admin'))
+        # ネストの上限（Misskey は 20）では URL の途中の `~~` で打ち消し線が閉じる
+        assert_equal("#{'>' * 19}~~https://x/~~@ admin", Service.escape_sigils("#{'>' * 19}~~https://x/~~@admin"))
+        # ⚠ 除外しなかった URL の中の `#` も、同じ連なりの後ろの URL を食う
+        assert_equal('詳細:https://x/#0**あhttps://y/@ b', Service.escape_sigils('詳細:https://x/#0**あhttps://y/@b'))
+      end
+
+      # ⚠ 空白で区切られていれば、手前の `#` `@` `:` は URL を食わない。
+      def test_escape_sigils_keeps_urls_after_a_space
+        assert_equal('詳細: https://x/@admin', Service.escape_sigils('詳細: https://x/@admin'))
+        assert_equal('# タグ https://x/@admin', Service.escape_sigils('#タグ https://x/@admin'))
+        assert_equal('(https://x/@admin)', Service.escape_sigils('(https://x/@admin)'))
+      end
+
+      # 🔴 **Ruby の `/i` は `ſ`（U+017F）を英字として扱う (#298)。**mfm-js（u フラグなし）は
+      # 扱わないので、`ſ@admin` はメンションになる。
+      def test_escape_sigils_long_s
+        assert_equal('ſ@ admin', Service.escape_sigils('ſ@admin'))
+        assert_equal('https://xſ/@ admin', Service.escape_sigils('https://xſ/@admin'))
+      end
+
+      # 🔴 **ホスト部に見える `@` も区切る (#298)。**`@admin_@adminp` を 1 つとして食い、
+      # 先頭だけ区切ると `_@adminp` がメンションとして残る。
+      def test_escape_sigils_acct_host_part
+        assert_equal('@ admin_@ adminp', Service.escape_sigils('@admin_@adminp'))
+        assert_equal('@ aſ@ b', Service.escape_sigils('@aſ@b'))
+      end
     end
   end
 end
