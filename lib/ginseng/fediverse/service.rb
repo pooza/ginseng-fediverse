@@ -160,11 +160,24 @@ module Ginseng
       # 安全で、抽出は「正確」なほうが安全** — 向きが逆なので、同じパターンを共有
       # している限りこの穴は残る。
       def self.escape_sigils(text)
+        # 🔴 **URL の範囲には当てない**（`sigil/url_pattern`・#291）。
+        # URL の途中の `_@name` `=#frag` まで区切って壊すため。
+        escaped = +''
+        pos = 0
+        text.to_enum(:scan, Parser.sigil_url_pattern).each do
+          matched = Regexp.last_match
+          escaped << escape_sigils_outside_url(text[pos...matched.begin(0)]) << matched[0]
+          pos = matched.end(0)
+        end
+        return escaped << escape_sigils_outside_url(text[pos..])
+      end
+
+      def self.escape_sigils_outside_url(text)
         text = text.gsub(Parser.hashtag_pattern) do
           matched = Regexp.last_match
           "#{matched[0].delete_suffix("##{matched[1]}")}# #{matched[1]}"
         end
-        return text.gsub(Parser.acct_pattern) {Regexp.last_match(1).sub('@', '@ ')}
+        return text.gsub(Parser.acct_sigil_pattern) {Regexp.last_match(1).sub('@', '@ ')}
       end
 
       def self.create_tag(word)
