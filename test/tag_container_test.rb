@@ -251,6 +251,19 @@ module Ginseng
         end
       end
 
+      # 🔴 **NFKC が畳み方の消す文字を生む場合（Codex P2）。** `Ŀ` は `l·` に、`क़` は
+      # `क` ＋ヌクタに分かれ、投稿先はどちらも消した名前を返す。
+      def test_member_characters_introduced_by_nfkc
+        {"\u013F" => ["l\u00B7", 'l'], "\u0958" => ["\u0915", "\u0915\u093C", "\u0958"]}.each do |stored, names|
+          container = TagContainer.new([stored])
+          names.each do |name|
+            member = container.member?(name)
+
+            assert_true(member, "#{stored} / #{name}")
+          end
+        end
+      end
+
       # ⚠ **出力されるタグと `member?` の答えが揃っていること**（畳み方の共通化）。
       def test_member_matches_create_tags
         container = TagContainer.new(['剣崎 真琴', 'Go!プリンセスプリキュア', 'foo bar', 'ＦＯＯ bar'])

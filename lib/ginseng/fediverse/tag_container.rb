@@ -117,8 +117,13 @@ module Ginseng
       # 🔴 **NFKC は畳んだあとに掛ける** — 投稿先が正規化するのは**出力されたタグ**なので。
       # 先に掛けると `ＦＯＯ bar`（出力は `#ＦＯＯbar`）と `FOO bar`（`#FOO_bar`）が
       # 同じ `foo_bar` に畳まれ、出力と答えがずれる（実測・テストで検出）。
+      #
+      # 🔴🔴 **正規化のあとでもう一度畳む（Codex P2）。** NFKC は畳み方が消す文字を
+      # 新しく生む（`Ŀ` → `l·`、`क़` → `क` ＋ヌクタ）。投稿先が返す名前はそれを消した形なので、
+      # 畳み直さないと格納側のキーにだけ残り、非対称になる。
       def tag_key(word)
-        return create_tag(word).to_s.unicode_normalize(:nfkc).delete_prefix('#').downcase
+        word = create_tag(word).to_s.unicode_normalize(:nfkc).downcase
+        return create_tag(word).to_s.delete_prefix('#')
       end
 
       def create_pattern(tag)
