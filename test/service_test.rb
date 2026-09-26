@@ -44,6 +44,8 @@ module Ginseng
         assert_equal('曲「@ admin」', Service.escape_sigils('曲「@admin」'))
         assert_equal('ラブ@ pooza@misskey.io', Service.escape_sigils('ラブ@pooza@misskey.io'))
         assert_equal('x.@ pooza', Service.escape_sigils('x.@pooza'))
+        assert_equal('曲/@ admin', Service.escape_sigils('曲/@admin'))
+        assert_equal('a/@ admin', Service.escape_sigils('a/@admin'))
       end
 
       # ⚠ **広げすぎない。**どこもメンションにしない形は壊さない。
