@@ -228,6 +228,56 @@ module Ginseng
         assert(member)
       end
 
+      # 🔴 **空白や記号を含む値は、どの形で引いても当たらなかった (#260)。**
+      # 設定や辞書から入る値（mulukhiya の image_copyright / remote_tag）の形。
+      def test_member_raw_forms
+        container = TagContainer.new(['剣崎 真琴', 'ドキドキ!プリキュア', 'foo'])
+        queries = ['剣崎 真琴', '剣崎真琴', '#剣崎真琴', 'ドキドキ!プリキュア', 'ドキドキ_プリキュア', '#foo']
+        queries.each do |query|
+          member = container.member?(query)
+
+          assert_true(member, query)
+        end
+      end
+
+      # 🔴 **Mastodon は `tags[].name` を正規化して返す (#260)。** mulukhiya は投稿の応答を
+      # `member?` で絞っていたので、大文字や `·` / ZWNJ を含むタグが応答から消えていた。
+      def test_member_mastodon_names
+        {'#FooBar' => 'foobar', "#l\u00B7l\u00B7l" => "l\u00B7l\u00B7l", "#a\u200Cb" => "a\u200Cb",
+         '#ＦＯＯ' => 'foo'}.each do |text, name|
+          member = TagContainer.scan(text).member?(name)
+
+          assert_true(member, text)
+        end
+      end
+
+      # ⚠ **出力されるタグと `member?` の答えが揃っていること**（畳み方の共通化）。
+      def test_member_matches_create_tags
+        container = TagContainer.new(['剣崎 真琴', 'Go!プリンセスプリキュア', 'foo bar', 'ＦＯＯ bar'])
+        container.create_tags.each do |tag|
+          member = container.member?(tag)
+
+          assert_true(member, tag)
+        end
+      end
+
+      def test_member_rejects
+        container = TagContainer.new(['foo', '!!!'])
+        ['bar', '', '#', '!!!', 'foo_bar'].each do |query|
+          member = container.member?(query)
+
+          assert_false(member, query)
+        end
+      end
+
+      # ⚠ **`include?` は `Set` のまま**（格納値との完全一致）。変えるなら major (#260)。
+      def test_include_stays_exact
+        container = TagContainer.new(['剣崎 真琴'])
+
+        assert_false(container.include?('剣崎真琴'))
+        assert_true(container.include?('剣崎 真琴'))
+      end
+
       # 🔴 `casecmp` が nil を返し、`.zero?` が NoMethodError になっていた。
       def test_delete_shift_jis
         @container.push('ほげ')

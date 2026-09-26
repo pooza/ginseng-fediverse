@@ -14,8 +14,18 @@ module Ginseng
 
       alias push add
 
+      # ⚠⚠ **「同じタグを出力するか」で比べる (#260)。** 両辺を `create_tags` と
+      # 同じ形に畳み、大文字小文字を区別しない。
+      # 🔴 もとは引数だけを `to_hashtag_base` して**生の格納値**と比べていたので、
+      # 空白や記号を含む値（`剣崎 真琴`）はどの形で引いても当たらず、
+      # Mastodon が正規化して返すタグ名（`foobar` / `l·l·l`）も外れていた。
+      #
+      # ⚠ **`include?` / `===` は `Set` のまま（格納値との完全一致）。**
+      # 🔴 `assert_includes` はこちらを通らない。
       def member?(tag)
-        return super(self.class.to_utf8(tag, entry_label).to_hashtag_base)
+        key = tag_key(normalize(self.class.to_utf8(tag, entry_label)))
+        return false if key.empty?
+        return any? {|v| tag_key(v) == key}
       end
 
       def merge(words)
@@ -57,9 +67,7 @@ module Ginseng
       end
 
       def create_tags
-        @tags ||= map {|tag| tag.gsub(/([a-z0-9]{2,})[[:blank:]]/i, '\\1_')}
-          .filter_map {|tag| tag.gsub(/[[:blank:]]/, '').presence}
-          .map(&:to_hashtag)
+        @tags ||= filter_map {|tag| create_tag(tag)}
           .reject {|tag| @text&.match?(create_pattern(tag))}
           .to_set
         return @tags
@@ -96,6 +104,21 @@ module Ginseng
       # 🔴 **切り分けたいのは「どの経路を通ったか」なので、これで足りる。**
       def entry_label
         return "#{self.class}##{caller_locations(1, 1).first.base_label}"
+      end
+
+      # ⚠ `create_tags` と `member?` の**共通の畳み方**。片方だけ直すと、
+      # 出力されるタグと `member?` の答えがまたずれる (#260)。
+      def create_tag(word)
+        word = word.gsub(/([a-z0-9]{2,})[[:blank:]]/i, '\\1_').gsub(/[[:blank:]]/, '')
+        return word.to_hashtag if word.present?
+      end
+
+      # ⚠ NFKC と小文字化は Mastodon の正規化（`HashtagNormalizer`）に合わせた。
+      # 🔴 **NFKC は畳んだあとに掛ける** — 投稿先が正規化するのは**出力されたタグ**なので。
+      # 先に掛けると `ＦＯＯ bar`（出力は `#ＦＯＯbar`）と `FOO bar`（`#FOO_bar`）が
+      # 同じ `foo_bar` に畳まれ、出力と答えがずれる（実測・テストで検出）。
+      def tag_key(word)
+        return create_tag(word).to_s.unicode_normalize(:nfkc).delete_prefix('#').downcase
       end
 
       def create_pattern(tag)
