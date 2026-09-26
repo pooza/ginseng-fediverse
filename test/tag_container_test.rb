@@ -283,6 +283,22 @@ module Ginseng
         end
       end
 
+      # 🔴 **覚えたキーが古くならないこと。** `clear` などは `add` / `delete` を通らない。
+      def test_member_after_set_mutations
+        container = TagContainer.new(['foo'])
+
+        assert_true(container.member?('FOO'))
+        container.clear
+
+        assert_false(container.member?('FOO'))
+        container.push('bar')
+
+        assert_true(container.member?('BAR'))
+        container.subtract(['bar'])
+
+        assert_false(container.member?('BAR'))
+      end
+
       # ⚠ **`include?` は `Set` のまま**（格納値との完全一致）。変えるなら major (#260)。
       def test_include_stays_exact
         container = TagContainer.new(['剣崎 真琴'])

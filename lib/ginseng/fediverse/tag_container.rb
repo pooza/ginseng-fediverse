@@ -22,10 +22,13 @@ module Ginseng
       #
       # ⚠ **`include?` / `===` は `Set` のまま（格納値との完全一致）。**
       # 🔴 `assert_includes` はこちらを通らない。
+      #
+      # ⚠ **Mastodon の ASCII folding（`café` → `cafe`）は写していない。**
+      # アクセント付きのラテン文字のタグは、投稿先が返す名前では当たらない。
       def member?(tag)
         key = tag_key(normalize(self.class.to_utf8(tag, entry_label)))
         return false if key.empty?
-        return any? {|v| tag_key(v) == key}
+        return stored_keys.include?(key)
       end
 
       def merge(words)
@@ -109,7 +112,9 @@ module Ginseng
       # ⚠ `create_tags` と `member?` の**共通の畳み方**。片方だけ直すと、
       # 出力されるタグと `member?` の答えがまたずれる (#260)。
       def create_tag(word)
-        word = word.gsub(/([a-z0-9]{2,})[[:blank:]]/i, '\\1_').gsub(/[[:blank:]]/, '')
+        # 🔴 **後読みで書く。** `([a-z0-9]{2,})[[:blank:]]` は空白の無い英数字の長い列で
+        # 二乗に遅い（`'x' * 8000` で 0.8 秒）。置換の結果は同じ（ランダムな 20 万件で一致）。
+        word = word.gsub(/(?<=[a-z0-9]{2})[[:blank:]]/i, '_').gsub(/[[:blank:]]/, '')
         return word.to_hashtag if word.present?
       end
 
@@ -119,11 +124,22 @@ module Ginseng
       # 同じ `foo_bar` に畳まれ、出力と答えがずれる（実測・テストで検出）。
       #
       # 🔴🔴 **正規化のあとでもう一度畳む（Codex P2）。** NFKC は畳み方が消す文字を
-      # 新しく生む（`Ŀ` → `l·`、`क़` → `क` ＋ヌクタ）。投稿先が返す名前はそれを消した形なので、
-      # 畳み直さないと格納側のキーにだけ残り、非対称になる。
+      # 新しく生む（`Ŀ` → `l·`、`क़` → `क` ＋ヌクタ）。問い合わせの `l·` の `·` は最初の畳みで
+      # 消えるのに、格納側の `·` は NFKC のあとで生まれるので残る。畳み直さないと非対称になる。
       def tag_key(word)
         word = create_tag(word).to_s.unicode_normalize(:nfkc).downcase
         return create_tag(word).to_s.delete_prefix('#')
+      end
+
+      # ⚠ **格納側のキーは覚えておく。** 毎回全要素を畳むと、応答のタグを `member?` で
+      # 絞る呼び側（mulukhiya）で「格納数 × 問い合わせ数」になる（100 タグで 0.15 秒）。
+      # 🔴 **`@tags` のように `add` / `delete` で捨てる形にしない** — `Set` の `clear` /
+      # `subtract` / `keep_if` などはそこを通らない。中身の `hash` で古さを判定する。
+      def stored_keys
+        digest = hash
+        return @stored_keys.last if @stored_keys&.first == digest
+        @stored_keys = [digest, filter_map {|v| tag_key(v).presence}.to_set]
+        return @stored_keys.last
       end
 
       def create_pattern(tag)
