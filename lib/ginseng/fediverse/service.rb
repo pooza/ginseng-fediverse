@@ -3,6 +3,17 @@ module Ginseng
     class Service
       include Package
 
+      # 無毒化で、URL の手前にあると **mfm-js が scheme を食う**トークンの開き (#298)。
+      # ⚠ `:name` は絵文字コード（`:https:`）、`$[name.arg=v,` は fn。🔴 fn は閉じなくても
+      # `$[https` まで**テキストとして**読み進めるので、残りの `@` がメンションになる。
+      # ⚠ 名前の文字は mfm-js の写し（`/[a-z0-9_+-]/i`・u フラグなし）。Ruby の `/i` は
+      # `ſ` `K` を英字として扱うので、**ASCII を並べて `/i` を使わない**。
+      SCHEME_EATING_HEAD = /(?::[a-zA-Z0-9_+-]*|\$\[[a-zA-Z0-9_.,=-]*)\z/
+
+      # mfm-js のハッシュタグ名が止まる空白（`space` と `newLine`）。🔴 Ruby の `[[:space:]]`
+      # は NBSP・U+2028 なども含むが、**mfm-js のタグ名はそれを越えて scheme まで食う**。
+      MFM_SPACE = /[ 　\t\r\n]/
+
       attr_reader :token, :http
       attr_accessor :mulukhiya_enable
 
@@ -204,57 +215,54 @@ module Ginseng
         # 🔴🔴 **ただし、手前のトークンが scheme を食う URL は除外しない (#298)。**
         # mfm-js はそれを URL と読まないので、**中の `@` がメンションになる**
         # （`詳細:https://x/@a` は `:https:` が絵文字になり `@a` に通知が飛ぶ・実測 0.26.0）。
-        # 🔴 **パターンは 1 回だけ組む。**`hashtag_sigil_pattern` は 1 回 3ms かかり、URL ごとに
+        # ⚠ **パターンは 1 回だけ組む。**`hashtag_sigil_pattern` は 1 回数 ms かかり、URL ごとに
         # 組むと 10KB の本文で 2.4 秒かかっていた（#298 のリリース前の実測）。
-        # 🔴 **位置はバイトで持つ。**和文字を含む本文の文字位置は先頭から数え直すので、
-        # `text[pos...matched.begin(0)]` は 1 回が O(n) になり、160KB で 3.7 秒かかっていた。
+        # ⚠ **位置はバイトで持つ。**和文字を含む本文の文字位置は先頭から数え直すので、
+        # 文字位置で切り出すと 1 回が O(n) になり、本文の長さの二乗で遅くなっていた。
         patterns = [Parser.hashtag_sigil_pattern, Parser.acct_sigil_pattern]
         escaped = +''
-        pos = 0
-        last = 0
+        # flushed: 無毒化して escaped へ移し終えた位置 / prev_end: 直前の URL の終わり
+        flushed = prev_end = 0
         tainted = false
         text.to_enum(:scan, Parser.sigil_url_pattern).each do
           matched = Regexp.last_match
           start, finish = matched.byteoffset(0)
-          gap = text.byteslice(last...start)
-          last = finish
-          tainted = sigil_in_run?(gap, tainted)
-          if tainted || gap.match?(EMOJI_CODE_HEAD)
+          gap = text.byteslice(prev_end...start)
+          prev_end = finish
+          tainted = sigil_in_run(gap, tainted)
+          if tainted || gap.match?(SCHEME_EATING_HEAD)
             # ⚠ 除外しなかった URL の `@` / `#` も、同じ連なりの後ろの URL を食いうる。
             tainted ||= matched[0].match?(/[#@]/)
             next
           end
-          escaped << escape_sigils_outside_url(text.byteslice(pos...start), patterns) << matched[0]
-          pos = last
+          escaped << escape_sigils_outside_url(text.byteslice(flushed...start), patterns)
+          escaped << matched[0]
+          flushed = finish
         end
-        return escaped << escape_sigils_outside_url(text.byteslice(pos..), patterns)
+        return escaped << escape_sigils_outside_url(text.byteslice(flushed..), patterns)
       end
 
-      # URL の直前が `:name` なら、mfm-js は `:name` ＋ scheme を絵文字コードとして食う。
-      # ⚠ 名前の文字は mfm-js の `/[a-z0-9_+-]/i`（u フラグなし）の写し。🔴 Ruby の `/i` は
-      # `ſ` `K` を英字として扱うので、**ASCII を並べて `/i` を使わない**。
-      EMOJI_CODE_HEAD = /:[a-zA-Z0-9_+-]*\z/
-
-      # 空白を挟まずに `#` / `@` が先行しているか。⚠⚠ **ハッシュタグとメンションの
-      # 名前がどこまで伸びるかは写さず、空白までの連なり全体を見る**（安全側）。
+      # 空白（`MFM_SPACE`）を挟まずに `#` / `@` が先行しているかを、直前の URL までの
+      # 結果 `tainted` に `gap` を足して返す。⚠⚠ **ハッシュタグとメンションの名前が
+      # どこまで伸びるかは写さず、空白までの連なり全体を見る**（安全側）。
       # mfm-js のタグ名は `#タグ・https` のように scheme まで食う（実測 0.26.0）。
-      # 🔴 **連なりを毎回切り出さない** — 直前の URL からの差分だけを見て、
-      # 1 本の長い本文で二次になるのを避ける。
-      def self.sigil_in_run?(gap, tainted)
-        index = gap.rindex(/[[:space:]]/)
+      # ⚠ 連なりを毎回切り出さず、直前の URL からの差分だけを見る（長い本文で二次にしない）。
+      def self.sigil_in_run(gap, tainted)
+        index = gap.rindex(MFM_SPACE)
         return gap[(index + 1)..].match?(/[#@]/) if index
         return tainted || gap.match?(/[#@]/)
       end
+      private_class_method :sigil_in_run
 
-      def self.escape_sigils_outside_url(text, patterns)
-        hashtag, acct = patterns
+      def self.escape_sigils_outside_url(text, patterns = nil)
+        hashtag, acct = patterns || [Parser.hashtag_sigil_pattern, Parser.acct_sigil_pattern]
         text = text.gsub(hashtag) do
           matched = Regexp.last_match
           "#{matched[0].delete_suffix(matched[1])} #{matched[1]}"
         end
-        # 🔴 **ホスト部の `@` も、直前が ASCII 英数でなければ区切る (#298)。** 名前の文字集合が
-        # mfm-js より広い（`_` で終わる・`/i` で `ſ` を含む）ので、`@admin_@adminp` を
-        # 1 つのアカウントとして食い、先頭だけ区切ると `_@adminp` がメンションになる。
+        # 🔴 **ホスト部の `@` も、直前が ASCII 英数でなければ区切る (#298)。** `@admin_@adminp`
+        # は mfm-js でも 1 つのメンション（ホスト `adminp`）だが、**先頭だけ区切ると
+        # `_@adminp` が新しいメンションになる**。⚠ `@aſ@b` も同じ（`ſ` は `/i` で名前に入る）。
         return text.gsub(acct) do
           Regexp.last_match(1).gsub(/(?<![a-zA-Z0-9])@/, '@ ')
         end

@@ -21,8 +21,10 @@ sigil:
   # `https://a.com)@admin` のような**メンションになる形まで除外する**ので、安全側（区切る側）に倒した。
   # 🔴🔴 **大文字小文字を区別する (#298)。**mfm-js の scheme は `https?://` だけで、
   # `HTTPS://x/@admin` を URL と読まない — 除外すると `@admin` に通知が飛んでいた。
-  # ⚠ 同じ理由で `/i` は使わず ASCII を並べる（`/i` では `ſ` が `s` に当たる）。
-  # ⚠ 手前のトークンが scheme を食う形（`詳細:https://`）は Service.escape_sigils で見る。
+  # ⚠ `/i` は使わず ASCII を並べる — 🔴 Ruby の `/i` は `ſ`（U+017F）を `s` に当て、
+  # mfm-js が URL を切る位置より先まで除外する（`https://xſ/@admin`）。
+  # ⚠ 手前のトークンが scheme を食う形（`詳細:https://` `$[https://` `#タグ・https://`）は
+  # Service.escape_sigils で見る。
   url_pattern: https?://[.,a-zA-Z0-9_/:%#@$&?!~=+\-]+
 hashtag:
   # タグ名の部分。⚠ **抽出と無毒化で共有する**（`%{name}` へ埋め込む）。

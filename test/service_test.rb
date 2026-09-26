@@ -135,6 +135,12 @@ module Ginseng
         assert_equal('@ https://x/@ admin', Service.escape_sigils('@https://x/@admin'))
         assert_equal('# タグ・https://x/@ admin', Service.escape_sigils('#タグ・https://x/@admin'))
         assert_equal('#0**http://@ admin', Service.escape_sigils('#0**http://@admin'))
+        # 閉じない fn も `$[https` までテキストとして読み進める
+        assert_equal('$[https://x/@ admin', Service.escape_sigils('$[https://x/@admin'))
+        assert_equal('$[x.y=1,https://x/@ admin', Service.escape_sigils('$[x.y=1,https://x/@admin'))
+        # 🔴 mfm-js のタグ名は NBSP・U+2028 を越える（止まるのは半角・全角空白、タブ、改行だけ）
+        assert_equal("#12\u00A0https://x/@ admin", Service.escape_sigils("#12\u00A0https://x/@admin"))
+        assert_equal("#12\u2028https://x/@ admin", Service.escape_sigils("#12\u2028https://x/@admin"))
         # ⚠ 除外しなかった URL の中の `#` も、同じ連なりの後ろの URL を食う
         assert_equal('詳細:https://x/#0**あhttps://y/@ b', Service.escape_sigils('詳細:https://x/#0**あhttps://y/@b'))
       end
@@ -157,7 +163,7 @@ module Ginseng
       # 先頭だけ区切ると `_@adminp` がメンションとして残る。
       def test_escape_sigils_acct_host_part
         assert_equal('@ admin_@ adminp', Service.escape_sigils('@admin_@adminp'))
-        assert_equal('ラブ@ pooza@misskey.io', Service.escape_sigils('ラブ@pooza@misskey.io'))
+        assert_equal('@ aſ@ b', Service.escape_sigils('@aſ@b'))
       end
     end
   end
