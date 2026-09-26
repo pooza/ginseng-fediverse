@@ -12,7 +12,7 @@ module Ginseng
 
       # mfm-js のハッシュタグ名が止まる空白（`space` と `newLine`）。🔴 Ruby の `[[:space:]]`
       # は NBSP・U+2028 なども含むが、**mfm-js のタグ名はそれを越えて scheme まで食う**。
-      MFM_SPACE = /[ 　\t\r\n]/
+      MFM_SPACE = /[ \u3000\t\r\n]/
 
       attr_reader :token, :http
       attr_accessor :mulukhiya_enable
