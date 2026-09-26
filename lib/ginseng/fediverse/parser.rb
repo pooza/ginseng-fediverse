@@ -150,8 +150,9 @@ module Ginseng
       end
 
       # 無毒化で丸ごと除外する URL の範囲（理由は config/lib.yaml の `sigil/url_pattern`）。
+      # 🔴 **`IGNORECASE` を付けない (#298)** — mfm-js は大文字の scheme を URL と読まない。
       def self.sigil_url_pattern
-        return Regexp.new(Config.instance['/sigil/url_pattern'], Regexp::IGNORECASE)
+        return Regexp.new(Config.instance['/sigil/url_pattern'])
       end
     end
   end

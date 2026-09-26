@@ -3,6 +3,17 @@ module Ginseng
     class Service
       include Package
 
+      # 無毒化で、URL の手前にあると **mfm-js が scheme を食う**トークンの開き (#298)。
+      # ⚠ `:name` は絵文字コード（`:https:`）、`$[name.arg=v,` は fn。🔴 fn は閉じなくても
+      # `$[https` まで**テキストとして**読み進めるので、残りの `@` がメンションになる。
+      # ⚠ 名前の文字は mfm-js の写し（`/[a-z0-9_+-]/i`・u フラグなし）。Ruby の `/i` は
+      # `ſ` `K` を英字として扱うので、**ASCII を並べて `/i` を使わない**。
+      SCHEME_EATING_HEAD = /(?::[a-zA-Z0-9_+-]*|\$\[[a-zA-Z0-9_.,=-]*)\z/
+
+      # mfm-js のハッシュタグ名が止まる空白（`space` と `newLine`）。🔴 Ruby の `[[:space:]]`
+      # は NBSP・U+2028 なども含むが、**mfm-js のタグ名はそれを越えて scheme まで食う**。
+      MFM_SPACE = /[ \u3000\t\r\n]/
+
       attr_reader :token, :http
       attr_accessor :mulukhiya_enable
 
@@ -162,22 +173,60 @@ module Ginseng
       def self.escape_sigils(text)
         # 🔴 **URL の範囲には当てない**（`sigil/url_pattern`・#291）。
         # URL の途中の `_@name` `=#frag` まで区切って壊すため。
+        # 🔴🔴 **ただし、手前のトークンが scheme を食う URL は除外しない (#298)。**
+        # mfm-js はそれを URL と読まないので、**中の `@` がメンションになる**
+        # （`詳細:https://x/@a` は `:https:` が絵文字になり `@a` に通知が飛ぶ・実測 0.26.0）。
+        # ⚠ **パターンは 1 回だけ組み、位置はバイトで持つ**（URL の多い長い本文で遅くしない）。
+        patterns = [Parser.hashtag_pattern, Parser.acct_sigil_pattern]
         escaped = +''
-        pos = 0
+        # flushed: 無毒化して escaped へ移し終えた位置 / prev_end: 直前の URL の終わり
+        flushed = prev_end = 0
+        tainted = false
         text.to_enum(:scan, Parser.sigil_url_pattern).each do
           matched = Regexp.last_match
-          escaped << escape_sigils_outside_url(text[pos...matched.begin(0)]) << matched[0]
-          pos = matched.end(0)
+          start, finish = matched.byteoffset(0)
+          gap = text.byteslice(prev_end...start)
+          prev_end = finish
+          tainted = sigil_in_run(gap, tainted)
+          # 🔴 `~~` を含む URL も除外しない — ネストが上限（Misskey は 20）に達すると
+          # mfm-js は 1 文字ずつ読み、URL の途中の `~~` で打ち消し線を閉じる。
+          if tainted || gap.match?(SCHEME_EATING_HEAD) || matched[0].include?('~~')
+            # 🔴 除外しなかった URL は、**同じ連なりの後ろの URL も汚す** — 中の `@` `#` や、
+            # 末尾の `$` と次の `[` で開く fn（`:https://x/$[https://y/@a`）が scheme を食う。
+            tainted = true
+            next
+          end
+          escaped << escape_sigils_outside_url(text.byteslice(flushed...start), patterns)
+          escaped << matched[0]
+          flushed = finish
         end
-        return escaped << escape_sigils_outside_url(text[pos..])
+        return escaped << escape_sigils_outside_url(text.byteslice(flushed..), patterns)
       end
 
-      def self.escape_sigils_outside_url(text)
-        text = text.gsub(Parser.hashtag_pattern) do
+      # 空白（`MFM_SPACE`）を挟まずに `#` / `@` が先行しているかを、直前の URL までの
+      # 結果 `tainted` に `gap` を足して返す。⚠⚠ **ハッシュタグとメンションの名前が
+      # どこまで伸びるかは写さず、空白までの連なり全体を見る**（安全側）。
+      # mfm-js のタグ名は `#タグ・https` のように scheme まで食う（実測 0.26.0）。
+      # ⚠ 連なりを毎回切り出さず、直前の URL からの差分だけを見る（長い本文で二次にしない）。
+      def self.sigil_in_run(gap, tainted)
+        index = gap.rindex(MFM_SPACE)
+        return gap[(index + 1)..].match?(/[#@]/) if index
+        return tainted || gap.match?(/[#@]/)
+      end
+      private_class_method :sigil_in_run
+
+      def self.escape_sigils_outside_url(text, patterns = nil)
+        hashtag, acct = patterns || [Parser.hashtag_pattern, Parser.acct_sigil_pattern]
+        text = text.gsub(hashtag) do
           matched = Regexp.last_match
           "#{matched[0].delete_suffix("##{matched[1]}")}# #{matched[1]}"
         end
-        return text.gsub(Parser.acct_sigil_pattern) {Regexp.last_match(1).sub('@', '@ ')}
+        # 🔴 **ホスト部の `@` も、直前が ASCII 英数でなければ区切る (#298)。** `@admin_@adminp`
+        # は mfm-js でも 1 つのメンション（ホスト `adminp`）だが、**先頭だけ区切ると
+        # `_@adminp` が新しいメンションになる**。⚠ `@aſ@b` も同じ（`ſ` は `/i` で名前に入る）。
+        return text.gsub(acct) do
+          Regexp.last_match(1).gsub(/(?<![a-zA-Z0-9])@/, '@ ')
+        end
       end
 
       def self.create_tag(word)
