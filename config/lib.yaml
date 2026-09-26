@@ -9,7 +9,9 @@ acct:
   # 🔴 **`/` は除かない。**mfm-js は `曲/@admin` もメンションにする（実測 0.26.0）。
   # ⚠ `https://example.com/@pooza` は `sigil/url_pattern` で丸ごと除外するので、ここで守らなくてよい。
   # ⚠ 全角 `＃` と同じく、全角 `＠` は **Misskey がメンションにしない**ので広げない。
-  sigil_pattern: ((?<![a-z0-9])@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))
+  # 🔴 **境界だけは `/i` を効かせない (#298)。**Ruby の `/i` は `ſ`（U+017F）を英字として扱い、
+  # `ſ@admin` を素通りしていた（mfm-js は u フラグなしなので英字にしない）。
+  sigil_pattern: ((?<!(?-i:[a-zA-Z0-9]))@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))
 sigil:
   # 無毒化で**丸ごと除外する URL の範囲** — ⚠⚠ **mfm-js の `urlChar` の写し**（0.26.0）。
   # 🔴 無毒化の境界を広げると、**URL の途中の `_@name` `_#frag` まで区切って URL を壊す**
@@ -17,7 +19,11 @@ sigil:
   # **中の `@` / `#` はメンションにもタグにもならない**＝守る相手がいない。
   # ⚠ 括弧は入れていない（mfm-js は対になる括弧だけ URL に含める）。🔴 入れると
   # `https://a.com)@admin` のような**メンションになる形まで除外する**ので、安全側（区切る側）に倒した。
-  url_pattern: https?://[.,a-z0-9_/:%#@$&?!~=+\-]+
+  # 🔴🔴 **大文字小文字を区別する (#298)。**mfm-js の scheme は `https?://` だけで、
+  # `HTTPS://x/@admin` を URL と読まない — 除外すると `@admin` に通知が飛んでいた。
+  # ⚠ 同じ理由で `/i` は使わず ASCII を並べる（`/i` では `ſ` が `s` に当たる）。
+  # ⚠ 手前のトークンが scheme を食う形（`詳細:https://`）は Service.escape_sigils で見る。
+  url_pattern: https?://[.,a-zA-Z0-9_/:%#@$&?!~=+\-]+
 hashtag:
   # タグ名の部分。⚠ **抽出と無毒化で共有する**（`%{name}` へ埋め込む）。
   # ⚠⚠ Mastodon v4.7.2 の `HASHTAG_FIRST_SEQUENCE` / `HASHTAG_LAST_SEQUENCE` の写し。
@@ -89,7 +95,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 3.1.3
+  version: 3.1.4
 parser:
   note:
     url:

@@ -201,22 +201,63 @@ module Ginseng
         text = Text.to_utf8(text, "#{name}.#{__callee__}")
         # 🔴 **URL の範囲には当てない**（`sigil/url_pattern`）。境界を広げたぶん、
         # URL の途中の `_@name` `_#frag` まで区切って壊すため。
+        # 🔴🔴 **ただし、手前のトークンが scheme を食う URL は除外しない (#298)。**
+        # mfm-js はそれを URL と読まないので、**中の `@` がメンションになる**
+        # （`詳細:https://x/@a` は `:https:` が絵文字になり `@a` に通知が飛ぶ・実測 0.26.0）。
+        # 🔴 **パターンは 1 回だけ組む。**`hashtag_sigil_pattern` は 1 回 3ms かかり、URL ごとに
+        # 組むと 10KB の本文で 2.4 秒かかっていた（#298 のリリース前の実測）。
+        # 🔴 **位置はバイトで持つ。**和文字を含む本文の文字位置は先頭から数え直すので、
+        # `text[pos...matched.begin(0)]` は 1 回が O(n) になり、160KB で 3.7 秒かかっていた。
+        patterns = [Parser.hashtag_sigil_pattern, Parser.acct_sigil_pattern]
         escaped = +''
         pos = 0
+        last = 0
+        tainted = false
         text.to_enum(:scan, Parser.sigil_url_pattern).each do
           matched = Regexp.last_match
-          escaped << escape_sigils_outside_url(text[pos...matched.begin(0)]) << matched[0]
-          pos = matched.end(0)
+          start, finish = matched.byteoffset(0)
+          gap = text.byteslice(last...start)
+          last = finish
+          tainted = sigil_in_run?(gap, tainted)
+          if tainted || gap.match?(EMOJI_CODE_HEAD)
+            # ⚠ 除外しなかった URL の `@` / `#` も、同じ連なりの後ろの URL を食いうる。
+            tainted ||= matched[0].match?(/[#@]/)
+            next
+          end
+          escaped << escape_sigils_outside_url(text.byteslice(pos...start), patterns) << matched[0]
+          pos = last
         end
-        return escaped << escape_sigils_outside_url(text[pos..])
+        return escaped << escape_sigils_outside_url(text.byteslice(pos..), patterns)
       end
 
-      def self.escape_sigils_outside_url(text)
-        text = text.gsub(Parser.hashtag_sigil_pattern) do
+      # URL の直前が `:name` なら、mfm-js は `:name` ＋ scheme を絵文字コードとして食う。
+      # ⚠ 名前の文字は mfm-js の `/[a-z0-9_+-]/i`（u フラグなし）の写し。🔴 Ruby の `/i` は
+      # `ſ` `K` を英字として扱うので、**ASCII を並べて `/i` を使わない**。
+      EMOJI_CODE_HEAD = /:[a-zA-Z0-9_+-]*\z/
+
+      # 空白を挟まずに `#` / `@` が先行しているか。⚠⚠ **ハッシュタグとメンションの
+      # 名前がどこまで伸びるかは写さず、空白までの連なり全体を見る**（安全側）。
+      # mfm-js のタグ名は `#タグ・https` のように scheme まで食う（実測 0.26.0）。
+      # 🔴 **連なりを毎回切り出さない** — 直前の URL からの差分だけを見て、
+      # 1 本の長い本文で二次になるのを避ける。
+      def self.sigil_in_run?(gap, tainted)
+        index = gap.rindex(/[[:space:]]/)
+        return gap[(index + 1)..].match?(/[#@]/) if index
+        return tainted || gap.match?(/[#@]/)
+      end
+
+      def self.escape_sigils_outside_url(text, patterns)
+        hashtag, acct = patterns
+        text = text.gsub(hashtag) do
           matched = Regexp.last_match
           "#{matched[0].delete_suffix(matched[1])} #{matched[1]}"
         end
-        return text.gsub(Parser.acct_sigil_pattern) {Regexp.last_match(1).sub('@', '@ ')}
+        # 🔴 **ホスト部の `@` も、直前が ASCII 英数でなければ区切る (#298)。** 名前の文字集合が
+        # mfm-js より広い（`_` で終わる・`/i` で `ſ` を含む）ので、`@admin_@adminp` を
+        # 1 つのアカウントとして食い、先頭だけ区切ると `_@adminp` がメンションになる。
+        return text.gsub(acct) do
+          Regexp.last_match(1).gsub(/(?<![a-zA-Z0-9])@/, '@ ')
+        end
       end
 
       def self.create_tag(word)

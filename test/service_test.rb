@@ -122,6 +122,43 @@ module Ginseng
         assert_equal('https://example.com/"@ admin', Service.escape_sigils('https://example.com/"@admin'))
         assert_equal('# a https://example.com/_#b # c', Service.escape_sigils('#a https://example.com/_#b #c'))
       end
+
+      # 🔴🔴 **mfm-js が URL と読まない範囲は除外しない (#298)。**除外すると中の `@` が
+      # メンションとして残り、**通知が飛ぶ**（すべて実測 0.26.0）。
+      def test_escape_sigils_urls_misskey_does_not_read
+        # scheme は小文字だけ（mfm-js の `https?://` は大文字小文字を区別する）
+        assert_equal('HTTPS://x/@ admin', Service.escape_sigils('HTTPS://x/@admin'))
+        # `:https:` が絵文字コードになる。⚠ 「詳細:URL」は普通に書かれる形
+        assert_equal('詳細:https://x/@ admin', Service.escape_sigils('詳細:https://x/@admin'))
+        assert_equal('a:bhttps://x/@ admin', Service.escape_sigils('a:bhttps://x/@admin'))
+        # 手前のメンション・タグが scheme まで食う
+        assert_equal('@ https://x/@ admin', Service.escape_sigils('@https://x/@admin'))
+        assert_equal('# タグ・https://x/@ admin', Service.escape_sigils('#タグ・https://x/@admin'))
+        assert_equal('#0**http://@ admin', Service.escape_sigils('#0**http://@admin'))
+        # ⚠ 除外しなかった URL の中の `#` も、同じ連なりの後ろの URL を食う
+        assert_equal('詳細:https://x/#0**あhttps://y/@ b', Service.escape_sigils('詳細:https://x/#0**あhttps://y/@b'))
+      end
+
+      # ⚠ 空白で区切られていれば、手前の `#` `@` `:` は URL を食わない。
+      def test_escape_sigils_keeps_urls_after_a_space
+        assert_equal('詳細: https://x/@admin', Service.escape_sigils('詳細: https://x/@admin'))
+        assert_equal('# タグ https://x/@admin', Service.escape_sigils('#タグ https://x/@admin'))
+        assert_equal('(https://x/@admin)', Service.escape_sigils('(https://x/@admin)'))
+      end
+
+      # 🔴 **Ruby の `/i` は `ſ`（U+017F）を英字として扱う (#298)。**mfm-js（u フラグなし）は
+      # 扱わないので、`ſ@admin` はメンションになる。
+      def test_escape_sigils_long_s
+        assert_equal('ſ@ admin', Service.escape_sigils('ſ@admin'))
+        assert_equal('https://xſ/@ admin', Service.escape_sigils('https://xſ/@admin'))
+      end
+
+      # 🔴 **ホスト部に見える `@` も区切る (#298)。**`@admin_@adminp` を 1 つとして食い、
+      # 先頭だけ区切ると `_@adminp` がメンションとして残る。
+      def test_escape_sigils_acct_host_part
+        assert_equal('@ admin_@ adminp', Service.escape_sigils('@admin_@adminp'))
+        assert_equal('ラブ@ pooza@misskey.io', Service.escape_sigils('ラブ@pooza@misskey.io'))
+      end
     end
   end
 end
