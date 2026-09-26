@@ -141,6 +141,10 @@ module Ginseng
         # 🔴 mfm-js のタグ名は NBSP・U+2028 を越える（止まるのは半角・全角空白、タブ、改行だけ）
         assert_equal("#12\u00A0https://x/@ admin", Service.escape_sigils("#12\u00A0https://x/@admin"))
         assert_equal("#12\u2028https://x/@ admin", Service.escape_sigils("#12\u2028https://x/@admin"))
+        # 除外しなかった URL の末尾の `$` と次の `[` で fn が開く
+        assert_equal(':https://x/$[https://y/@ admin', Service.escape_sigils(':https://x/$[https://y/@admin'))
+        # ネストの上限（Misskey は 20）では URL の途中の `~~` で打ち消し線が閉じる
+        assert_equal("#{'>' * 19}~~https://x/~~@ admin", Service.escape_sigils("#{'>' * 19}~~https://x/~~@admin"))
         # ⚠ 除外しなかった URL の中の `#` も、同じ連なりの後ろの URL を食う
         assert_equal('詳細:https://x/#0**あhttps://y/@ b', Service.escape_sigils('詳細:https://x/#0**あhttps://y/@b'))
       end

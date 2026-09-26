@@ -230,9 +230,12 @@ module Ginseng
           gap = text.byteslice(prev_end...start)
           prev_end = finish
           tainted = sigil_in_run(gap, tainted)
-          if tainted || gap.match?(SCHEME_EATING_HEAD)
-            # ⚠ 除外しなかった URL の `@` / `#` も、同じ連なりの後ろの URL を食いうる。
-            tainted ||= matched[0].match?(/[#@]/)
+          # 🔴 `~~` を含む URL も除外しない — ネストが上限（Misskey は 20）に達すると
+          # mfm-js は 1 文字ずつ読み、URL の途中の `~~` で打ち消し線を閉じる。
+          if tainted || gap.match?(SCHEME_EATING_HEAD) || matched[0].include?('~~')
+            # 🔴 除外しなかった URL は、**同じ連なりの後ろの URL も汚す** — 中の `@` `#` や、
+            # 末尾の `$` と次の `[` で開く fn（`:https://x/$[https://y/@a`）が scheme を食う。
+            tainted = true
             next
           end
           escaped << escape_sigils_outside_url(text.byteslice(flushed...start), patterns)
