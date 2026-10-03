@@ -68,8 +68,18 @@ module Ginseng
         return toot['visibility']
       end
 
+      # 連合なし（`local_only`）か。⚠ 本家 Mastodon には無く、glitch-soc / Hometown が
+      # 返す。無ければ false。
+      def local_only?
+        return toot['local_only'] ? true : false
+      end
+
+      # 外へ出してよい公開範囲か。
+      #
+      # 🔴 **`visibility` だけで決めない (#302)。** 連合なしのトゥートも `visibility` は
+      # `public` のまま。⚠ 理由は `NoteURI#public?` と同じ。
       def public?
-        return visibility == 'public'
+        return visibility == 'public' && !local_only?
       end
 
       def subject
