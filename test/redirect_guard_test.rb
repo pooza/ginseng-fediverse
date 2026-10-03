@@ -2,6 +2,9 @@ module Ginseng
   module Fediverse
     # 投稿先へ出す要求のリダイレクトの扱い (#280 / #282)。
     #
+    # ⚠⚠ **ガードの実装は `ginseng-core` にある (#289)。** 判定そのもののテストは
+    # あちらが正本で、ここは**この gem の口に届いていること**を見る。
+    #
     # ⚠⚠ **継ぎ目は `HTTParty.public_send`。** `Ginseng::HTTP` の private の分け方は版で
     # 変わる（lock の 1.17 と main の 1.23 で違う）が、ここは両方に在る。
     class RedirectGuardTest < TestCase
@@ -174,12 +177,53 @@ module Ginseng
         assert_false(options[:follow_redirects], '差し替えられていても効くこと')
       end
 
+      # 🔴🔴 **挿さっているのは core の module そのもの (#289)。** ⚠⚠ 自前の copy を
+      # 持っていた間、「何が資格情報か」の一覧が 2 つあり、core 側だけが増えていた。
+      def test_guard_is_the_one_in_core
+        assert_same(Ginseng::HTTP::RedirectGuard, RedirectGuard, '名前は alias で残すこと')
+
+        service = ForeignService.new(Ginseng::URI.parse('https://misskey.example.com/'), 'secret')
+
+        assert_includes(service.http.singleton_class.ancestors, Ginseng::HTTP::RedirectGuard)
+      end
+
+      # 🔴 **自前の copy が見ていなかった資格情報 (#289)。** 固定の 3 個
+      # （`Authorization` / `Cookie` / `Proxy-Authorization`）以外は追従したままだった。
+      def test_conventional_credentials_are_guarded_on_the_service
+        http = ForeignService.new(Ginseng::URI.parse('https://misskey.example.com/'), 'secret').http
+        [
+          ['/api/meta', {headers: {'X-Api-Key' => 'secret'}}],
+          ['/api/meta', {query: {access_token: 'secret'}}],
+          ['/api/meta?access%5Ftoken=secret', {}],
+          ['https://user:pass@misskey.example.com/api/meta', {}],
+        ].each do |uri, params|
+          http.get(uri, params)
+
+          assert_false(options[:follow_redirects], uri + params.inspect)
+        end
+      end
+
+      # ⚠⚠ **古い `ginseng-core` では、ガード無しで動かさない (#289)。** 🔴 gemspec に
+      # core の床が無い (#286) ので、2.0.0 より古い core のまま上がってくる利用側がありうる。
+      def test_old_core_is_refused
+        service = Class.new(MisskeyService) do
+          def http_class
+            return Class.new(Ginseng::HTTP) {undef_method :guard_redirects!}
+          end
+        end
+
+        error = assert_raise(Ginseng::ImplementError) do
+          service.new(Ginseng::URI.parse('https://misskey.example.com/'), 'secret')
+        end
+
+        assert_match(/ginseng-core 2\.0\.0/, error.message)
+      end
+
       private
 
       # ⚠ **`Service` と同じ形で組む** — ガードは継承ではなく prepend で入る。
       def create
-        http = Ginseng::HTTP.new
-        http.singleton_class.prepend(RedirectGuard)
+        http = Ginseng::HTTP.new.guard_redirects!
         http.base_uri = 'https://mstdn.example.com/'
         return http
       end

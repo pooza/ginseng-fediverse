@@ -71,7 +71,7 @@ module Ginseng
       # ⚠ なので `maintain_method_across_redirects` では塞がらない。
       # ⚠⚠ **いまは `RedirectGuard` が資格情報を持つ要求を一括で止める (#280)。**
       # 🔴🔴 **ここの明示は「冗長」ではない — 中央の判断を上書きする。**
-      # `guard_redirects` は `options.key?(:follow_redirects)` で早期 return するので、
+      # ガードは `options.key?(:follow_redirects)` で早期 return するので、
       # ⚠⚠ **この行を `true` にした日に中央のガードは黙って譲る**（いまは同値）。
       # ⚠ 3xx は `RedirectGuard` が `GatewayError` にする (#282)。
       def post(body, params = {})
