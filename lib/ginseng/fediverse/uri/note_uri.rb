@@ -36,8 +36,20 @@ module Ginseng
         return note['visibility']
       end
 
+      # 連合なし（`localOnly`）か。⚠ チャンネルのノートもここに入る。
+      def local_only?
+        return note['localOnly'] ? true : false
+      end
+
+      # 外へ出してよい公開範囲か。
+      #
+      # 🔴🔴 **`visibility` だけで決めない (#302)。** Misskey の連合なしのノートは
+      # `visibility` が `public` のままで、`localOnly` が別に立つ。⚠⚠ 利用側は
+      # この判定で**本文を外部へ転載するか**を決めている（`ginseng-piefed` の
+      # `clip`、`mulukhiya-toot-proxy` のクリップ）ので、`visibility` だけを見ると
+      # **作者が連合させないと決めた本文が外へ出る**。
       def public?
-        return visibility == 'public'
+        return visibility == 'public' && !local_only?
       end
 
       def parser
