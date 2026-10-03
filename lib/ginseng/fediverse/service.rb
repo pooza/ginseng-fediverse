@@ -26,7 +26,9 @@ module Ginseng
         # ⚠⚠ 利用側は全員 `http_class` を自前の HTTP へ差し替えているので、
         # `Ginseng::HTTP` のサブクラスとして足すと**継承経路に現れない** — この
         # gem が出す要求だけに、**`http_class` が何を返しても**効かせる。
-        @http.singleton_class.prepend(RedirectGuard)
+        # ⚠ 挿すのは `ginseng-core` の `guard_redirects!` (#289)。2.0.0 より古い core には
+        # 無いので、床を gemspec に持つ。
+        @http.guard_redirects!
         @http.base_uri = uri ? URI.parse(uri) : default_uri
       end
 
