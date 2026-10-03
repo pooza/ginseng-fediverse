@@ -6,7 +6,7 @@ module Ginseng
     # あちらが正本で、ここは**この gem の口に届いていること**を見る。
     #
     # ⚠⚠ **継ぎ目は `HTTParty.public_send`。** `Ginseng::HTTP` の private の分け方は版で
-    # 変わる（lock の 1.17 と main の 1.23 で違う）が、ここは両方に在る。
+    # 変わるが、ここは変わらない。
     class RedirectGuardTest < TestCase
       class FakeResponse
         attr_reader :code, :headers, :body
