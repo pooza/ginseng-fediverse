@@ -26,8 +26,9 @@ module Ginseng
         # ⚠⚠ 利用側は全員 `http_class` を自前の HTTP へ差し替えているので、
         # `Ginseng::HTTP` のサブクラスとして足すと**継承経路に現れない** — この
         # gem が出す要求だけに、**`http_class` が何を返しても**効かせる。
-        # ⚠ 挿すのは `ginseng-core` の `guard_redirects!` (#289)。
-        guard_redirects!(@http)
+        # ⚠ 挿すのは `ginseng-core` の `guard_redirects!` (#289)。2.0.0 より古い core には
+        # 無いので、床を gemspec に持つ。
+        @http.guard_redirects!
         @http.base_uri = uri ? URI.parse(uri) : default_uri
       end
 
@@ -281,16 +282,6 @@ module Ginseng
       end
 
       private
-
-      # ⚠⚠ **古い `ginseng-core` では、ガード無しで動かさずに落とす (#289)。**
-      # 🔴 この gem は gemspec で core の床を宣言していない (#286) ので、**2.0.0 より古い
-      # core を刺したまま、この gem だけ上げてくる利用側がありうる**。⚠ 素通しすると、
-      # 資格情報付きの要求がリダイレクトを追う状態へ黙って戻る。
-      def guard_redirects!(http)
-        return http.guard_redirects! if http.respond_to?(:guard_redirects!)
-        raise Ginseng::ImplementError,
-          "ginseng-core 2.0.0 以上が必要です（#{http.class} に guard_redirects! がありません）"
-      end
 
       def oauth_client_path
         return File.join(environment_class.dir, 'tmp/cache/oauth_cilent.json')

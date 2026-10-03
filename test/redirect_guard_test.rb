@@ -203,22 +203,6 @@ module Ginseng
         end
       end
 
-      # ⚠⚠ **古い `ginseng-core` では、ガード無しで動かさない (#289)。** 🔴 gemspec に
-      # core の床が無い (#286) ので、2.0.0 より古い core のまま上がってくる利用側がありうる。
-      def test_old_core_is_refused
-        service = Class.new(MisskeyService) do
-          def http_class
-            return Class.new(Ginseng::HTTP) {undef_method :guard_redirects!}
-          end
-        end
-
-        error = assert_raise(Ginseng::ImplementError) do
-          service.new(Ginseng::URI.parse('https://misskey.example.com/'), 'secret')
-        end
-
-        assert_match(/ginseng-core 2\.0\.0/, error.message)
-      end
-
       private
 
       # ⚠ **`Service` と同じ形で組む** — ガードは継承ではなく prepend で入る。
