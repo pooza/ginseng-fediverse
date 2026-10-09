@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
   # 実行時まで分からない（Codex P1）。
   # ⚠⚠ **`TootURI` / `NoteURI` が `Ginseng::PublicHost.validator` を呼ぶ (#306)。**
   # 2.1.0 より古い core には無く、投稿を取りにいった時点で `NameError` になる。
+  # 🔴 `Service.new` では落ちず、**クリップの経路でだけ出る**ので、床が無いと気づくのが遅れる。
   # ⚠ **外してよい条件は無い。** 上げるのは、core の新しい口に乗ったとき。
   # 🔴 `ginseng-core` は rubygems.org に無い。**利用側の `Gemfile` に git の参照が要る**
   # （無ければ解決できずに止まる。いまの利用側は全員書いている）。

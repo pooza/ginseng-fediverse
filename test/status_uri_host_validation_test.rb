@@ -25,6 +25,7 @@ module Ginseng
 
         def close
           @thread.kill
+          @thread.join(1)
           @server.close
         end
 
@@ -33,17 +34,24 @@ module Ginseng
         def serve(response)
           loop do
             socket = @server.accept
-            @requests.push(socket.gets.to_s.strip)
-            length = 0
-            while (line = socket.gets) && line != "\r\n"
-              length = line.split(':', 2).last.to_i if line.match?(/\Acontent-length:/i)
+            begin
+              answer(socket, response)
+            ensure
+              socket.close
             end
-            socket.read(length) if length.positive?
-            socket.write(response)
-            socket.close
           end
-        rescue IOError
+        rescue IOError, SystemCallError
           nil
+        end
+
+        def answer(socket, response)
+          @requests.push(socket.gets.to_s.strip)
+          length = 0
+          while (line = socket.gets) && line != "\r\n"
+            length = line.split(':', 2).last.to_i if line.match?(/\Acontent-length:/i)
+          end
+          socket.read(length) if length.positive?
+          socket.write(response)
         end
       end
 
@@ -131,7 +139,25 @@ module Ginseng
         end
       end
 
-      # 🔴🔴 **`service` を上書きした利用側にも届く。**
+      # 🔴 **通した相手には、真偽ではなく IP アドレスを返す**（`HTTP` はそこへ接続を固定する）。
+      # ⚠⚠ 真偽を返す validator に替えても、内部を拒む側のテストは緑のまま —
+      # **固定を失ったことは、ここでしか分からない**。
+      def test_default_validator_pins_to_the_resolved_address
+        original = Ginseng::PublicHost.method(:resolve_addresses)
+        Ginseng::PublicHost.define_singleton_method(:resolve_addresses) {|_host| ['8.8.8.8']}
+
+        [
+          TootURI.parse('https://mstdn.example.com/@pooza/1'),
+          NoteURI.parse('https://misskey.example.com/notes/9abc'),
+        ].each do |uri|
+          assert_equal('8.8.8.8', uri.host_validator.call(uri.host), uri.class.name)
+        end
+      ensure
+        Ginseng::PublicHost.define_singleton_method(:resolve_addresses, original) if original
+      end
+
+      # ⚠⚠ `service` を上書きした利用側にも届く。🔴🔴 **検証を gem の `service` に置くと、
+      # ここで黙って外れる。**
       def test_reaches_a_consumer_that_overrides_service
         server = recorder
         seen = []
@@ -195,6 +221,24 @@ module Ginseng
         assert_match(/Bad response 302/, error.message)
         assert_equal(1, hop.requests.size)
         assert_empty(target.requests)
+      end
+
+      # 🔴 **Misskey（POST）も追わない。** ⚠⚠ 307 / 308 は本文ごと撃ち直すので、追う側へ
+      # 変わると**別ホストへ本文付きの POST が届く**。⚠ こちらは「本文を伴うメソッドは
+      # 無条件で追わない」で止まっている（Mastodon の GET とは理由が違う）。
+      def test_accepted_host_does_not_follow_redirects_on_post
+        ['302 Found', '307 Temporary Redirect'].each do |status|
+          target = recorder(body: '{"visibility":"public","localOnly":false}')
+          location = "http://127.0.0.1:#{target.port}/api/notes/show"
+          hop = recorder(status:, headers: {'Location' => location}, body: '')
+          note = ForeignNoteURI.parse("http://127.0.0.1:#{hop.port}/notes/9abc")
+          note.validator = ->(_host) {true}
+
+          error = assert_raise(Ginseng::GatewayError, status) {note.public?}
+          assert_match(/Bad response 30[27]/, error.message)
+          assert_equal(1, hop.requests.size, status)
+          assert_empty(target.requests, status)
+        end
       end
 
       private
