@@ -45,10 +45,13 @@ module Ginseng
         return attachment
       end
 
+      # ⚠ `params[:host_validator]` は `Ginseng::HTTP` へそのまま渡す (#306)。
+      # 渡してくるのは `TootURI#toot`（URL のホストが外部由来になる経路）。
       def fetch_status(id, params = {})
         response = http.get("/api/v1/statuses/#{search_status_id(id)}", {
           headers: create_headers(params[:headers]),
-        })
+          host_validator: params[:host_validator],
+        }.compact)
         raise GatewayError, response['error'] if response['error']
         return response
       end

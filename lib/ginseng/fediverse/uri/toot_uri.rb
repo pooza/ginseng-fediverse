@@ -93,6 +93,18 @@ module Ginseng
         return @subject
       end
 
+      # トゥートを取りにいく先のホストを検証する callable (#306)。⚠ **利用側の上書き点。**
+      #
+      # 🔴🔴 **この URL のホストへ、こちらから要求を撃つ。** 検証が無いと、URL が外部由来に
+      # なる利用側では初段ホストへの SSRF になる。
+      # ⚠ 何が落ちるか・自サーバー宛の外し方・`service` を直に使う口には効かないことは、
+      # `NoteURI#host_validator` と同じ（説明はあちらが正本）。
+      # ⚠⚠ **検証を挿す場所は `service` ではなく `toot`。** 利用側は `service` を丸ごと
+      # 上書きしているので、そこへ置くと届かない。
+      def host_validator
+        return Ginseng::PublicHost.validator
+      end
+
       def service
         unless @service
           uri = clone
@@ -107,7 +119,7 @@ module Ginseng
 
       def toot
         unless @toot
-          @toot = service.fetch_status(id)
+          @toot = service.fetch_status(id, {host_validator:}.compact)
           raise NotFoundError, "Toot '#{self}' not found" unless @toot
           raise GatewayError, "Toot '#{self}' is invalid (#{toot['error']})" if @toot['error']
         end

@@ -97,7 +97,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 4.0.0
+  version: 5.0.0
 parser:
   note:
     url:
