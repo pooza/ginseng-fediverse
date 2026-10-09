@@ -61,7 +61,7 @@ module Ginseng
 
       def stub(uri, status)
         assert_predicate(uri, :valid?)
-        uri.service.define_singleton_method(:fetch_status) {|_id| status}
+        uri.service.define_singleton_method(:fetch_status) {|_id, _params = {}| status}
         return uri
       end
     end

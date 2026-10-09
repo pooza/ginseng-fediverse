@@ -71,6 +71,32 @@ module Ginseng
         return @subject
       end
 
+      # ノートを取りにいく先のホストを検証する callable (#306)。⚠ **利用側の上書き点。**
+      #
+      # 🔴🔴 **この URL のホストへ、こちらから要求を撃つ。** URL が外部由来になる利用側
+      # （渡された URL をクリップする口）では、検証が無いと**初段ホストへの SSRF** になる
+      # — `http://127.0.0.1:<port>/…` を渡せば、ローカルのサーバーへ届いていた（実測）。
+      # ⚠ 既定は `Ginseng::PublicHost.validator`。**公開アドレスだけに解決される名前**を
+      # 通し、IP アドレスのリテラル・ドットを含まない名前・内部アドレスに解決される名前は
+      # `GatewayError` で落とす。
+      #
+      # ⚠⚠ **自サーバーが内部アドレスに解決される構成では、自サーバー宛だけ外す。**
+      # 「自サーバー」が何かは gem からは決められないので、利用側が上書きする。
+      #
+      #   def host_validator
+      #     return nil if host == Environment.domain_name # 設定値との一致だけで外す
+      #     return super
+      #   end
+      #
+      # ⚠ nil を返すと検証しない（5.0.0 より前と同じ）。🔴 **外す条件を URL の中身から
+      # 作らないこと** — 比べる相手は設定で決まる値にする。
+      # ⚠⚠ **検証を挿す場所は `service` ではなく `note`。** 利用側は `service` を丸ごと
+      # 上書きしている（自前のサービスクラスを返す）ので、そこへ置くと届かない。
+      # ⚠ `TootURI` も同じ形。
+      def host_validator
+        return Ginseng::PublicHost.validator
+      end
+
       def service
         unless @service
           uri = clone
@@ -85,7 +111,7 @@ module Ginseng
 
       def note
         unless @note
-          @note = service.fetch_status(id)
+          @note = service.fetch_status(id, {host_validator:}.compact)
           raise NotFoundError, "Note '#{self}' not found" unless @note
           if error = note['error']
             raise GatewayError, "Note '#{self}' is invalid (#{error['message']})"

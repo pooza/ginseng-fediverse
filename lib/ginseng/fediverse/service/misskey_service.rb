@@ -98,11 +98,14 @@ module Ginseng
 
       alias notes statuses
 
+      # ⚠ `params[:host_validator]` は `Ginseng::HTTP` へそのまま渡す (#306)。
+      # 渡してくるのは `NoteURI#note`（URL のホストが外部由来になる経路）。
       def fetch_status(id, params = {})
         return http.post('/api/notes/show', {
           body: {noteId: search_status_id(id), i: token},
           headers: create_headers(params[:headers]),
-        })
+          host_validator: params[:host_validator],
+        }.compact)
       end
 
       alias fetch_note fetch_status
