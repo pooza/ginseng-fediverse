@@ -5,8 +5,9 @@ module Ginseng
     # リモートの添付を取りに行く口の、リダイレクトの扱い (#311) とホストの検証 (#312)。
     #
     # ⚠⚠ **`HTTParty` を差し替えず、実際にソケットで応答する。** 見たいのは
-    # 「ガードを挿した `http` が、この口では 3xx を追う」ことで、追うのは HTTParty の
-    # 中なので、継ぎ目を差し替えると測れない。
+    # 「ガードを挿した `http` が、この口では 3xx を追い、各ホップを検証する」ことで、
+    # 追うのは `ginseng-core`（検証つきの経路）か HTTParty（検証を外したとき）の中なので、
+    # 継ぎ目を差し替えると測れない。
     class UploadRemoteResourceTest < TestCase
       BODY = 'IMAGE-BYTES'.freeze
 
@@ -80,7 +81,11 @@ module Ginseng
       # ⚠ 要求が 1 本も届いていないこと（落とすのは接続の前）。
       def test_default_validator_rejects_internal_host
         service = CapturingService.new(Ginseng::URI.parse('https://mstdn.example.com/'))
-        ["http://127.0.0.1:#{@port}/first", "http://localhost:#{@port}/final"].each do |url|
+        # ⚠ userinfo を持つ URL は別の枝（追うと明示しない）を通る。そこでも検証が要る。
+        [
+          "http://127.0.0.1:#{@port}/first", "http://localhost:#{@port}/final",
+          "http://user:pass@127.0.0.1:#{@port}/final"
+        ].each do |url|
           error = assert_raise(GatewayError) {service.upload_remote_resource(url)}
 
           assert_match(/Rejected host/, error.message, url)
@@ -98,6 +103,19 @@ module Ginseng
         assert_nil(validator.call('localhost'))
       end
 
+      # 🔴 **通した相手には、真偽ではなく IP アドレスを返す**（`HTTP` はそこへ接続を固定する）。
+      # ⚠⚠ 既定を「全部拒否」や真偽値に替えても、内部を拒む側のテストは緑のまま —
+      # **通すこと・固定することは、ここでしか分からない**（#306 のテストと同じ形）。
+      def test_default_validator_pins_to_the_resolved_address
+        original = Ginseng::PublicHost.method(:resolve_addresses)
+        Ginseng::PublicHost.define_singleton_method(:resolve_addresses) {|_host| ['8.8.8.8']}
+        validator = CapturingService.new(Ginseng::URI.parse('https://mstdn.example.com/')).remote_resource_host_validator
+
+        assert_equal('8.8.8.8', validator.call('cdn.example.com'))
+      ensure
+        Ginseng::PublicHost.define_singleton_method(:resolve_addresses, original) if original
+      end
+
       # 🔴 **リダイレクトの先も検証を通ること。** ⚠ 初段は通るホスト（127.0.0.1）で、
       # 先は通らないホスト（localhost）。公開ホストから内部へ飛ばす形の縮図。
       def test_validates_every_redirect_hop
@@ -110,14 +128,20 @@ module Ginseng
         assert_nil(@service.uploaded)
       end
 
-      # ⚠ **呼び出しごとの差し替え。** キーが在ればその値を使い、`nil` なら検証しない。
+      # ⚠ **呼び出しごとの差し替え。** 検証を外すのは `false`。
       # ⚠⚠ `upload` へは渡さず、渡された hash も書き換えない (#258)。
       def test_host_validator_param_overrides_and_is_not_forwarded
         service = CapturingService.new(Ginseng::URI.parse('https://mstdn.example.com/'))
-        params = {host_validator: nil, response: :id}.freeze
+        params = {host_validator: false, response: :id}.freeze
 
         assert_equal(:uploaded, service.upload_remote_resource("http://127.0.0.1:#{@port}/final", params))
         assert_equal({response: :id}, service.upload_params)
+
+        # 🔴🔴 **`nil` は「既定のまま」。** 設定や探索の結果が不具合で `nil` になったとき、
+        # 守りが黙って外れないこと。
+        assert_raise(GatewayError) do
+          service.upload_remote_resource("http://127.0.0.1:#{@port}/final", {host_validator: nil})
+        end
 
         rejecting = {host_validator: ->(_) {false}}
 
