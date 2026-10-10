@@ -101,13 +101,35 @@ module Ginseng
       # 3xx を返すだけで添付が `GatewayError` になっていた。
       # ⚠ **この GET は投稿先の資格情報を運ばない**（ヘッダを渡していない）。クエリの値は
       # その URL 自身のもので、リダイレクト先へは再送されない。
-      # ⚠⚠ **ホストの検証はしていない**（初段もリダイレクト先も。#312）。
+      # 🔴🔴 **取りにいく先のホストを検証する (#312)。** 初段も、リダイレクトの各ホップも
+      # `remote_resource_host_validator` を通る。⚠ 無かった間は、渡された URL を無検証で
+      # 取りにいき、取れたものを投稿先へ上げていた（内部の応答が読める SSRF）。
+      # ⚠ **呼び出しごとに差し替えるなら `params[:host_validator]`。** キーが在ればその値を
+      # 使う（`nil` なら検証しない）。⚠⚠ `upload` へは渡さない — あちらの `params` は
+      # 投稿先へ出す要求のためのもの。⚠ 渡された hash は書き換えない (#258)。
       def upload_remote_resource(uri, params = {})
+        params = params.dup
+        validator = remote_resource_host_validator
+        validator = params.delete(:host_validator) if params.key?(:host_validator)
         path = File.join(environment_class.dir, 'tmp/media', uri.to_s.sha256)
-        File.write(path, http.get(uri, remote_resource_options(uri)))
+        File.write(path, http.get(uri, remote_resource_options(uri, validator)))
         return upload(path, params)
       ensure
-        FileUtils.rm_f(path)
+        FileUtils.rm_f(path) if path
+      end
+
+      # リモートの添付を取りにいく先のホストを検証する callable (#312)。⚠ **利用側の上書き点。**
+      #
+      # ⚠ 既定は `Ginseng::PublicHost.validator`（`TootURI` / `NoteURI` の #306 と同じ）。
+      # 🔴 **落ちるもの**: IP アドレスのリテラル、ドットを含まない名前（`localhost` など）、
+      # 内部・予約アドレスに解決される名前、名前解決できない名前。`GatewayError` になる。
+      # ⚠⚠ **接続は、検証したアドレスへ固定される**（DNS リバインディングを塞ぐため）。
+      # 🔴 アドレスを回している CDN では、選んだ 1 本が落ちていると取れない。固定を外したい
+      # 利用側は、**真偽値を返す** validator に差し替える（文字列を返すとそこへ固定される）。
+      # ⚠ nil を返すと検証しない（6.0.0 より前と同じ）。🔴 **外す条件を URL の中身から
+      # 作らないこと**（`NoteURI#host_validator` の説明が正本）。
+      def remote_resource_host_validator
+        return Ginseng::PublicHost.validator
       end
 
       # 🔴🔴 **userinfo（`user:pass@`）を持つ URL では明示しない（リリース前レビュー）。**
@@ -117,11 +139,14 @@ module Ginseng
       # （実測。pooza/ginseng-core#653 が塞いだのと同じ形）。
       # ⚠ 明示しなければガードが決める — userinfo 付きの URL の 3xx は、これまでどおり
       # `GatewayError` になる。⚠ 読めない URL も明示しない（ガードは安全側へ倒す）。
-      def remote_resource_options(uri)
-        return {} if Ginseng::URI.parse(uri.to_s).userinfo.present?
-        return {follow_redirects: true}
+      # 🔴 **どの枝でも `host_validator` は落とさない (#312)。** 読めない URL の枝で空の hash を
+      # 返すと、そこだけ検証が外れる。
+      def remote_resource_options(uri, validator = nil)
+        options = {host_validator: validator}.compact
+        return options if Ginseng::URI.parse(uri.to_s).userinfo.present?
+        return options.merge(follow_redirects: true)
       rescue StandardError
-        return {}
+        return {host_validator: validator}.compact
       end
 
       def fetch_featured_tags(id, params = {})
