@@ -29,8 +29,9 @@ module Ginseng
       end
 
       def teardown
-        @thread.kill
-        @server.close
+        @thread&.kill
+        @thread&.join(1)
+        @server&.close
       end
 
       # 🔴 **資格情報らしい名前をクエリに持つ URL でも、3xx を追って取れること。**
@@ -53,6 +54,18 @@ module Ginseng
         assert_equal(BODY, @service.uploaded)
       end
 
+      # 🔴🔴 **userinfo を持つ URL は、この口でも追わない（リリース前レビュー）。**
+      # ⚠⚠ 追うと、HTTParty が userinfo から作った Basic を**同じホストの別ポートや
+      # `http`** へ再送する（ホスト名しか比べないため）。⚠ 一律に明示していた初版は、
+      # ガードの userinfo の判定まで素通ししていた。
+      def test_does_not_follow_redirect_with_userinfo
+        assert_raise(GatewayError) do
+          @service.upload_remote_resource("http://user:pass@127.0.0.1:#{@port}/first")
+        end
+        assert_equal(['/first'], @requests)
+        assert_nil(@service.uploaded)
+      end
+
       # ⚠⚠ **追うのはこの口だけ。** 同じ `http` の素の GET は、ガードのとおり追わない。
       def test_guard_still_refuses_elsewhere
         assert_raise(GatewayError) {@service.http.get("http://127.0.0.1:#{@port}/first?token=x")}
@@ -62,15 +75,26 @@ module Ginseng
       private
 
       # `/first…` は `/final` へ 302、それ以外は本文を返す。
+      # ⚠ 後始末の形は `StatusURIHostValidationTest::Recorder` と同じ（要求行の無い接続が
+      # 来てもスレッドを死なせない。死ぬと、次の要求が読み取りの時間切れまで待つ）。
       def serve
         loop do
           client = @server.accept
-          path = client.gets.to_s.split[1]
-          nil while (line = client.gets) && line != "\r\n"
-          @requests.push(path)
-          client.write(response_for(path))
-          client.close
+          begin
+            answer(client)
+          ensure
+            client.close
+          end
         end
+      rescue IOError, SystemCallError
+        nil
+      end
+
+      def answer(client)
+        path = client.gets.to_s.split[1].to_s
+        nil while (line = client.gets) && line != "\r\n"
+        @requests.push(path)
+        client.write(response_for(path))
       end
 
       def response_for(path)

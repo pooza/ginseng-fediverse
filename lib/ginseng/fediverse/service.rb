@@ -104,10 +104,24 @@ module Ginseng
       # ⚠⚠ **ホストの検証はしていない**（初段もリダイレクト先も。#312）。
       def upload_remote_resource(uri, params = {})
         path = File.join(environment_class.dir, 'tmp/media', uri.to_s.sha256)
-        File.write(path, http.get(uri, {follow_redirects: true}))
+        File.write(path, http.get(uri, remote_resource_options(uri)))
         return upload(path, params)
       ensure
         FileUtils.rm_f(path)
+      end
+
+      # 🔴🔴 **userinfo（`user:pass@`）を持つ URL では明示しない（リリース前レビュー）。**
+      # ⚠⚠ 明示はガードの判定を**丸ごと**素通しするので、クエリの名前だけでなく
+      # userinfo の判定も外れる。HTTParty は userinfo を Basic に移し、🔴 **ホスト名しか
+      # 比べない**ので、同じホストの別ポートや `https` → `http` へ Basic が再送される
+      # （実測。pooza/ginseng-core#653 が塞いだのと同じ形）。
+      # ⚠ 明示しなければガードが決める — userinfo 付きの URL の 3xx は、これまでどおり
+      # `GatewayError` になる。⚠ 読めない URL も明示しない（ガードは安全側へ倒す）。
+      def remote_resource_options(uri)
+        return {} if Ginseng::URI.parse(uri.to_s).userinfo.present?
+        return {follow_redirects: true}
+      rescue StandardError
+        return {}
       end
 
       def fetch_featured_tags(id, params = {})
