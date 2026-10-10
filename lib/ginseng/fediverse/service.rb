@@ -93,9 +93,18 @@ module Ginseng
         raise ImplementError, "'#{__method__}' not implemented"
       end
 
+      # 🔴 **この口だけは、リダイレクトを追うと明示する (#311)。** `http` にはガード
+      # （`guard_redirects!`）を挿してあり、⚠⚠ ガードは**クエリの名前**（`token` / `key` /
+      # `sig` / `X-Amz-Signature` など）で「資格情報を運ぶ要求」と読むと 3xx を追わない。
+      # あれは宛先が 1 つに決まっている API の口のためのもので、ここは**第三者の URL**
+      # （フィードの添付・webhook の `image_url`）を取りに行く — 署名付きの画像 URL が
+      # 3xx を返すだけで添付が `GatewayError` になっていた。
+      # ⚠ **この GET は投稿先の資格情報を運ばない**（ヘッダを渡していない）。クエリの値は
+      # その URL 自身のもので、リダイレクト先へは再送されない。
+      # ⚠⚠ **ホストの検証はしていない**（初段もリダイレクト先も。#312）。
       def upload_remote_resource(uri, params = {})
         path = File.join(environment_class.dir, 'tmp/media', uri.to_s.sha256)
-        File.write(path, http.get(uri))
+        File.write(path, http.get(uri, {follow_redirects: true}))
         return upload(path, params)
       ensure
         FileUtils.rm_f(path)
