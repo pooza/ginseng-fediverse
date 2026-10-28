@@ -379,10 +379,10 @@ module Ginseng
 
       def max_post_text_length
         length = info.dig('configuration', 'statuses', 'max_characters')
-        length ||= config['/mastodon/status/default_max_length']
+        length ||= @config['/mastodon/status/default_max_length']
         return length
       rescue
-        return config['/mastodon/status/default_max_length']
+        return @config['/mastodon/status/default_max_length']
       end
 
       def max_media_attachments
