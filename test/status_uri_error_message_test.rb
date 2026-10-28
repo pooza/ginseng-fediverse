@@ -27,6 +27,18 @@ module Ginseng
         end
       end
 
+      # userinfo・クエリ・フラグメントを落とした残りにも、ログと同じマスクを掛ける。
+      def test_masked_by_logger
+        CASES.each do |uri_class, url|
+          uri = uri_class.parse(url)
+          uri.instance_variable_get(:@logger).define_singleton_method(:mask_url) {|_value| 'MASKED'}
+          uri.service.define_singleton_method(:fetch_status) {|_id, _params = {}| nil}
+          error = assert_raises(Ginseng::NotFoundError) {uri.status}
+
+          assert_includes(error.message, "'MASKED'", uri_class.name)
+        end
+      end
+
       private
 
       def status(uri_class, url, body)

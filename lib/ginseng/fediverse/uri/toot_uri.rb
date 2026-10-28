@@ -84,8 +84,9 @@ module Ginseng
 
       def subject
         unless @subject
-          @subject = toot['spoiler_text'] if toot['spoiler_text'].present?
-          @subject ||= toot['content']
+          # ⚠ 複製してから削る。そのままだと取得した投稿の本文を書き換える (#319)。
+          @subject = toot['spoiler_text'].dup if toot['spoiler_text'].present?
+          @subject ||= toot['content'].to_s.dup
           @subject.sanitize!
           URI.scan(@subject.dup) {|uri| @subject.gsub!(uri.to_s, '')}
           @subject.gsub!(/[\s[:blank:]]+/, ' ')
@@ -119,9 +120,11 @@ module Ginseng
 
       def toot
         unless @toot
-          @toot = service.fetch_status(id, {host_validator:}.compact)
-          raise NotFoundError, "Toot '#{masked_uri}' not found" unless @toot
-          raise GatewayError, "Toot '#{masked_uri}' is invalid (#{toot['error']})" if @toot['error']
+          # ⚠ 検査を通ってから覚える。先に入れると、2 回目は error の応答を例外なしで返す (#319)。
+          toot = service.fetch_status(id, {host_validator:}.compact)
+          raise NotFoundError, "Toot '#{masked_uri}' not found" unless toot
+          raise GatewayError, "Toot '#{masked_uri}' is invalid (#{toot['error']})" if toot['error']
+          @toot = toot
         end
         return @toot
       end

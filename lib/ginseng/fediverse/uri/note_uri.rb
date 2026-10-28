@@ -62,8 +62,9 @@ module Ginseng
 
       def subject
         unless @subject
-          @subject = note['cw'] if note['cw'].present?
-          @subject ||= note['text']
+          # ⚠ 複製してから削る（`TootURI#subject` と同じ）。`text` と `cw` が両方 null のノートもある。
+          @subject = note['cw'].dup if note['cw'].present?
+          @subject ||= note['text'].to_s.dup
           @subject.sanitize!
           URI.scan(@subject.dup) {|uri| @subject.gsub!(uri.to_s, '')}
           @subject.gsub!(/[\s[:blank:]]+/, ' ')
@@ -136,11 +137,13 @@ module Ginseng
 
       def note
         unless @note
-          @note = service.fetch_status(id, {host_validator:}.compact)
-          raise NotFoundError, "Note '#{masked_uri}' not found" unless @note
+          # ⚠ 検査を通ってから覚える（`TootURI#toot` と同じ）。
+          note = service.fetch_status(id, {host_validator:}.compact)
+          raise NotFoundError, "Note '#{masked_uri}' not found" unless note
           if error = note['error']
             raise GatewayError, "Note '#{masked_uri}' is invalid (#{error['message']})"
           end
+          @note = note
         end
         return @note
       end
@@ -149,9 +152,7 @@ module Ginseng
 
       private
 
-      # 例外のメッセージに載せる形 (#322)。⚠ 例外はログのマスクを通らずに呼び出し側や Sentry へ
-      # 出るので、userinfo・クエリ・フラグメントを落とし、残りにもログと同じマスクを掛ける。
-      # 投稿を特定するのはホストとパスなので、手掛かりは減らない。
+      # 例外のメッセージに載せる形 (#322)。⚠ 説明は `TootURI#masked_uri` が正本。
       def masked_uri
         uri = clone
         uri.userinfo = nil
