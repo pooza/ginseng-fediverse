@@ -6,6 +6,9 @@ module Ginseng
       def initialize(uri = nil)
         uri = URI.parse(uri.to_s) unless uri.is_a?(URI)
         @http = http_class.new
+        # ⚠ `Service` を継承しないので、ガードはここでも挿す (#320)。挿し方の理由は `Service#initialize`。
+        # 🔴 `search_hashtags` は本文を POST するので、3xx は追わずに `GatewayError` になる。
+        @http.guard_redirects!
         @http.base_uri = uri if uri
       end
 
