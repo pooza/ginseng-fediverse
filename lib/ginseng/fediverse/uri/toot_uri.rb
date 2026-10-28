@@ -120,8 +120,8 @@ module Ginseng
       def toot
         unless @toot
           @toot = service.fetch_status(id, {host_validator:}.compact)
-          raise NotFoundError, "Toot '#{self}' not found" unless @toot
-          raise GatewayError, "Toot '#{self}' is invalid (#{toot['error']})" if @toot['error']
+          raise NotFoundError, "Toot '#{masked_uri}' not found" unless @toot
+          raise GatewayError, "Toot '#{masked_uri}' is invalid (#{toot['error']})" if @toot['error']
         end
         return @toot
       end
@@ -129,6 +129,18 @@ module Ginseng
       alias status toot
 
       private
+
+      # 例外のメッセージに載せる形 (#322)。⚠ 例外はログのマスクを通らずに呼び出し側や Sentry へ
+      # 出るので、userinfo・クエリ・フラグメントを落とし、残りにもログと同じマスクを掛ける。
+      # 投稿を特定するのはホストとパスなので、手掛かりは減らない。
+      def masked_uri
+        uri = clone
+        uri.userinfo = nil
+        uri.query = nil
+        uri.fragment = nil
+        return @logger.mask_url(uri.to_s) if @logger.respond_to?(:mask_url)
+        return uri.to_s
+      end
 
       # ⚠ 一致したパターンの**種別と捕獲した値を対で**返す。種別を捨てると、
       # 受け取った側が値の見た目で判定し直すことになり #251 が再発する。

@@ -137,15 +137,29 @@ module Ginseng
       def note
         unless @note
           @note = service.fetch_status(id, {host_validator:}.compact)
-          raise NotFoundError, "Note '#{self}' not found" unless @note
+          raise NotFoundError, "Note '#{masked_uri}' not found" unless @note
           if error = note['error']
-            raise GatewayError, "Note '#{self}' is invalid (#{error['message']})"
+            raise GatewayError, "Note '#{masked_uri}' is invalid (#{error['message']})"
           end
         end
         return @note
       end
 
       alias status note
+
+      private
+
+      # 例外のメッセージに載せる形 (#322)。⚠ 例外はログのマスクを通らずに呼び出し側や Sentry へ
+      # 出るので、userinfo・クエリ・フラグメントを落とし、残りにもログと同じマスクを掛ける。
+      # 投稿を特定するのはホストとパスなので、手掛かりは減らない。
+      def masked_uri
+        uri = clone
+        uri.userinfo = nil
+        uri.query = nil
+        uri.fragment = nil
+        return @logger.mask_url(uri.to_s) if @logger.respond_to?(:mask_url)
+        return uri.to_s
+      end
     end
   end
 end
