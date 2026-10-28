@@ -16,6 +16,10 @@ module Ginseng
           @headers = {}
           @body = ''
         end
+
+        # ⚠ `MulukhiyaService#search_hashtags` が応答を読むため。
+        def each_value
+        end
       end
 
       METHODS = [:get, :head, :post, :put, :delete].freeze
@@ -24,6 +28,12 @@ module Ginseng
       class ForeignHTTP < Ginseng::HTTP; end
 
       class ForeignService < MisskeyService
+        def http_class
+          return ForeignHTTP
+        end
+      end
+
+      class ForeignMulukhiyaService < MulukhiyaService
         def http_class
           return ForeignHTTP
         end
@@ -200,6 +210,22 @@ module Ginseng
           http.get(uri, params)
 
           assert_false(options[:follow_redirects], uri + params.inspect)
+        end
+      end
+
+      # 🔴 **`MulukhiyaService` は `Service` を継承しないので、別に挿す (#320)。** 本文を POST する
+      # `search_hashtags` は追わない。資格情報の無い GET（`about` / `health`）は従来どおり追う。
+      def test_mulukhiya_service_applies_the_guard
+        [MulukhiyaService, ForeignMulukhiyaService].each do |service_class|
+          service = service_class.new('https://mulukhiya.example.com/')
+          service.search_hashtags('本文')
+
+          assert_false(options[:follow_redirects], service_class.name)
+          assert_equal('本文', JSON.parse(options[:body])['q'])
+
+          service.about
+
+          refute(options.key?(:follow_redirects), service_class.name)
         end
       end
 
