@@ -77,6 +77,48 @@ module Ginseng
         assert_equal("宮本佳那子\n宮本佳那子", Service.sanitize_status('宮本佳那子<br />宮本佳那子 '))
       end
 
+      # Mastodon がリンク化しない位置は書き換えない (#321)。
+      def test_mastodon_escape_sigils_keeps_what_mastodon_does_not_link
+        [
+          '曲名#featuring', 'ラブ@pooza', '_@admin', 'x=@alice', 'info@example.com',
+          'https://mastodon.social/@alice', 'https://example.com/#frag', '#123'
+        ].each do |text|
+          assert_equal(text, MastodonService.escape_sigils(text))
+        end
+      end
+
+      # 🔴 URL の形でも `Account::MENTION_RE` に当たれば通知が飛ぶ (#321)。
+      def test_mastodon_escape_sigils_breaks_what_mastodon_links
+        {
+          '曲名 https://foo/-@alice' => '曲名 https://foo/-@ alice',
+          'https://192.168.0.1/.@alice' => 'https://192.168.0.1/.@ alice',
+          'https://example.music/.@alice' => 'https://example.music/.@ alice',
+          '@alice' => '@ alice',
+          '「@alice」' => '「@ alice」',
+          'a @alice@example.com' => 'a @ alice@example.com',
+          '#tag' => '# tag',
+          '曲 #tag' => '曲 # tag',
+          '＃タグ' => '＃ タグ',
+        }.each do |src, expected|
+          assert_equal(expected, MastodonService.escape_sigils(src))
+        end
+      end
+
+      def test_mastodon_escape_sigils_takes_a_binary_labelled_string
+        assert_equal('ほげ # tag', MastodonService.escape_sigils('ほげ #tag'.b))
+      end
+
+      def test_sanitize_status_follows_the_service
+        assert_equal('曲名#featuring', MastodonService.sanitize_status('<p>曲名#featuring</p>'))
+        assert_equal('曲名# featuring', Service.sanitize_status('<p>曲名#featuring</p>'))
+        assert_equal('曲名# featuring', MisskeyService.sanitize_status('<p>曲名#featuring</p>'))
+      end
+
+      # ⚠ Pleroma の境界は測っていないので広いほうのまま。
+      def test_pleroma_escape_sigils_stays_on_the_wide_boundary
+        assert_equal('曲名# featuring', PleromaService.escape_sigils('曲名#featuring'))
+      end
+
       # ⚠ **HTML の除去と区切りの挿入が同じ口で起きる**（#273）。
       def test_sanitize_status_escapes_sigils
         assert_equal('# キボウレインボウ#', Service.sanitize_status('<p>#キボウレインボウ#</p>'))

@@ -12,6 +12,10 @@ acct:
   # 🔴 **境界だけは `/i` を効かせない (#298)。**Ruby の `/i` は `ſ`（U+017F）を英字として扱い、
   # `ſ@admin` を素通りしていた（mfm-js は u フラグなしなので英字にしない）。
   sigil_pattern: ((?<!(?-i:[a-zA-Z0-9]))@(([a-z0-9_]+([a-z0-9_\.-]+[a-z0-9_]+)?)(?:@[a-z0-9\.\-]+[a-z0-9]+)?))
+  # Mastodon 向けの無毒化用 (#321)。⚠ Mastodon v4.7.2 の `Account::MENTION_RE` の写し。
+  # 🔴 **URL の中でも当てる。** 通知は `ProcessMentionsService` が本文全体にこの正規表現を当てて決めるので、
+  # `https://foo/-@alice` は URL の形でも通知が飛ぶ。`/@alice` は直前の `/` で除かれる。
+  mastodon_sigil_pattern: ((?<![=/[:word:]])@(([a-z0-9_]+([.-]+[a-z0-9_]+)*)(?:@[[:word:]]+([.-]+[[:word:]]+)*)?))
 sigil:
   # 無毒化で**丸ごと除外する URL の範囲** — ⚠⚠ **mfm-js の `urlChar` の写し**（0.26.0）。
   # 🔴 無毒化の境界を広げると、**URL の途中の `_@name` `_#frag` まで区切って URL を壊す**
@@ -97,7 +101,7 @@ package:
     - tkoishi@b-shock.co.jp
   license: MIT
   url: https://github.com/pooza/ginseng-fediverse
-  version: 7.0.1
+  version: 7.1.0
 parser:
   note:
     url:

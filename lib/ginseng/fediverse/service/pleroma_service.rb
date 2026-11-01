@@ -3,6 +3,11 @@ module Ginseng
     class PleromaService < MastodonService
       include Package
 
+      # ⚠ Pleroma の境界は測っていないので、Mastodon の写し (#321) を継がず広いほうのままにする。
+      def self.escape_sigils(text)
+        return Service.escape_sigils(text)
+      end
+
       def say(body, params = {})
         params[:chat_id] ||= body[:chat_id]
         return http.post("/api/v1/pleroma/chats/#{params[:chat_id]}/messages", {

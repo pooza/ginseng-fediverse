@@ -203,6 +203,11 @@ module Ginseng
         return Regexp.new(Config.instance['/acct/sigil_pattern'], Regexp::IGNORECASE)
       end
 
+      # Mastodon 向けの無毒化用パターン (#321)。理由は config/lib.yaml。
+      def self.mastodon_acct_sigil_pattern
+        return Regexp.new(Config.instance['/acct/mastodon_sigil_pattern'], Regexp::IGNORECASE)
+      end
+
       # 無毒化で丸ごと除外する URL の範囲（理由は config/lib.yaml の `sigil/url_pattern`）。
       # 🔴 **`IGNORECASE` を付けない (#298)** — mfm-js は大文字の scheme を URL と読まない。
       def self.sigil_url_pattern
