@@ -3,6 +3,17 @@ module Ginseng
     class MastodonService < Service
       include Package
 
+      # Mastodon が実際にリンク化する位置だけを区切る (#321)。
+      #
+      # ⚠ 基底の `Service.escape_sigils` は Misskey（mfm-js）の境界なので、`曲名#featuring` のように
+      # Mastodon がリンク化しない位置まで書き換え、`https://foo/-@alice` は URL として除外して
+      # 通知を止められない。⚠ 投稿先を決められない呼び出しは、これまでどおり基底を使う。
+      def self.escape_sigils(text)
+        text = Text.to_utf8(text, "#{name}.#{__callee__}")
+        return escape_sigils_outside_url(text,
+          [Parser.hashtag_pattern, Parser.mastodon_acct_sigil_pattern])
+      end
+
       def nodeinfo
         unless @nodeinfo
           @nodeinfo = http.get('/api/v1/instance').parsed_response.merge(super)
