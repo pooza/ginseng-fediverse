@@ -99,6 +99,10 @@ module Ginseng
           '#tag' => '# tag',
           '曲 #tag' => '曲 # tag',
           '＃タグ' => '＃ タグ',
+          # 🔴 境界に `/i` を効かせると、`ß` の畳み込みで素通りする。
+          'Weiß @alice' => 'Weiß @ alice',
+          'ﬁ @alice' => 'ﬁ @ alice',
+          'ﬃ-@alice' => 'ﬃ-@ alice',
         }.each do |src, expected|
           assert_equal(expected, MastodonService.escape_sigils(src))
         end
