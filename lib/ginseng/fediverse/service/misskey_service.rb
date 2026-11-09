@@ -226,11 +226,21 @@ module Ginseng
       def create_streaming_uri(stream = nil)
         uri = http.create_uri('/streaming')
         uri.scheme = 'wss'
-        uri.query_values = {'i' => token}
+        # 🔴 **トークンはクエリ（`i`）に載せない (#334)。** → `create_streaming_headers`
+        uri.query = nil
         return uri
       end
 
       alias streaming_uri create_streaming_uri
+
+      # ⚠ ストリーミングは `Authorization: Bearer` を受け、無ければ `i` を見る
+      # （misskey の `StreamingApiServerService.ts`）。
+      def create_streaming_headers
+        return {} unless token
+        return {'Authorization' => "Bearer #{token}"}
+      end
+
+      alias streaming_headers create_streaming_headers
 
       def default_token
         return @config['/misskey/token']

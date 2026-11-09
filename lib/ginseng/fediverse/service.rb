@@ -163,6 +163,17 @@ module Ginseng
 
       alias streaming_uri create_streaming_uri
 
+      # ストリーミングに接続するときに付けるヘッダ (#334)。
+      #
+      # 🔴 **トークンは URL ではなくここで渡す。** クエリに載せると、逆プロキシ（nginx など）の
+      # アクセスログにそのまま残る。⚠ `streaming_uri` にはトークンを入れないので、接続する側は
+      # このヘッダを必ず付けること（付けないと認証されない）。
+      def create_streaming_headers
+        raise ImplementError, "'#{__method__}' not implemented"
+      end
+
+      alias streaming_headers create_streaming_headers
+
       # ⚠⚠ **渡された hash を書き換えないこと (#258)。** 複製せずに書き込むと、
       # 呼び側の hash に `X-Mulukhiya` や（`MastodonService` では）**設定の
       # トークン**が残り、**同じ hash を使い回す次の要求（別ホスト宛でも）へ

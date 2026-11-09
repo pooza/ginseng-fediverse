@@ -382,11 +382,20 @@ module Ginseng
       def create_streaming_uri(stream = 'user')
         uri = URI.parse(info.dig('urls', 'streaming_api'))
         uri.path = '/api/v1/streaming'
-        uri.query_values = {'access_token' => token, 'stream' => stream}
+        # 🔴 **トークンはクエリに載せない (#334)。** → `create_streaming_headers`
+        uri.query_values = {'stream' => stream}
         return uri
       end
 
       alias streaming_uri create_streaming_uri
+
+      # ⚠ Streaming API は `Authorization: Bearer` を受ける（mastodon の `streaming/index.js`）。
+      def create_streaming_headers
+        return {} unless token
+        return {'Authorization' => "Bearer #{token}"}
+      end
+
+      alias streaming_headers create_streaming_headers
 
       def max_post_text_length
         length = info.dig('configuration', 'statuses', 'max_characters')
