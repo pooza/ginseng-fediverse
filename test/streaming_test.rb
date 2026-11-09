@@ -3,12 +3,12 @@ module Ginseng
     # ストリーミングの URL とヘッダ (#334)。
     #
     # 🔴 **トークンを URL に載せない。** クエリは逆プロキシのアクセスログにそのまま残るので、
-    # `Authorization: Bearer` で渡す（Mastodon も Misskey もヘッダを受ける）。
+    # `Authorization: Bearer` で渡す（Mastodon と Misskey 13.14.0 以降はヘッダを受ける）。
+    # ⚠⚠ **Pleroma と Meisskey はヘッダを受けないので、従来どおりクエリ**（v8.0.0 のリリース前レビュー）。
     class StreamingTest < TestCase
       TOKEN = 'streaming-secret-token'.freeze
 
-      # ⚠ Pleroma は Mastodon を、Meisskey は Misskey を継承している。継承先も同じ形か見る。
-      SERVICES = [MastodonService, PleromaService, MisskeyService, MeisskeyService].freeze
+      SERVICES = [MastodonService, MisskeyService].freeze
 
       def create_service(service_class, token: TOKEN)
         service = service_class.new(Ginseng::URI.parse('https://example.com/'))
@@ -39,10 +39,26 @@ module Ginseng
 
       # ⚠ トークンが無ければヘッダも付けない（`Bearer ` だけを送らない）。
       def test_headers_without_a_token
-        SERVICES.each do |service_class|
-          assert_equal({}, create_service(service_class, token: nil).streaming_headers,
-            service_class.name)
+        SERVICES.product([nil, '']).each do |service_class, token|
+          assert_equal({}, create_service(service_class, token:).streaming_headers,
+            [service_class.name, token].inspect)
         end
+      end
+
+      # 🔴🔴 **Pleroma と Meisskey は、継承で Mastodon / Misskey の形にしない。** ヘッダを読まないので、
+      # 認証されなくなる（Meisskey は黙って匿名になる）。
+      def test_servers_without_header_auth_keep_the_query
+        pleroma = create_service(PleromaService)
+
+        assert_equal({'access_token' => TOKEN, 'stream' => 'user'}, pleroma.streaming_uri.query_values)
+        assert_equal('wss://streaming.example.com/api/v1/streaming', pleroma.streaming_uri.to_s.split('?').first)
+        assert_equal({}, pleroma.streaming_headers)
+
+        meisskey = create_service(MeisskeyService)
+
+        assert_equal({'i' => TOKEN}, meisskey.streaming_uri.query_values)
+        assert_equal('wss', meisskey.streaming_uri.scheme)
+        assert_equal({}, meisskey.streaming_headers)
       end
 
       # ⚠ トークン以外は従来どおり。Mastodon は申告されたホストと `stream`、Misskey は本体の `wss`。

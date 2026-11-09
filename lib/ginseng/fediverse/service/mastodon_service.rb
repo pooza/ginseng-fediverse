@@ -391,7 +391,7 @@ module Ginseng
 
       # ⚠ Streaming API は `Authorization: Bearer` を受ける（mastodon の `streaming/index.js`）。
       def create_streaming_headers
-        return {} unless token
+        return {} if token.to_s.empty?
         return {'Authorization' => "Bearer #{token}"}
       end
 

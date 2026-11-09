@@ -8,6 +8,24 @@ module Ginseng
         return Service.escape_sigils(text)
       end
 
+      # ⚠⚠ **Pleroma はトークンをクエリに残す（v8.0.0 のリリース前レビュー・オーナー判断）。**
+      # ストリーミングが `Authorization` を読まない（`access_token` のクエリか
+      # `Sec-WebSocket-Protocol`。フォークの Akkoma の `websocket_handler.ex` で確認、本家は未確認）ので、
+      # Mastodon と同じにすると認証されなくなる。🔴 **トークンは逆プロキシのログに残る**（引き受けた限界）。
+      def create_streaming_uri(stream = 'user')
+        uri = super
+        uri.query_values = {'access_token' => token, 'stream' => stream}
+        return uri
+      end
+
+      alias streaming_uri create_streaming_uri
+
+      def create_streaming_headers
+        return {}
+      end
+
+      alias streaming_headers create_streaming_headers
+
       def say(body, params = {})
         params[:chat_id] ||= body[:chat_id]
         return http.post("/api/v1/pleroma/chats/#{params[:chat_id]}/messages", {

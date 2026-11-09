@@ -234,9 +234,9 @@ module Ginseng
       alias streaming_uri create_streaming_uri
 
       # ⚠ ストリーミングは `Authorization: Bearer` を受け、無ければ `i` を見る
-      # （misskey の `StreamingApiServerService.ts`）。
+      # （misskey の `StreamingApiServerService.ts`。13.14.0 から）。
       def create_streaming_headers
-        return {} unless token
+        return {} if token.to_s.empty?
         return {'Authorization' => "Bearer #{token}"}
       end
 
