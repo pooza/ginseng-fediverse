@@ -167,7 +167,11 @@ module Ginseng
       #
       # 🔴 **トークンは URL ではなくここで渡す。** クエリに載せると、逆プロキシ（nginx など）の
       # アクセスログにそのまま残る。⚠ `streaming_uri` にはトークンを入れないので、接続する側は
-      # このヘッダを必ず付けること（付けないと認証されない）。
+      # このヘッダを必ず付けること。
+      # 🔴🔴 **付け忘れたときの見え方はサーバーで違う。** Mastodon は 401 で接続できない。
+      # ⚠⚠ Misskey は**黙って匿名で接続し、認証の要るチャンネル（`main` / `homeTimeline`）だけが
+      # 来なくなる**（エラーは出ない）。⚠ Misskey がヘッダを受けるのは 13.14.0 から。
+      # ⚠ Pleroma と Meisskey はヘッダを受けないので、従来どおりクエリに載せ、ここは `{}`。
       def create_streaming_headers
         raise ImplementError, "'#{__method__}' not implemented"
       end
