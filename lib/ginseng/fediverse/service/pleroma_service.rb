@@ -12,6 +12,9 @@ module Ginseng
       # `Sec-WebSocket-Protocol`（フォークの Akkoma の `websocket_handler.ex`）。
       # 🔴 **クエリには載せない。**逆プロキシのログに残るので、`streaming_protocols` で渡す。
       # Akkoma 3.20.1 で、サブプロトコルのトークンで認証されることを確かめた（トークン無しは 401）。
+      # ⚠ 本家 Pleroma も 1.1.0（2019）から受ける（CHANGELOG）。サーバーが受けたプロトコルを
+      # 返すようになったのは 2.11.0 からだが、Ruby の `websocket-driver`（faye）は返らなくても
+      # 接続を通す（返ってきたときだけ照合する）。⚠ ブラウザは返らないと接続を拒む。
       # ⚠ URL は `MastodonService` のまま（`stream` だけ）。
       def create_streaming_headers
         return {}
