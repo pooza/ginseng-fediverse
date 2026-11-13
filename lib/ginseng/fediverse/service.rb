@@ -171,12 +171,25 @@ module Ginseng
       # 🔴🔴 **付け忘れたときの見え方はサーバーで違う。** Mastodon は 401 で接続できない。
       # ⚠⚠ Misskey は**黙って匿名で接続し、認証の要るチャンネル（`main` / `homeTimeline`）だけが
       # 来なくなる**（エラーは出ない）。⚠ Misskey がヘッダを受けるのは 13.14.0 から。
-      # ⚠ Pleroma と Meisskey はヘッダを受けないので、従来どおりクエリに載せ、ここは `{}`。
+      # ⚠ Pleroma と Meisskey はヘッダを受けないので、ここは `{}`（Pleroma は `streaming_protocols`、
+      # Meisskey はクエリで渡す）。
       def create_streaming_headers
         raise ImplementError, "'#{__method__}' not implemented"
       end
 
       alias streaming_headers create_streaming_headers
+
+      # ストリーミングに接続するときの WebSocket のサブプロトコル（`Sec-WebSocket-Protocol`）。
+      #
+      # ⚠ **トークンをここで渡すのは Pleroma 系だけ。**`Authorization` を読まないが、
+      # `Sec-WebSocket-Protocol` は読むので、URL に載せずに済む。ほかは `[]`。
+      # 接続する側は `Faye::WebSocket::Client.new(uri, streaming_protocols, headers: streaming_headers)`
+      # の形で渡す。
+      def create_streaming_protocols
+        return []
+      end
+
+      alias streaming_protocols create_streaming_protocols
 
       # ⚠⚠ **渡された hash を書き換えないこと (#258)。** 複製せずに書き込むと、
       # 呼び側の hash に `X-Mulukhiya` や（`MastodonService` では）**設定の

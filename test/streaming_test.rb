@@ -4,7 +4,7 @@ module Ginseng
     #
     # 🔴 **トークンを URL に載せない。** クエリは逆プロキシのアクセスログにそのまま残るので、
     # `Authorization: Bearer` で渡す（Mastodon と Misskey 13.14.0 以降はヘッダを受ける）。
-    # ⚠⚠ **Pleroma と Meisskey はヘッダを受けないので、従来どおりクエリ**（v8.0.0 のリリース前レビュー）。
+    # ⚠⚠ **Pleroma と Meisskey はヘッダを受けない。**Pleroma は `Sec-WebSocket-Protocol`、Meisskey はクエリ。
     class StreamingTest < TestCase
       TOKEN = 'streaming-secret-token'.freeze
 
@@ -47,18 +47,36 @@ module Ginseng
 
       # 🔴🔴 **Pleroma と Meisskey は、継承で Mastodon / Misskey の形にしない。** ヘッダを読まないので、
       # 認証されなくなる（Meisskey は黙って匿名になる）。
-      def test_servers_without_header_auth_keep_the_query
+      # 🔴 Pleroma はトークンを `Sec-WebSocket-Protocol` で渡し、URL にもヘッダにも載せない。
+      def test_pleroma_uses_the_subprotocol
         pleroma = create_service(PleromaService)
 
-        assert_equal({'access_token' => TOKEN, 'stream' => 'user'}, pleroma.streaming_uri.query_values)
-        assert_equal('wss://streaming.example.com/api/v1/streaming', pleroma.streaming_uri.to_s.split('?').first)
+        assert_equal('wss://streaming.example.com/api/v1/streaming?stream=user', pleroma.streaming_uri.to_s)
+        assert_not_include(pleroma.streaming_uri.to_s, TOKEN)
         assert_equal({}, pleroma.streaming_headers)
+        assert_equal([TOKEN], pleroma.streaming_protocols)
+      end
 
+      # ⚠ トークンが無ければサブプロトコルも付けない。
+      def test_pleroma_protocols_without_a_token
+        [nil, ''].each do |token|
+          assert_equal([], create_service(PleromaService, token:).streaming_protocols, token.inspect)
+        end
+      end
+
+      def test_meisskey_keeps_the_query
         meisskey = create_service(MeisskeyService)
 
         assert_equal({'i' => TOKEN}, meisskey.streaming_uri.query_values)
         assert_equal('wss', meisskey.streaming_uri.scheme)
         assert_equal({}, meisskey.streaming_headers)
+      end
+
+      # Pleroma 以外はサブプロトコルにトークンを載せない。
+      def test_protocols_are_empty_elsewhere
+        [MastodonService, MisskeyService, MeisskeyService].each do |service_class|
+          assert_equal([], create_service(service_class).streaming_protocols, service_class.name)
+        end
       end
 
       # ⚠ トークン以外は従来どおり。Mastodon は申告されたホストと `stream`、Misskey は本体の `wss`。

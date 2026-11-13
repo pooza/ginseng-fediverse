@@ -8,23 +8,26 @@ module Ginseng
         return Service.escape_sigils(text)
       end
 
-      # ⚠⚠ **Pleroma はトークンをクエリに残す（v8.0.0 のリリース前レビュー・オーナー判断）。**
-      # ストリーミングが `Authorization` を読まない（`access_token` のクエリか
-      # `Sec-WebSocket-Protocol`。フォークの Akkoma の `websocket_handler.ex` で確認、本家は未確認）ので、
-      # Mastodon と同じにすると認証されなくなる。🔴 **トークンは逆プロキシのログに残る**（引き受けた限界）。
-      def create_streaming_uri(stream = 'user')
-        uri = super
-        uri.query_values = {'access_token' => token, 'stream' => stream}
-        return uri
-      end
-
-      alias streaming_uri create_streaming_uri
-
+      # ⚠⚠ **Pleroma のストリーミングは `Authorization` を読まない。**読むのは `access_token` のクエリか
+      # `Sec-WebSocket-Protocol`（フォークの Akkoma の `websocket_handler.ex`）。
+      # 🔴 **クエリには載せない。**逆プロキシのログに残るので、`streaming_protocols` で渡す。
+      # Akkoma 3.20.1 で、サブプロトコルのトークンで認証されることを確かめた（トークン無しは 401）。
+      # ⚠ 本家 Pleroma も 1.1.0（2019）から受ける（CHANGELOG）。サーバーが受けたプロトコルを
+      # 返すようになったのは 2.11.0 からだが、Ruby の `websocket-driver`（faye）は返らなくても
+      # 接続を通す（返ってきたときだけ照合する）。⚠ ブラウザは返らないと接続を拒む。
+      # ⚠ URL は `MastodonService` のまま（`stream` だけ）。
       def create_streaming_headers
         return {}
       end
 
       alias streaming_headers create_streaming_headers
+
+      def create_streaming_protocols
+        return [] if token.to_s.empty?
+        return [token]
+      end
+
+      alias streaming_protocols create_streaming_protocols
 
       def say(body, params = {})
         params[:chat_id] ||= body[:chat_id]
