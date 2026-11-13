@@ -181,8 +181,8 @@ module Ginseng
 
       # ストリーミングに接続するときの WebSocket のサブプロトコル（`Sec-WebSocket-Protocol`）。
       #
-      # ⚠ **トークンをここで渡すのは Pleroma 系だけ。**`Authorization` を読まないが、
-      # `Sec-WebSocket-Protocol` は読むので、URL に載せずに済む。ほかは `[]`。
+      # ⚠ **トークンをここで渡すのは Pleroma 系だけ。**Pleroma 系のストリーミングは `Authorization` を
+      # 読まないが、`Sec-WebSocket-Protocol` は読むので、URL に載せずに済む。ほかは `[]`。
       # 接続する側は `Faye::WebSocket::Client.new(uri, streaming_protocols, headers: streaming_headers)`
       # の形で渡す。
       def create_streaming_protocols
