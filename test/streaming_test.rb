@@ -64,6 +64,7 @@ module Ginseng
         end
       end
 
+      # ⚠ Meisskey はヘッダを読まないのでクエリのまま（ヘッダにすると黙って匿名になる）。
       def test_meisskey_keeps_the_query
         meisskey = create_service(MeisskeyService)
 

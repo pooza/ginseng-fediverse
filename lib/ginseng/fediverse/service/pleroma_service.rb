@@ -8,20 +8,26 @@ module Ginseng
         return Service.escape_sigils(text)
       end
 
-      # ⚠⚠ **Pleroma のストリーミングは `Authorization` を読まない。**読むのは `access_token` のクエリか
-      # `Sec-WebSocket-Protocol`（フォークの Akkoma の `websocket_handler.ex`）。
-      # 🔴 **クエリには載せない。**逆プロキシのログに残るので、`streaming_protocols` で渡す。
-      # Akkoma 3.20.1 で、サブプロトコルのトークンで認証されることを確かめた（トークン無しは 401）。
-      # ⚠ 本家 Pleroma も 1.1.0（2019）から受ける（CHANGELOG）。サーバーが受けたプロトコルを
-      # 返すようになったのは 2.11.0 からだが、Ruby の `websocket-driver`（faye）は返らなくても
-      # 接続を通す（返ってきたときだけ照合する）。⚠ ブラウザは返らないと接続を拒む。
-      # ⚠ URL は `MastodonService` のまま（`stream` だけ）。
+      # `{}`。⚠ Pleroma のストリーミングは `Authorization` を読まないので、トークンは
+      # `create_streaming_protocols` で渡す。⚠ URL は `MastodonService` のまま（`stream` だけ）。
       def create_streaming_headers
         return {}
       end
 
       alias streaming_headers create_streaming_headers
 
+      # ⚠⚠ **Pleroma のストリーミングは `Authorization` を読まない。**読むのは `access_token` のクエリか
+      # `Sec-WebSocket-Protocol`（Pleroma / Akkoma の `websocket_handler.ex`。⚠ **先頭のプロトコルだけ**を
+      # トークンとして読むので、ほかのプロトコルを前に足さない）。
+      # 🔴 **クエリには載せない。**逆プロキシのログに残るので、`streaming_protocols` で渡す。
+      # Akkoma 3.20.1 で、サブプロトコルのトークンで認証されることを確かめた（トークン無しは 401。
+      # pooza/mulukhiya-toot-proxy#4901）。
+      # ⚠ 本家 Pleroma も 1.1.0（2019）から受ける（CHANGELOG）。サーバーが受けたプロトコルを
+      # 返すようになったのは 2.11.0 からだが、Ruby の `websocket-driver`（faye）は返らなくても
+      # 接続を通す（返ってきたときだけ照合する）。
+      # ⚠ **引き受けた限界**: ヘッダはクエリと違って既定のアクセスログには残らないが、ヘッダを残す
+      # 設定のプロキシ・CDN には残る。⚠ 返ってきた版では faye の `ws.protocol` がトークンそのものに
+      # なるので、接続側は `protocol` をログに出さない。
       def create_streaming_protocols
         return [] if token.to_s.empty?
         return [token]
