@@ -30,6 +30,27 @@ module Ginseng
         end
       end
 
+      # 🔴 **同じ URL の並行 (#317)。** `upload` の中から同じ URL をもう一度取りにいかせ、
+      # 内側の後始末が外側のファイルを消さないことを見る（スレッドを使わずに重ねる）。
+      class NestingService < LoopbackService
+        attr_accessor :nested_url
+
+        def upload(path, params = {})
+          if (url = nested_url)
+            self.nested_url = nil
+            upload_remote_resource(url)
+          end
+          return super
+        end
+      end
+
+      # 受信の上限を小さくしたサービス (#317)。
+      class SmallLimitService < LoopbackService
+        def remote_resource_max_bytes
+          return 4
+        end
+      end
+
       def setup
         @requests = []
         @server = TCPServer.new('127.0.0.1', 0)
@@ -153,6 +174,42 @@ module Ginseng
       def test_guard_still_refuses_elsewhere
         assert_raise(GatewayError) {@service.http.get("http://127.0.0.1:#{@port}/first?token=x")}
         assert_equal(['/first?token=x'], @requests)
+      end
+
+      def test_same_url_in_parallel_does_not_remove_each_other
+        service = NestingService.new(Ginseng::URI.parse('https://mstdn.example.com/'))
+        url = "http://127.0.0.1:#{@port}/final"
+        service.nested_url = url
+
+        assert_equal(:uploaded, service.upload_remote_resource(url))
+        assert_equal(BODY, service.uploaded)
+      end
+
+      # ⚠ 呼び出しごとに切ったディレクトリも消す（ファイルだけ消すと空のディレクトリが溜まる）。
+      def test_leaves_nothing_in_tmp_media
+        dir = File.join(@service.environment_class.dir, 'tmp/media')
+        before = Dir.children(dir)
+        @service.upload_remote_resource("http://127.0.0.1:#{@port}/final")
+
+        assert_equal(before.sort, Dir.children(dir).sort)
+      end
+
+      def test_refuses_body_over_max_bytes
+        service = SmallLimitService.new(Ginseng::URI.parse('https://mstdn.example.com/'))
+        assert_raise(TooLargeError) {service.upload_remote_resource("http://127.0.0.1:#{@port}/final")}
+        assert_nil(service.uploaded)
+      end
+
+      # 🔴 **どの枝でも上限を落とさない。** 読めない URL（`http://a b/` は `InvalidURIError`）の枝でも、
+      # 検証と上限が残ること。
+      def test_options_keep_max_bytes_on_every_branch
+        validator = ->(_host) {true}
+        ["http://127.0.0.1:#{@port}/final", "http://user:pass@127.0.0.1:#{@port}/final", 'http://a b/'].each do |url|
+          options = @service.send(:remote_resource_options, url, validator)
+
+          assert_equal(100 * 1024 * 1024, options[:max_bytes], url)
+          assert_same(validator, options[:host_validator], url)
+        end
       end
 
       private
