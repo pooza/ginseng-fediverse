@@ -207,7 +207,7 @@ module Ginseng
         ["http://127.0.0.1:#{@port}/final", "http://user:pass@127.0.0.1:#{@port}/final", 'http://a b/'].each do |url|
           options = @service.send(:remote_resource_options, url, validator)
 
-          assert_equal(100 * 1024 * 1024, options[:max_bytes], url)
+          assert_equal(256 * 1024 * 1024, options[:max_bytes], url)
           assert_same(validator, options[:host_validator], url)
         end
       end
