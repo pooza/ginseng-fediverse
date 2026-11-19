@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 module Ginseng
   module Fediverse
     class Service
@@ -113,11 +115,25 @@ module Ginseng
         params = params.dup
         validator = params.delete(:host_validator)
         validator = remote_resource_host_validator if validator.nil?
-        path = File.join(environment_class.dir, 'tmp/media', uri.to_s.sha256)
-        File.write(path, http.get(uri, remote_resource_options(uri, validator)))
+        dir = Dir.mktmpdir(nil, File.join(environment_class.dir, 'tmp/media'))
+        path = File.join(dir, uri.to_s.sha256)
+        # ⚠ **`.body` を書く。** `max_bytes:` を付けると応答の `to_s` は本文を返さない
+        # （`Net::ReadAdapter` の inspect になる。ginseng-core 7.1.0 で実測）。
+        File.write(path, http.get(uri, remote_resource_options(uri, validator)).body.to_s)
         return upload(path, params)
       ensure
-        FileUtils.rm_f(path) if path
+        FileUtils.rm_rf(dir) if dir
+      end
+
+      # リモートの添付として受け取るバイト数の上限 (#317)。⚠ **利用側の上書き点。**
+      #
+      # ⚠ 第三者の URL から来る応答をそのまま `tmp/media` へ書くので、上限が無いと巨大な応答で
+      # ディスクとメモリを食う。超えると `Ginseng::TooLargeError`（`GatewayError` の子）。
+      # ⚠ 既定は 100 MiB。投稿先の上限（Mastodon の動画は 99 MB）より上に置いて、
+      # 投稿先が受けるものをここで落とさない。nil を返すと上限を掛けない（9.0.0 までと同じ）。
+      # ⚠ core 2.4.1 より前は、`TooLargeError` のメッセージに URL が載る（ginseng-core#689）。
+      def remote_resource_max_bytes
+        return 100 * 1024 * 1024
       end
 
       # リモートの添付を取りにいく先のホストを検証する callable (#312)。⚠ **利用側の上書き点。**
@@ -357,14 +373,21 @@ module Ginseng
       # 変わると資格情報を落とす。それでも明示しないほうへ倒しておく。
       # ⚠ 明示しなければガードが決める — userinfo 付きの URL の 3xx は、これまでどおり
       # `GatewayError` になる。⚠ 読めない URL も明示しない（ガードは安全側へ倒す）。
-      # 🔴 **どの枝でも `host_validator` は落とさない (#312)。** 読めない URL の枝で空の hash を
-      # 返すと、そこだけ検証が外れる。
+      # 🔴 **どの枝でも `host_validator` と `max_bytes` は落とさない (#312 / #317)。** 読めない URL の
+      # 枝で作り直すと、そこだけ検証や上限が外れる。⚠ なので `rescue` は URL を読むところだけに置く。
       def remote_resource_options(uri, validator)
         options = validator ? {host_validator: validator} : {}
-        return options if Ginseng::URI.parse(uri.to_s).userinfo.present?
+        max_bytes = remote_resource_max_bytes
+        options[:max_bytes] = max_bytes if max_bytes
+        return options unless remote_resource_followable?(uri)
         return options.merge(follow_redirects: true)
+      end
+
+      # ⚠ userinfo を持つ URL と、読めない URL は追うと明示しない（上の説明）。
+      def remote_resource_followable?(uri)
+        return Ginseng::URI.parse(uri.to_s).userinfo.blank?
       rescue StandardError
-        return validator ? {host_validator: validator} : {}
+        return false
       end
 
       def oauth_client_path
