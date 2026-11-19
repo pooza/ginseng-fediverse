@@ -129,11 +129,13 @@ module Ginseng
       #
       # ⚠ 第三者の URL から来る応答をそのまま `tmp/media` へ書くので、上限が無いと巨大な応答で
       # ディスクとメモリを食う。超えると `Ginseng::TooLargeError`（`GatewayError` の子）。
-      # ⚠ 既定は 100 MiB。投稿先の上限（Mastodon の動画は 99 MB）より上に置いて、
-      # 投稿先が受けるものをここで落とさない。nil を返すと上限を掛けない（9.0.0 までと同じ）。
+      # ⚠ 既定は 256 MiB。投稿先の既定の上限（Mastodon の動画は 99 MB、Misskey の `maxFileSize` は
+      # 250 MB）より上に置いて、投稿先が受けるものをここで落とさない。nil を返すと上限を掛けない
+      # （9.0.0 までと同じ）。⚠⚠ 上限を超えると新しく例外が上がるので 10.0.0（major）にした。
+      # ⚠ 本文は丸ごとメモリに持つので、並行で呼ぶ利用側はその本数ぶん持ちうる。
       # ⚠ core 2.4.1 より前は、`TooLargeError` のメッセージに URL が載る（ginseng-core#689）。
       def remote_resource_max_bytes
-        return 100 * 1024 * 1024
+        return 256 * 1024 * 1024
       end
 
       # リモートの添付を取りにいく先のホストを検証する callable (#312)。⚠ **利用側の上書き点。**
