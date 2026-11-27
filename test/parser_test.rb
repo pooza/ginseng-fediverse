@@ -46,6 +46,14 @@ module Ginseng
         assert_equal('ローリン♪ローリン♪', @parser.body)
         assert_equal('#precure_fun #シュビドゥビ', @parser.footer)
         assert_equal(Set['precure_fun', 'シュビドゥビ'], @parser.footer_tags)
+
+        # ⚠ 半角と全角が混ざった行も同じ。
+        ["ローリン♪ローリン♪\n#precure_fun ＃シュビドゥビ", "ローリン♪ローリン♪\n＃precure_fun #シュビドゥビ"].each do |text|
+          @parser.text = text
+
+          assert_equal('ローリン♪ローリン♪', @parser.body, text)
+          assert_equal('#precure_fun #シュビドゥビ', @parser.footer, text)
+        end
       end
 
       def test_exec
