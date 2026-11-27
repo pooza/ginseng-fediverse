@@ -98,6 +98,18 @@ module Ginseng
         assert_equal(Set[], @container.create_tags, '本文にあるタグを足さないこと')
       end
 
+      # ⚠ 格納時は半角 `#` と同じく全角 `＃` も外す (#316)。
+      # ⚠ `delete` は `normalize` を通さないので、印付きの名前では消えない（半角も同じ）。
+      def test_push_strips_a_fullwidth_sigil
+        @container.push('＃precure_fun')
+        @container.push('#シュビドゥビ')
+
+        assert_equal(Set['precure_fun', 'シュビドゥビ'], @container)
+        assert_equal(Set['#precure_fun', '#シュビドゥビ'], @container.create_tags)
+        assert_nil(@container.delete('＃precure_fun'))
+        assert_equal(@container.delete('precure_fun'), @container)
+      end
+
       def test_delete
         @container.push('実況')
         @container.push('precure_fun')
