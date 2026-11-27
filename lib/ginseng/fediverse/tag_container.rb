@@ -37,8 +37,9 @@ module Ginseng
 
       alias concat merge
 
+      # ⚠ フッタの畳み込み（`Parser#text=`）は全角 `＃` も受けるので、格納時も揃える (#316)。
       def normalize(word)
-        return word.sub(/^#/, '')
+        return word.sub(/^[#＃]/, '')
       end
 
       alias body text
