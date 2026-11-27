@@ -41,7 +41,9 @@ module Ginseng
         @footer_tags.clear
         lines = self.class.sanitize(text).each_line.to_a
         lines.dup.reverse_each do |line|
-          break unless line.match?(/^[[:blank:]]*(#[^[:blank:]]+[[:blank:]]?)+[[:blank:]]*$/)
+          # ⚠ 抽出（`hashtag_pattern`）と同じく、全角 `＃` もフッタとして畳む (#316)。
+          # 🔴 半角だけを見ていると、末尾が全角の行が本文に残る。
+          break unless line.match?(/^[[:blank:]]*([#＃][^[:blank:]]+[[:blank:]]?)+[[:blank:]]*$/)
           @footer_tags.merge(lines.pop.strip.split(/[[:blank:]]+/))
         end
         @body = lines.map(&:chomp).join("\n").strip

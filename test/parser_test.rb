@@ -38,6 +38,16 @@ module Ginseng
         assert_equal('#mulukhiya #Example #スマイルプリキュア #precure_fun', @parser.footer)
       end
 
+      # 🔴 フッタの判定は抽出と同じく全角 `＃` も見る (#316)。
+      # ⚠⚠ **半角 `#` だけを見ていると、末尾が全角の行が本文に残る。**
+      def test_footer_with_fullwidth_sigil
+        @parser.text = "ローリン♪ローリン♪\n＃precure_fun ＃シュビドゥビ"
+
+        assert_equal('ローリン♪ローリン♪', @parser.body)
+        assert_equal('#precure_fun #シュビドゥビ', @parser.footer)
+        assert_equal(Set['precure_fun', 'シュビドゥビ'], @parser.footer_tags)
+      end
+
       def test_exec
         @parser.text = 'ローリン♪ローリン♪ココロにズッキュン'
 
